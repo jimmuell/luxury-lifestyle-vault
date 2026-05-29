@@ -1,0 +1,93 @@
+'use client'
+
+// Browser-side photo upload — uses the anon Supabase client so Storage RLS
+// enforces folder-prefix = auth.uid(). Never call this from a Server Component.
+// For server-side URL signing, downloads, or archival, use src/lib/storage/server.ts.
+
+import { createClient } from '@/lib/supabase/client'
+import {
+  ACTIVE_BUCKET,
+  SIGNED_URL_TTL,
+  MAX_PHOTO_BYTES,
+  ALLOWED_PHOTO_MIME_TYPES,
+  type PhotoType,
+  type UploadedPhoto,
+} from './constants'
+
+export type { PhotoType, UploadedPhoto }
+
+async function toJpeg(file: File): Promise<File> {
+  if (!file.type.includes('heic') && !file.type.includes('heif')) return file
+  const heic2any = (await import('heic2any')).default
+  const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 }) as Blob
+  return new File([blob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' })
+}
+
+function validate(file: File) {
+  if (file.size > MAX_PHOTO_BYTES) {
+    throw new Error(`File too large — max 10 MB (got ${(file.size / 1024 / 1024).toFixed(1)} MB)`)
+  }
+  const normalised = file.type.toLowerCase()
+  if (!ALLOWED_PHOTO_MIME_TYPES.some(t => normalised.includes(t.split('/')[1]))) {
+    throw new Error(`Unsupported file type: ${file.type}`)
+  }
+}
+
+export async function uploadItemPhoto({
+  clientId,
+  itemId,
+  file,
+  photoType,
+  sortOrder = 0,
+  caption,
+}: {
+  clientId: string
+  itemId: string
+  file: File
+  photoType: PhotoType
+  sortOrder?: number
+  caption?: string
+}): Promise<UploadedPhoto> {
+  validate(file)
+  const converted = await toJpeg(file)
+
+  const ext = converted.name.split('.').pop() ?? 'jpg'
+  const uuid = crypto.randomUUID()
+  // Path matches storage RLS: first folder segment must equal auth.uid()
+  const storagePath = `${clientId}/${itemId}/${uuid}-${photoType}.${ext}`
+
+  const sb = createClient()
+
+  const { error: uploadError } = await sb.storage
+    .from(ACTIVE_BUCKET)
+    .upload(storagePath, converted, { contentType: converted.type, upsert: false })
+
+  if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`)
+
+  const { data: signedData } = await sb.storage
+    .from(ACTIVE_BUCKET)
+    .createSignedUrl(storagePath, SIGNED_URL_TTL)
+
+  const { data: photoRow, error: dbError } = await sb
+    .from('item_photos')
+    .insert({
+      item_id: itemId,
+      uploaded_by: clientId,
+      storage_path: storagePath,
+      storage_bucket: ACTIVE_BUCKET,
+      photo_type: photoType,
+      sort_order: sortOrder,
+      caption: caption ?? null,
+    })
+    .select('id')
+    .single()
+
+  if (dbError) throw new Error(`DB insert failed: ${dbError.message}`)
+
+  return {
+    id: photoRow.id,
+    storagePath,
+    signedUrl: signedData?.signedUrl ?? '',
+    photoType,
+  }
+}
