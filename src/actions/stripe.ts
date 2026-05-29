@@ -42,12 +42,15 @@ export async function createSetupIntent() {
     )
 
     const adminClient = createAdminClient()
-    await adminClient
+    const { error: upsertError } = await adminClient
       .from('client_profiles')
       .upsert(
         { profile_id: user.id, stripe_customer_id: customer.id },
         { onConflict: 'profile_id' }
       )
+    if (upsertError) {
+      console.error('createSetupIntent: client_profiles upsert failed:', upsertError.message)
+    }
 
     stripeCustomerId = customer.id
   }
@@ -118,7 +121,7 @@ export async function createSubscription(tierId: string) {
   }))
 
   const adminSupabase = createAdminClient()
-  await adminSupabase.from('client_subscriptions').insert({
+  const { error: subInsertError } = await adminSupabase.from('client_subscriptions').insert({
     client_id: user.id,
     service_tier_id: tierId,
     stripe_subscription_id: subscription.id,
@@ -126,6 +129,10 @@ export async function createSubscription(tierId: string) {
     status: subscription.status,
     founding_member_discount_applied: !!couponId,
   })
+  if (subInsertError) {
+    // Non-blocking: subscription exists in Stripe; admin can reconcile
+    console.error('createSubscription: client_subscriptions insert failed:', subInsertError.message)
+  }
 
   return { subscriptionId: subscription.id, status: subscription.status }
 }
@@ -164,10 +171,19 @@ export async function activateAndComplete(tierId: string) {
   const { subscriptionId } = await createSubscription(tierId)
 
   const adminSupabase = createAdminClient()
-  await Promise.all([
+  const [cpResult, profileResult] = await Promise.all([
     adminSupabase.from('client_profiles').update({ subscription_active: true }).eq('profile_id', user.id),
     adminSupabase.from('profiles').update({ onboarding_complete: true }).eq('id', user.id),
   ])
+
+  if (cpResult.error) {
+    // Non-blocking: cosmetic flag; subscription state is authoritative in Stripe
+    console.error('activateAndComplete: subscription_active update failed:', cpResult.error.message)
+  }
+  if (profileResult.error) {
+    // Critical: middleware gates on this column — must succeed
+    throw new Error(`Onboarding completion failed: ${profileResult.error.message}`)
+  }
 
   return { subscriptionId }
 }

@@ -248,9 +248,15 @@ export function OnboardingFlow({
         await activateAndComplete(selectedTierId)
         router.push('/client')
       } catch (e) {
-        // If subscription creation fails, still complete onboarding
-        const msg = e instanceof Error ? e.message : ''
-        if (msg.includes('not synced to Stripe') || msg.includes('no stripe customer')) {
+        // Normalize error message regardless of how Next.js serializes server action errors
+        const msg = e instanceof Error ? e.message : (e as { message?: string })?.message ?? String(e)
+        console.error('handleActivate: activateAndComplete failed:', msg)
+        // Stripe-related failures: complete onboarding anyway; concierge reconciles billing
+        if (
+          msg.includes('not synced to Stripe') ||
+          msg.includes('no stripe customer') ||
+          msg.includes('Stripe customer not found')
+        ) {
           toast.warning('Membership activated. Billing will be configured by your concierge.')
           await completeOnboarding()
           router.push('/client')
