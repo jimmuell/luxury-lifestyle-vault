@@ -19,12 +19,41 @@ export async function createSetupIntent() {
     .eq('profile_id', user.id)
     .single()
 
-  if (!clientProfile?.stripe_customer_id) {
-    throw new Error('Stripe customer not yet created — please try again in a moment')
+  let stripeCustomerId = clientProfile?.stripe_customer_id ?? null
+
+  // Self-healing fallback: if the Stripe customer hasn't been created yet
+  // (Inngest function hasn't run, or this is a fresh signup that hasn't
+  // completed onboarding), create it inline. Uses the same idempotency key
+  // as the Inngest function so concurrent runs produce the same customer.
+  if (!stripeCustomerId) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .single()
+
+    const customer = await stripe.customers.create(
+      {
+        email: user.email!,
+        name: profile?.full_name ?? undefined,
+        metadata: { profile_id: user.id },
+      },
+      { idempotencyKey: `profile_${user.id}` }
+    )
+
+    const adminClient = createAdminClient()
+    await adminClient
+      .from('client_profiles')
+      .upsert(
+        { profile_id: user.id, stripe_customer_id: customer.id },
+        { onConflict: 'profile_id' }
+      )
+
+    stripeCustomerId = customer.id
   }
 
   const setupIntent = await stripe.setupIntents.create({
-    customer: clientProfile.stripe_customer_id,
+    customer: stripeCustomerId,
     metadata: { profile_id: user.id },
     automatic_payment_methods: { enabled: true },
   })
