@@ -11,7 +11,7 @@ create table public.profiles (
 );
 
 create table public.client_profiles (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   profile_id      uuid not null unique references public.profiles(id) on delete cascade,
   membership_tier text not null default 'founding',
   stripe_customer_id text,
@@ -23,7 +23,7 @@ create table public.client_profiles (
 );
 
 create table public.addresses (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   profile_id      uuid not null references public.profiles(id) on delete cascade,
   label           text not null default 'Home',
   line1           text not null,
@@ -39,7 +39,7 @@ create table public.addresses (
 );
 
 create table public.providers (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   profile_id      uuid references public.profiles(id) on delete set null,
   business_name   text not null,
   contact_name    text not null,
@@ -64,7 +64,7 @@ create table public.providers (
 create sequence if not exists item_sku_seq start 1;
 
 create table public.items (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   client_id       uuid not null references public.profiles(id) on delete cascade,
   name            text not null,
   sku             text unique,
@@ -101,7 +101,7 @@ create trigger items_sku_trigger
   for each row execute function generate_item_sku();
 
 create table public.item_photos (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   item_id         uuid not null references public.items(id) on delete cascade,
   uploaded_by     uuid not null references public.profiles(id),
   storage_path    text not null,
@@ -115,7 +115,7 @@ create table public.item_photos (
 );
 
 create table public.item_conditions (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   item_id         uuid not null references public.items(id) on delete cascade,
   assessed_by     uuid not null references public.profiles(id),
   condition_level condition_level not null,

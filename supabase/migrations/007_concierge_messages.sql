@@ -2,7 +2,7 @@
 -- Phase B will add threading, read receipts, and push notifications
 
 CREATE TABLE IF NOT EXISTS concierge_messages (
-  id            uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   client_id     uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   subject       text NOT NULL,
   body          text NOT NULL,
