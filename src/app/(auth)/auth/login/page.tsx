@@ -22,7 +22,7 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        {process.env.NODE_ENV !== 'production' && <DemoLogin />}
+        <DemoLogin />
       </div>
     </div>
   )
