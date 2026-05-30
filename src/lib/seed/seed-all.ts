@@ -1,5 +1,6 @@
 import { seedProviders } from './seed-providers'
 import { seedClients } from './seed-clients'
+import { seedDemoAccounts } from './seed-demo-accounts'
 import { seedSubscriptions } from './seed-subscriptions'
 import { seedItems } from './seed-items'
 import { seedPhotos } from './seed-photos'
@@ -16,6 +17,7 @@ import type { PhotoFetchResult } from './fetch-unsplash-photos'
 export interface AllSeedsResult {
   providers: SeedResult
   clients: SeedResult
+  demoAccounts: SeedResult
   subscriptions: SeedResult
   items: SeedResult
   photos: SeedResult
@@ -33,9 +35,10 @@ export interface AllSeedsResult {
 
 export async function seedAll(): Promise<AllSeedsResult> {
   // ── Tier 1: Foundation (parallel — no deps on each other) ─────────────────
-  const [providers, clients] = await Promise.all([
+  const [providers, clients, demoAccounts] = await Promise.all([
     seedProviders(),
     seedClients(),
+    seedDemoAccounts(),
   ])
 
   // ── Tier 2: Subscriptions (needs clients + service_tiers from migrations) ──
@@ -70,25 +73,25 @@ export async function seedAll(): Promise<AllSeedsResult> {
   const unsplashPhotos = await fetchUnsplashPhotos()
 
   const totalSeeded =
-    providers.seeded + clients.seeded + subscriptions.seeded +
+    providers.seeded + clients.seeded + demoAccounts.seeded + subscriptions.seeded +
     items.seeded + photos.seeded + conditions.seeded +
     outfits.seeded + orders.seeded + concierge.seeded +
     notifications.seeded + audit.seeded + unsplashPhotos.fetched
 
   const totalSkipped =
-    providers.skipped + clients.skipped + subscriptions.skipped +
+    providers.skipped + clients.skipped + demoAccounts.skipped + subscriptions.skipped +
     items.skipped + photos.skipped + conditions.skipped +
     outfits.skipped + orders.skipped + concierge.skipped +
     notifications.skipped + audit.skipped + unsplashPhotos.skipped
 
   const totalErrors =
-    providers.errors.length + clients.errors.length + subscriptions.errors.length +
+    providers.errors.length + clients.errors.length + demoAccounts.errors.length + subscriptions.errors.length +
     items.errors.length + photos.errors.length + conditions.errors.length +
     outfits.errors.length + orders.errors.length + concierge.errors.length +
     notifications.errors.length + audit.errors.length + unsplashPhotos.errors.length
 
   return {
-    providers, clients, subscriptions,
+    providers, clients, demoAccounts, subscriptions,
     items, photos, conditions,
     outfits, orders, concierge,
     notifications, audit,

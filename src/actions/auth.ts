@@ -49,8 +49,8 @@ export async function signOut() {
 }
 
 export async function signInAsDemo(role: 'client' | 'admin') {
-  if (process.env.NODE_ENV === 'production') {
-    return { error: 'Demo login not available in production.' }
+  if (process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN !== 'true') {
+    return { error: 'Demo login is not enabled in this environment.' }
   }
 
   const supabase = await createClient()

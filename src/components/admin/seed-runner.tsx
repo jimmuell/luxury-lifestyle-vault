@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Play, Trash2, RefreshCw, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
-import { runSeedScript, runAllSeeds, clearAllSeeds, getSeedStatus } from '@/actions/seed'
+import { runSeedScript, runAllSeeds, clearAllSeeds, getSeedStatus, previewTestAccountCleanup, clearAllTestAccounts } from '@/actions/seed'
 import type { SeedResult } from '@/lib/seed/types'
 import type { AllSeedsResult } from '@/lib/seed/seed-all'
 import type { PhotoFetchResult } from '@/lib/seed/fetch-unsplash-photos'
@@ -55,6 +55,8 @@ function ResultBadge({ result }: { result: SeedResult }) {
   )
 }
 
+const DEMO_LOGIN_ENABLED = process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === 'true'
+
 export function SeedRunner() {
   const [status, setStatus] = useState<StatusCounts | null>(null)
   const [log, setLog] = useState<LogEntry[]>([])
@@ -63,6 +65,10 @@ export function SeedRunner() {
   const [clearTimer, setClearTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
   const [isPending, startTransition] = useTransition()
   const [activeScript, setActiveScript] = useState<string | null>(null)
+
+  // Test account cleanup state
+  const [testPreview, setTestPreview] = useState<{ count: number; emails: string[] } | null>(null)
+  const [testCleanupConfirm, setTestCleanupConfirm] = useState(false)
 
   async function refreshStatus() {
     try {
@@ -128,6 +134,42 @@ export function SeedRunner() {
         await refreshStatus()
       } catch (err) {
         addLog('Clear All', null, err instanceof Error ? err.message : String(err))
+      } finally {
+        setActiveScript(null)
+      }
+    })
+  }
+
+  function handleTestPreview() {
+    setActiveScript('test-preview')
+    setTestCleanupConfirm(false)
+    startTransition(async () => {
+      try {
+        const preview = await previewTestAccountCleanup()
+        setTestPreview(preview)
+      } catch (err) {
+        addLog('Preview Test Accounts', null, err instanceof Error ? err.message : String(err))
+      } finally {
+        setActiveScript(null)
+      }
+    })
+  }
+
+  function handleTestCleanup() {
+    if (!testCleanupConfirm) {
+      setTestCleanupConfirm(true)
+      return
+    }
+    setTestCleanupConfirm(false)
+    setTestPreview(null)
+    setActiveScript('test-cleanup')
+    startTransition(async () => {
+      try {
+        const result = await clearAllTestAccounts()
+        addLog('Clear Test Accounts', result, null)
+        await refreshStatus()
+      } catch (err) {
+        addLog('Clear Test Accounts', null, err instanceof Error ? err.message : String(err))
       } finally {
         setActiveScript(null)
       }
@@ -294,6 +336,76 @@ export function SeedRunner() {
           <p className="text-xs text-destructive leading-relaxed">
             This will delete all seed clients, items, photos, conditions, concierge messages, and providers — and remove the 5 demo auth users. Click <strong>Confirm Clear</strong> again to proceed.
           </p>
+        </div>
+      )}
+
+      {/* Test account cleanup — dev/demo environments only */}
+      {DEMO_LOGIN_ENABLED && (
+        <div className="rounded-lg border border-dashed border-border bg-card p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] tracking-widest uppercase font-mono text-muted-foreground border border-border rounded px-1 py-0.5">
+              DEV
+            </span>
+            <p className="text-sm font-medium">Test Account Cleanup</p>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Removes all non-admin auth users and their associated data. Does not touch seed data or admin accounts. Preview first to see which accounts will be removed.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              onClick={handleTestPreview}
+              disabled={isRunning}
+              className="flex-1 gap-2"
+            >
+              {activeScript === 'test-preview' ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Preview test accounts
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleTestCleanup}
+              disabled={isRunning || !testPreview}
+              className="flex-1 gap-2"
+            >
+              {activeScript === 'test-cleanup' ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+              {testCleanupConfirm ? 'Confirm — delete all test accounts' : 'Delete all test accounts'}
+            </Button>
+          </div>
+
+          {testCleanupConfirm && testPreview && (
+            <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+              <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-destructive leading-relaxed">
+                This will permanently delete <strong>{testPreview.count} account{testPreview.count !== 1 ? 's' : ''}</strong> and all their associated data. This cannot be undone. Click <strong>Confirm</strong> again to proceed.
+              </p>
+            </div>
+          )}
+
+          {testPreview && !testCleanupConfirm && (
+            <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+              <p className="text-xs font-medium">
+                {testPreview.count} account{testPreview.count !== 1 ? 's' : ''} would be removed:
+              </p>
+              {testPreview.count === 0 ? (
+                <p className="text-xs text-muted-foreground">No test accounts found.</p>
+              ) : (
+                <ul className="space-y-1">
+                  {testPreview.emails.map(email => (
+                    <li key={email} className="font-mono text-xs text-muted-foreground">{email}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       )}
 

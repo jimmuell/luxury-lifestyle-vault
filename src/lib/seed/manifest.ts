@@ -1,5 +1,6 @@
 import { seedProviders } from './seed-providers'
 import { seedClients } from './seed-clients'
+import { seedDemoAccounts } from './seed-demo-accounts'
 import { seedSubscriptions } from './seed-subscriptions'
 import { seedItems } from './seed-items'
 import { seedPhotos } from './seed-photos'
@@ -24,6 +25,12 @@ export const SEED_MANIFEST: SeedScript[] = [
     name: 'Demo Clients',
     description: '5 luxury snowbird client profiles with WI + AZ addresses (client1–5@test.llv.com / TestLLV2026!). Clients 1–3 fully onboarded; 4–5 in progress.',
     script: seedClients,
+  },
+  {
+    id: 'demo-accounts',
+    name: 'Demo Accounts',
+    description: 'Quick-login demo accounts: demo.admin@llv.dev + demo.client@llv.dev (password: demo1234). Demo client is fully onboarded with 6 wardrobe items and 1 completed order.',
+    script: seedDemoAccounts,
   },
   {
     id: 'subscriptions',

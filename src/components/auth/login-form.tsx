@@ -15,7 +15,15 @@ type QuickAccount = {
   password: string | null
 }
 
+const DEMO_LOGIN_ENABLED = process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === 'true'
+
 const QUICK_ACCOUNTS: QuickAccount[] = [
+  ...(DEMO_LOGIN_ENABLED
+    ? [
+        { label: 'Demo — Admin',                   email: 'demo.admin@llv.dev',  password: 'demo1234' },
+        { label: 'Demo — Client (fully onboarded)', email: 'demo.client@llv.dev', password: 'demo1234' },
+      ]
+    : []),
   ...(DEV_ADMIN_EMAIL
     ? [{ label: `Admin — ${DEV_ADMIN_EMAIL}`, email: DEV_ADMIN_EMAIL, password: null }]
     : []),
@@ -71,8 +79,8 @@ export function LoginForm() {
 
   return (
     <div className="space-y-6">
-      {/* Dev quick-select — gated by NODE_ENV, remove before production */}
-      {process.env.NODE_ENV !== 'production' && (
+      {/* Dev quick-select — gated by NEXT_PUBLIC_ENABLE_DEMO_LOGIN, not NODE_ENV */}
+      {DEMO_LOGIN_ENABLED && (
         <div className="rounded-md border border-dashed border-border px-3 py-2.5 space-y-1.5">
           <div className="flex items-center gap-2">
             <span className="text-[9px] tracking-widest uppercase font-mono text-muted-foreground border border-border rounded px-1 py-0.5">

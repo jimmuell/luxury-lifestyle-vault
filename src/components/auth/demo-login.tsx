@@ -3,9 +3,13 @@
 import { useTransition } from 'react'
 import { signInAsDemo } from '@/actions/auth'
 
+const DEMO_LOGIN_ENABLED = process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === 'true'
+
 export function DemoLogin() {
   const [clientPending, startClient] = useTransition()
   const [adminPending, startAdmin] = useTransition()
+
+  if (!DEMO_LOGIN_ENABLED) return null
 
   return (
     <div className="space-y-3">

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { seedAll } from '@/lib/seed/seed-all'
 import { clearAll } from '@/lib/seed/clear-all'
+import { previewTestAccounts, clearTestAccounts } from '@/lib/seed/clear-test-accounts'
 import { SEED_MANIFEST } from '@/lib/seed/manifest'
 import type { SeedResult } from '@/lib/seed/types'
 
@@ -30,6 +31,22 @@ export async function runAllSeeds() {
 export async function clearAllSeeds(): Promise<SeedResult> {
   await requireAdmin()
   return clearAll()
+}
+
+export async function previewTestAccountCleanup(): Promise<{ count: number; emails: string[] }> {
+  await requireAdmin()
+  if (process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN !== 'true') {
+    throw new Error('ENABLE_DEMO_LOGIN flag not set — refusing in this environment')
+  }
+  return previewTestAccounts()
+}
+
+export async function clearAllTestAccounts(): Promise<SeedResult> {
+  await requireAdmin()
+  if (process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN !== 'true') {
+    throw new Error('ENABLE_DEMO_LOGIN flag not set — refusing in this environment')
+  }
+  return clearTestAccounts()
 }
 
 export async function getSeedStatus() {
