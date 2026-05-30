@@ -10,6 +10,7 @@ import { seedOrders } from './seed-orders'
 import { seedConcierge } from './seed-concierge'
 import { seedNotifications } from './seed-notifications'
 import { seedAudit } from './seed-audit'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for easy re-enable when photo fetch is restored
 import { fetchUnsplashPhotos } from './fetch-unsplash-photos'
 import type { SeedResult } from './types'
 import type { PhotoFetchResult } from './fetch-unsplash-photos'
@@ -67,10 +68,20 @@ export async function seedAll(): Promise<AllSeedsResult> {
   ])
 
   // ── Tier 8: Fetch Unsplash photo URLs for seed items ─────────────────────
-  // Runs last — requires item_photos rows from Tier 4.
-  // Gracefully handles the Unsplash 50 req/hr demo limit: partial results
-  // are returned with rateLimitHit=true so the remaining count is visible.
-  const unsplashPhotos = await fetchUnsplashPhotos()
+  // ⚠️ TEMPORARILY DISABLED — Unsplash demo key (50 req/hr) triggers 403s
+  //    (not 429s) when over quota; the detection bug turns one over-quota
+  //    state into ~118 wasted requests. See:
+  //    docs/cowork/llv_engineering_polish_todos.md → "Photo seeding architecture"
+  //    To re-enable: uncomment the line below and remove the stub.
+  // const unsplashPhotos = await fetchUnsplashPhotos()
+  const unsplashPhotos: PhotoFetchResult = {
+    seeded: 0,
+    skipped: 0,
+    errors: ['Photo fetch temporarily disabled — see polish todo'],
+    fetched: 0,
+    rateLimitHit: false,
+    remaining: 0,
+  }
 
   const totalSeeded =
     providers.seeded + clients.seeded + demoAccounts.seeded + subscriptions.seeded +

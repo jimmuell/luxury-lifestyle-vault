@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { Play, Trash2, RefreshCw, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
 import { runSeedScript, runAllSeeds, clearAllSeeds, getSeedStatus, previewTestAccountCleanup, clearAllTestAccounts } from '@/actions/seed'
@@ -65,6 +66,8 @@ export function SeedRunner() {
   const [clearTimer, setClearTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
   const [isPending, startTransition] = useTransition()
   const [activeScript, setActiveScript] = useState<string | null>(null)
+
+  const [photoDisabledOpen, setPhotoDisabledOpen] = useState(false)
 
   // Test account cleanup state
   const [testPreview, setTestPreview] = useState<{ count: number; emails: string[] } | null>(null)
@@ -289,7 +292,7 @@ export function SeedRunner() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleRunScript(script.id, script.name)}
+                onClick={() => script.id === 'fetch-photos' ? setPhotoDisabledOpen(true) : handleRunScript(script.id, script.name)}
                 disabled={isRunning}
                 className="flex-shrink-0 gap-1.5"
               >
@@ -517,6 +520,26 @@ export function SeedRunner() {
           </div>
         </div>
       )}
+      {/* Photo fetch disabled dialog */}
+      <Dialog open={photoDisabledOpen} onOpenChange={setPhotoDisabledOpen}>
+        <DialogTrigger className="sr-only" />
+        <DialogContent className="max-w-md">
+          <DialogTitle>Photo fetching is temporarily disabled</DialogTitle>
+          <DialogDescription className="space-y-3 pt-1">
+            <span className="block">
+              The Unsplash photo fetch script is paused while we replace it with a more reliable architecture. The seed pipeline completes successfully without photo URLs — items will display placeholder graphics in the UI.
+            </span>
+            <span className="block">
+              The fix is tracked in <code className="text-xs bg-muted px-1 py-0.5 rounded">docs/cowork/llv_engineering_polish_todos.md</code> → &ldquo;Photo seeding architecture.&rdquo; Until that ships, this button is a no-op.
+            </span>
+          </DialogDescription>
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" size="sm" onClick={() => setPhotoDisabledOpen(false)}>
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
