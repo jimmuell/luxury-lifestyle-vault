@@ -87,3 +87,13 @@ import { buttonVariants } from '@/components/ui/button'
 ### Design System
 
 Obsidian & Ivory palette with gold accent. CSS variables in `src/app/globals.css`. Fonts: Cormorant Garamond (serif, headings) + Inter (sans, body) loaded via `next/font` in root layout.
+
+### Icons
+
+**Use Lucide React icons (`lucide-react`) exclusively — no emoji in UI.** Emoji rendering varies by OS/browser/font and breaks the luxury brand voice. Examples:
+- ✓ `import { Sun, Moon, Monitor } from 'lucide-react'`
+- ✗ `<span>☀️</span>` or `<span>🌙</span>` in any user-facing component
+
+Exception: dialog body copy and error messages CAN reference emoji for emphasis if absolutely necessary, but always prefer Lucide icons. Doc files (`.md`) and code comments are unrestricted — this rule is for the rendered UI only.
+
+If you need an icon Lucide doesn't ship, propose adding `@radix-ui/react-icons` or a single-purpose SVG to `public/icons/` rather than reaching for emoji.
