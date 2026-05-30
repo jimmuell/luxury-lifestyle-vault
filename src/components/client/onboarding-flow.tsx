@@ -246,6 +246,7 @@ export function OnboardingFlow({
     startTransition(async () => {
       try {
         await activateAndComplete(selectedTierId)
+        router.refresh()
         router.push('/client')
       } catch (e) {
         // Normalize error message regardless of how Next.js serializes server action errors
@@ -259,6 +260,7 @@ export function OnboardingFlow({
         ) {
           toast.warning('Membership activated. Billing will be configured by your concierge.')
           await completeOnboarding()
+          router.refresh()
           router.push('/client')
         } else {
           toast.error(msg || 'Failed to activate membership')
