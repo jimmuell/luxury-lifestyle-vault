@@ -112,12 +112,25 @@ export async function createSubscription(tierId: string) {
     }
   }
 
+  // Fetch the default PM set during the SetupIntent flow so we can charge
+  // immediately without requiring client-side PaymentIntent confirmation.
+  const customerData = await stripe.customers.retrieve(stripe_customer_id)
+  const defaultPaymentMethodId: string | null =
+    typeof customerData === 'object' && !customerData.deleted
+      ? (customerData.invoice_settings?.default_payment_method as string | null) ?? null
+      : null
+
+  if (!defaultPaymentMethodId) {
+    throw new Error('No payment method on file — please complete payment setup before subscribing')
+  }
+
   const subscription = asStripe<Stripe.Subscription>(await stripe.subscriptions.create({
     customer: stripe_customer_id,
     items: [{ price: stripe_price_id_current }],
     ...(couponId ? { discounts: [{ coupon: couponId }] } : {}),
     metadata: { profile_id: user.id, tier_id: tierId },
-    payment_behavior: 'default_incomplete',
+    default_payment_method: defaultPaymentMethodId,
+    off_session: true,
   }))
 
   const adminSupabase = createAdminClient()
@@ -227,11 +240,18 @@ export async function adminSetSubscription(clientId: string, tierId: string) {
     }
   }
 
+  const adminCustomerData = await stripe.customers.retrieve(stripe_customer_id)
+  const adminDefaultPmId: string | null =
+    typeof adminCustomerData === 'object' && !adminCustomerData.deleted
+      ? (adminCustomerData.invoice_settings?.default_payment_method as string | null) ?? null
+      : null
+
   const subscription = asStripe<Stripe.Subscription>(await stripe.subscriptions.create({
     customer: stripe_customer_id,
     items: [{ price: stripe_price_id_current }],
     ...(couponId ? { discounts: [{ coupon: couponId }] } : {}),
     metadata: { profile_id: clientId, tier_id: tierId },
+    ...(adminDefaultPmId ? { default_payment_method: adminDefaultPmId, off_session: true } : {}),
   }))
 
   await adminClient.from('client_subscriptions').insert({
