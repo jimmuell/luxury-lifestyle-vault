@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { updateProfile, completeOnboarding, updatePreferredContact } from '@/actions/profile'
@@ -147,7 +146,6 @@ export function OnboardingFlow({
   tiers,
   isFoundingMember,
 }: OnboardingFlowProps) {
-  const router = useRouter()
   const [step, setStep] = useState<Step>(0)
   const [pending, startTransition] = useTransition()
 
@@ -246,8 +244,7 @@ export function OnboardingFlow({
     startTransition(async () => {
       try {
         await activateAndComplete(selectedTierId)
-        router.refresh()
-        router.push('/client')
+        window.location.href = '/client'
       } catch (e) {
         // Normalize error message regardless of how Next.js serializes server action errors
         const msg = e instanceof Error ? e.message : (e as { message?: string })?.message ?? String(e)
@@ -260,8 +257,7 @@ export function OnboardingFlow({
         ) {
           toast.warning('Membership activated. Billing will be configured by your concierge.')
           await completeOnboarding()
-          router.refresh()
-          router.push('/client')
+          window.location.href = '/client'
         } else {
           toast.error(msg || 'Failed to activate membership')
         }
