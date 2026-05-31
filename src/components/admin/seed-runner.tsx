@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { Play, Trash2, RefreshCw, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
 import { runSeedScript, runAllSeeds, clearAllSeeds, getSeedStatus, previewTestAccountCleanup, clearAllTestAccounts } from '@/actions/seed'
 import type { SeedResult } from '@/lib/seed/types'
 import type { AllSeedsResult } from '@/lib/seed/seed-all'
-import type { PhotoFetchResult } from '@/lib/seed/fetch-unsplash-photos'
 import { SEED_MANIFEST } from '@/lib/seed/manifest'
 
 interface StatusCounts {
@@ -66,8 +64,6 @@ export function SeedRunner() {
   const [clearTimer, setClearTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
   const [isPending, startTransition] = useTransition()
   const [activeScript, setActiveScript] = useState<string | null>(null)
-
-  const [photoDisabledOpen, setPhotoDisabledOpen] = useState(false)
 
   // Test account cleanup state
   const [testPreview, setTestPreview] = useState<{ count: number; emails: string[] } | null>(null)
@@ -292,7 +288,7 @@ export function SeedRunner() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => script.id === 'fetch-photos' ? setPhotoDisabledOpen(true) : handleRunScript(script.id, script.name)}
+                onClick={() => handleRunScript(script.id, script.name)}
                 disabled={isRunning}
                 className="flex-shrink-0 gap-1.5"
               >
@@ -436,18 +432,10 @@ export function SeedRunner() {
                     )}
                     {entry.result && 'totalSeeded' in entry.result && (() => {
                       const r = entry.result as AllSeedsResult
-                      const rateLimit = r.unsplashPhotos?.rateLimitHit
                       return (
-                        <>
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium flex-shrink-0">
-                            {r.totalSeeded} seeded · {r.totalSkipped} skipped
-                          </span>
-                          {rateLimit && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 font-medium flex-shrink-0">
-                              ⚠ photos partial
-                            </span>
-                          )}
-                        </>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium flex-shrink-0">
+                          {r.totalSeeded} seeded · {r.totalSkipped} skipped
+                        </span>
                       )
                     })()}
                   </div>
@@ -463,31 +451,6 @@ export function SeedRunner() {
                         {Object.entries(entry.result as AllSeedsResult)
                           .filter(([k]) => !['totalSeeded', 'totalSkipped', 'totalErrors'].includes(k))
                           .map(([key, val]) => {
-                            const isPhotoFetch = typeof val === 'object' && val !== null && 'rateLimitHit' in val
-                            if (isPhotoFetch) {
-                              const pr = val as PhotoFetchResult
-                              return (
-                                <div key={key} className="space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono text-xs text-muted-foreground w-24 flex-shrink-0">unsplash</span>
-                                    <ResultBadge result={pr} />
-                                    {pr.rateLimitHit && (
-                                      <span className="text-xs text-yellow-700 dark:text-yellow-400">
-                                        rate limit hit — {pr.remaining} photo{pr.remaining !== 1 ? 's' : ''} pending
-                                      </span>
-                                    )}
-                                  </div>
-                                  {pr.rateLimitHit && (
-                                    <p className="font-mono text-xs text-yellow-700 dark:text-yellow-400 pl-[112px]">
-                                      Re-run &ldquo;Fetch Photos&rdquo; or &ldquo;Seed All&rdquo; in ~1 hour to complete. Script is idempotent.
-                                    </p>
-                                  )}
-                                  {pr.errors.map((e, ei) => (
-                                    <span key={ei} className="font-mono text-xs text-destructive">{e}</span>
-                                  ))}
-                                </div>
-                              )
-                            }
                             const r = val as SeedResult
                             return (
                               <div key={key} className="flex items-center gap-2">
@@ -520,26 +483,6 @@ export function SeedRunner() {
           </div>
         </div>
       )}
-      {/* Photo fetch disabled dialog */}
-      <Dialog open={photoDisabledOpen} onOpenChange={setPhotoDisabledOpen}>
-        <DialogTrigger className="sr-only" />
-        <DialogContent className="max-w-md">
-          <DialogTitle>Photo fetching is temporarily disabled</DialogTitle>
-          <DialogDescription className="space-y-3 pt-1">
-            <span className="block">
-              The Unsplash photo fetch script is paused while we replace it with a more reliable architecture. The seed pipeline completes successfully without photo URLs — items will display placeholder graphics in the UI.
-            </span>
-            <span className="block">
-              The fix is tracked in <code className="text-xs bg-muted px-1 py-0.5 rounded">docs/cowork/llv_engineering_polish_todos.md</code> → &ldquo;Photo seeding architecture.&rdquo; Until that ships, this button is a no-op.
-            </span>
-          </DialogDescription>
-          <div className="flex justify-end pt-2">
-            <Button variant="outline" size="sm" onClick={() => setPhotoDisabledOpen(false)}>
-              OK
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

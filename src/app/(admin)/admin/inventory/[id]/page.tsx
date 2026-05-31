@@ -10,6 +10,7 @@ import { AddConditionForm } from '@/components/admin/add-condition-form'
 import { ItemFieldEditor } from '@/components/admin/item-field-editor'
 import { LocationStatusSelect } from '@/components/admin/location-status-select'
 import { adminUpdateItem } from '@/actions/admin'
+import { CategoryArtCard } from '@/components/wardrobe/category-art-card'
 import { Separator } from '@/components/ui/separator'
 import { ChevronLeft } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
@@ -48,11 +49,16 @@ export default async function AdminItemDetailPage({
       .order('assessed_at', { ascending: false }),
   ])
 
-  const storagePaths = photos?.map(p => p.storage_path) ?? []
+  const storagePaths = (photos ?? [])
+    .map(p => p.storage_path)
+    .filter(p => !p.endsWith('seed-main.jpg'))
   const signedUrlMap = await getSignedUrls(storagePaths)
 
   const primaryPhoto = photos?.[0]
-  const primarySignedUrl = primaryPhoto ? signedUrlMap[primaryPhoto.storage_path] : null
+  const primarySignedUrl =
+    primaryPhoto && !primaryPhoto.storage_path.endsWith('seed-main.jpg')
+      ? (signedUrlMap[primaryPhoto.storage_path] ?? null)
+      : null
 
   const clientName = item.profiles?.full_name ?? item.profiles?.email ?? 'Unknown client'
 
@@ -103,9 +109,13 @@ export default async function AdminItemDetailPage({
                 sizes="(max-width: 1024px) 100vw, 33vw"
               />
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
-                {ITEM_CATEGORY_LABELS[item.category as ItemCategory]}
-              </div>
+              <CategoryArtCard
+                category={item.category as ItemCategory}
+                name={item.name}
+                brand={item.brand}
+                size="detail"
+                className="absolute inset-0"
+              />
             )}
           </div>
 

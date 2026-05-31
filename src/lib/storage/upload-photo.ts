@@ -23,6 +23,52 @@ async function toJpeg(file: File): Promise<File> {
   return new File([blob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' })
 }
 
+async function downscaleAndEncode(file: File): Promise<File> {
+  let bitmap: ImageBitmap
+  try {
+    bitmap = await createImageBitmap(file)
+  } catch {
+    return file
+  }
+
+  const { width, height } = bitmap
+  const maxEdge = 2048
+  const scale = Math.min(1, maxEdge / Math.max(width, height))
+  const targetW = Math.round(width * scale)
+  const targetH = Math.round(height * scale)
+
+  if (scale === 1 && file.type === 'image/webp') {
+    bitmap.close()
+    return file
+  }
+
+  const canvas = document.createElement('canvas')
+  canvas.width = targetW
+  canvas.height = targetH
+  const ctx = canvas.getContext('2d')
+  if (!ctx) { bitmap.close(); return file }
+  ctx.drawImage(bitmap, 0, 0, targetW, targetH)
+  bitmap.close()
+
+  const baseName = file.name.replace(/\.[^.]+$/, '')
+
+  const webpBlob = await new Promise<Blob | null>(resolve =>
+    canvas.toBlob(b => resolve(b), 'image/webp', 0.82)
+  )
+  if (webpBlob && webpBlob.type === 'image/webp') {
+    return new File([webpBlob], `${baseName}.webp`, { type: 'image/webp' })
+  }
+
+  const jpegBlob = await new Promise<Blob | null>(resolve =>
+    canvas.toBlob(b => resolve(b), 'image/jpeg', 0.85)
+  )
+  if (jpegBlob) {
+    return new File([jpegBlob], `${baseName}.jpg`, { type: 'image/jpeg' })
+  }
+
+  return file
+}
+
 function validate(file: File) {
   if (file.size > MAX_PHOTO_BYTES) {
     throw new Error(`File too large — max 10 MB (got ${(file.size / 1024 / 1024).toFixed(1)} MB)`)
@@ -48,8 +94,9 @@ export async function uploadItemPhoto({
   sortOrder?: number
   caption?: string
 }): Promise<UploadedPhoto> {
-  validate(file)
-  const converted = await toJpeg(file)
+  const jpeg = await toJpeg(file)
+  const converted = await downscaleAndEncode(jpeg)
+  validate(converted)
 
   const ext = converted.name.split('.').pop() ?? 'jpg'
   const uuid = crypto.randomUUID()

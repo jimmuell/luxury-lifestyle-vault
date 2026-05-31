@@ -3,10 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import { getSignedUrls } from '@/lib/storage/server'
 import { H1, Caption } from '@/components/ui/typography'
 import { buttonVariants } from '@/components/ui/button'
+import { CategoryArtCard } from '@/components/wardrobe/category-art-card'
 import { ArrowLeft, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { OutfitDetailActions } from '@/components/client/outfit-detail-actions'
+import type { ItemCategory } from '@/types/app'
 
 export default async function OutfitDetailPage({
   params,
@@ -39,7 +41,7 @@ export default async function OutfitDetailPage({
   // Sort items by sort_order
   const sortedItems = [...(outfit.outfit_items ?? [])].sort((a, b) => a.sort_order - b.sort_order)
 
-  // Build photo map — prefer public_url (Unsplash CDN), sign storage_path as fallback.
+  // Build photo map — use public_url when set; sign real upload paths; skip seed placeholders.
   type RawPhoto = { storage_path: string; public_url: string | null; sort_order: number }
   type RawItem = { id: string; item_photos?: RawPhoto[] } | null
 
@@ -55,7 +57,7 @@ export default async function OutfitDetailPage({
     const first = photos[0]
     if (first.public_url) {
       photoMap[item.id] = first.public_url
-    } else {
+    } else if (!first.storage_path.endsWith('seed-main.jpg')) {
       needSigning.push(first.storage_path)
       pathToItemId[first.storage_path] = item.id
     }
@@ -126,12 +128,12 @@ export default async function OutfitDetailPage({
                 href={`/client/wardrobe/${item.id}`}
                 className="group rounded-lg border border-border overflow-hidden hover:border-foreground/20 transition-colors"
               >
-                <div className="aspect-[3/4] bg-muted overflow-hidden flex items-center justify-center">
+                <div className="aspect-[3/4] bg-muted overflow-hidden">
                   {photoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photoUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
-                    <span className="text-xs text-muted-foreground">{item.category.replace(/_/g, ' ')}</span>
+                    <CategoryArtCard category={item.category as ItemCategory} name={item.name} brand={item.brand} size="list" className="w-full h-full" />
                   )}
                 </div>
                 <div className="px-3 py-2.5">

@@ -6,6 +6,8 @@ import { toast } from 'sonner'
 import { createOutfit } from '@/actions/outfits'
 import { Search, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { CategoryArtCard } from '@/components/wardrobe/category-art-card'
+import type { ItemCategory } from '@/types/app'
 
 type Item = {
   id: string
@@ -148,12 +150,12 @@ export function OutfitBuilderForm({
                     : 'border-border hover:border-foreground/30'
                 )}
               >
-                <div className="aspect-[3/4] bg-muted overflow-hidden flex items-center justify-center">
+                <div className="aspect-[3/4] bg-muted overflow-hidden">
                   {item.photoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.photoUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-[10px] text-muted-foreground">{item.category.replace(/_/g, ' ')}</span>
+                    <CategoryArtCard category={item.category as ItemCategory} name={item.name} brand={item.brand} size="list" className="w-full h-full" />
                   )}
                 </div>
                 <div className="px-2.5 py-2">

@@ -3,8 +3,9 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { buttonVariants } from '@/components/ui/button'
 import { OrderStatusBadge } from '@/components/shared/order-status-badge'
+import { CategoryArtCard } from '@/components/wardrobe/category-art-card'
 import { ORDER_TYPE_LABELS } from '@/types/app'
-import type { OrderStatus, OrderType } from '@/types/app'
+import type { OrderStatus, OrderType, ItemCategory } from '@/types/app'
 import { format, subDays, startOfYear } from 'date-fns'
 import { ArrowRight, Plus, RotateCcw, Zap, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -45,7 +46,7 @@ const DELIVERED_STATUSES: OrderStatus[] = [
 ]
 
 type PhotoRow = { public_url: string | null; sort_order: number }
-type ItemRow = { id: string; name: string; brand: string | null; item_photos: PhotoRow[] } | null
+type ItemRow = { id: string; name: string; brand: string | null; category: string; item_photos: PhotoRow[] } | null
 type OrderItemRow = { items: ItemRow }
 type OrderRow = {
   id: string
@@ -110,7 +111,7 @@ export default async function ClientOrdersPage({
       requested_delivery_date, confirmed_delivery_date,
       created_at, is_rush,
       order_items(
-        items(id, name, brand, item_photos(public_url, sort_order))
+        items(id, name, brand, category, item_photos(public_url, sort_order))
       )
     `)
     .eq('client_id', user!.id)
@@ -285,13 +286,18 @@ export default async function ClientOrdersPage({
                         <Image src={url} alt="" width={32} height={32} className="object-cover w-full h-full" />
                       </div>
                     ))
-                  ) : (
-                    <div className="w-8 h-8 rounded border border-border bg-muted flex items-center justify-center shrink-0">
-                      <span className="text-[9px] text-muted-foreground font-medium">
-                        {itemCount > 0 ? `${itemCount}` : '—'}
-                      </span>
-                    </div>
-                  )}
+                  ) : (() => {
+                    const firstItem = order.order_items[0]?.items
+                    return firstItem ? (
+                      <div className="w-8 h-8 rounded border border-border overflow-hidden shrink-0">
+                        <CategoryArtCard category={firstItem.category as ItemCategory} name={firstItem.name} brand={firstItem.brand} size="list" className="w-8 h-8" />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 rounded border border-border bg-muted flex items-center justify-center shrink-0">
+                        <span className="text-[9px] text-muted-foreground font-medium">—</span>
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 {/* Info */}

@@ -3,8 +3,10 @@ import { getSignedUrls } from '@/lib/storage/server'
 import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
 import { H1 } from '@/components/ui/typography'
+import { CategoryArtCard } from '@/components/wardrobe/category-art-card'
 import { Plus } from 'lucide-react'
 import { format } from 'date-fns'
+import type { ItemCategory } from '@/types/app'
 
 export default async function OutfitsPage() {
   const supabase = await createClient()
@@ -20,6 +22,8 @@ export default async function OutfitsPage() {
         items (
           id,
           name,
+          brand,
+          category,
           item_photos ( storage_path, public_url, sort_order )
         )
       )
@@ -27,39 +31,49 @@ export default async function OutfitsPage() {
     .eq('client_id', user!.id)
     .order('created_at', { ascending: false })
 
-  // Collect up to 4 photos per outfit for the collage cover.
-  // Prefer public_url (Unsplash CDN); sign storage_path as fallback.
+  // Collect up to 4 real photos per outfit for the collage cover.
   type RawPhoto = { storage_path: string; public_url: string | null; sort_order: number }
+  type RawItem = { id: string; name: string; brand: string | null; category: string; item_photos?: RawPhoto[] } | null
 
   const outfitRawPhotos: Record<string, RawPhoto[]> = {}
+  const outfitFirstItem: Record<string, { name: string; brand: string | null; category: string }> = {}
 
   for (const outfit of outfits ?? []) {
     const collected: RawPhoto[] = []
     const sortedItems = [...(outfit.outfit_items ?? [])].sort((a, b) => a.sort_order - b.sort_order)
     for (const oi of sortedItems) {
-      if (collected.length >= 4) break
-      const photos = ((oi.items as { item_photos?: RawPhoto[] } | null)?.item_photos ?? [])
-        .slice()
-        .sort((a, b) => a.sort_order - b.sort_order)
+      const item = oi.items as RawItem
+      if (!item) continue
+      if (!outfitFirstItem[outfit.id]) {
+        outfitFirstItem[outfit.id] = { name: item.name, brand: item.brand, category: item.category }
+      }
+      if (collected.length >= 4) continue
+      const photos = (item.item_photos ?? []).slice().sort((a, b) => a.sort_order - b.sort_order)
       if (photos.length > 0) collected.push(photos[0])
     }
     outfitRawPhotos[outfit.id] = collected
   }
 
-  // Sign only the paths that have no public_url.
+  // Sign only real paths (skip placeholder seed paths and paths that already have public_url).
   const needSigning: string[] = []
   for (const photos of Object.values(outfitRawPhotos)) {
     for (const p of photos) {
-      if (!p.public_url) needSigning.push(p.storage_path)
+      if (!p.public_url && !p.storage_path.endsWith('seed-main.jpg')) {
+        needSigning.push(p.storage_path)
+      }
     }
   }
   const signedMap = needSigning.length > 0 ? await getSignedUrls(needSigning) : {}
 
-  // Resolve final URL arrays per outfit.
+  // Resolve final URL arrays per outfit (skip seed placeholders — art card handles those).
   const outfitPhotoUrls: Record<string, string[]> = {}
   for (const [outfitId, photos] of Object.entries(outfitRawPhotos)) {
     outfitPhotoUrls[outfitId] = photos
-      .map(p => p.public_url ?? signedMap[p.storage_path] ?? null)
+      .map(p => {
+        if (p.public_url) return p.public_url
+        if (p.storage_path.endsWith('seed-main.jpg')) return null
+        return signedMap[p.storage_path] ?? null
+      })
       .filter((u): u is string => u !== null)
   }
 
@@ -87,12 +101,22 @@ export default async function OutfitsPage() {
                 href={`/client/outfits/${outfit.id}`}
                 className="group rounded-xl border border-border overflow-hidden hover:border-foreground/20 transition-colors bg-card"
               >
-                {/* Cover: collage if 2+ photos, single image otherwise */}
+                {/* Cover: collage if 2+ photos, single image otherwise, art card if no photos */}
                 <div className="aspect-[4/3] bg-muted overflow-hidden">
                   {photoUrls.length === 0 ? (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <p className="text-xs text-muted-foreground">No items</p>
-                    </div>
+                    outfitFirstItem[outfit.id] ? (
+                      <CategoryArtCard
+                        category={outfitFirstItem[outfit.id].category as ItemCategory}
+                        name={outfitFirstItem[outfit.id].name}
+                        brand={outfitFirstItem[outfit.id].brand}
+                        size="grid"
+                        className="w-full h-full"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <p className="text-xs text-muted-foreground">No items</p>
+                      </div>
+                    )
                   ) : photoUrls.length === 1 ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

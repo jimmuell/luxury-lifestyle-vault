@@ -12,6 +12,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { ITEM_CATEGORY_LABELS } from '@/types/app'
 import type { SearchResult } from '@/actions/search'
 import type { ItemStatus, ItemCategory } from '@/types/app'
+import { CategoryArtCard } from '@/components/wardrobe/category-art-card'
 import { cn } from '@/lib/utils'
 
 function PaginationControls({
@@ -143,7 +144,7 @@ export function WardrobeCatalogShell({
                   href={`/client/wardrobe/${item.id}`}
                   className="flex items-center gap-4 px-4 py-3.5 bg-card hover:bg-muted/40 transition-colors group"
                 >
-                  <div className="w-10 h-10 bg-muted rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <div className="w-10 h-10 rounded flex-shrink-0 overflow-hidden">
                     {photoMap[item.id] ? (
                       <Image
                         src={photoMap[item.id]}
@@ -153,9 +154,7 @@ export function WardrobeCatalogShell({
                         className="w-10 h-10 object-cover"
                       />
                     ) : (
-                      <span className="text-[9px] text-muted-foreground text-center leading-tight px-1">
-                        {ITEM_CATEGORY_LABELS[item.category as ItemCategory]?.slice(0, 4)}
-                      </span>
+                      <CategoryArtCard category={item.category as ItemCategory} name={item.name} brand={item.brand} size="list" className="w-10 h-10" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -195,7 +194,7 @@ export function WardrobeCatalogShell({
                   href={`/client/wardrobe/${item.id}`}
                   className="flex items-center gap-4 px-5 py-3.5 bg-card hover:bg-muted/40 transition-colors group"
                 >
-                  <div className="w-12 h-12 bg-muted rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <div className="w-12 h-12 rounded flex-shrink-0 overflow-hidden">
                     {photoMap[item.id] ? (
                       <Image
                         src={photoMap[item.id]}
@@ -205,9 +204,7 @@ export function WardrobeCatalogShell({
                         className="object-cover w-12 h-12"
                       />
                     ) : (
-                      <span className="text-[10px] text-muted-foreground text-center leading-tight px-1">
-                        {ITEM_CATEGORY_LABELS[item.category as ItemCategory]?.slice(0, 4)}
-                      </span>
+                      <CategoryArtCard category={item.category as ItemCategory} name={item.name} brand={item.brand} size="list" className="w-12 h-12" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -238,11 +235,7 @@ export function WardrobeCatalogShell({
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-muted-foreground/40 text-xs text-center px-2 leading-tight">
-                          {ITEM_CATEGORY_LABELS[item.category as ItemCategory]}
-                        </span>
-                      </div>
+                      <CategoryArtCard category={item.category as ItemCategory} name={item.name} brand={item.brand} size="grid" className="absolute inset-0" />
                     )}
                   </div>
                   <div className="space-y-1">

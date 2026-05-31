@@ -10,7 +10,6 @@ import { seedOrders } from './seed-orders'
 import { seedConcierge } from './seed-concierge'
 import { seedNotifications } from './seed-notifications'
 import { seedAudit } from './seed-audit'
-import { fetchUnsplashPhotos } from './fetch-unsplash-photos'
 import type { SeedScript } from './types'
 
 export const SEED_MANIFEST: SeedScript[] = [
@@ -85,11 +84,5 @@ export const SEED_MANIFEST: SeedScript[] = [
     name: 'Admin Audit Log',
     description: '15 audit log entries spanning 6 months of order lifecycle events plus client onboarding records.',
     script: seedAudit,
-  },
-  {
-    id: 'fetch-photos',
-    name: 'Fetch Wardrobe Photos',
-    description: 'Pulls Unsplash CDN URLs for seed items that are missing photos. Idempotent — safe to re-run after a rate-limit pause (50 req/hr on demo key).',
-    script: fetchUnsplashPhotos,
   },
 ]

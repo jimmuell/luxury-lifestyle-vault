@@ -40,7 +40,7 @@ export default async function OutfitEditPage({
   for (const item of items) {
     const photos = ((item.item_photos ?? []) as { storage_path: string; sort_order: number }[])
       .sort((a, b) => a.sort_order - b.sort_order)
-    if (photos.length > 0) {
+    if (photos.length > 0 && !photos[0].storage_path.endsWith('seed-main.jpg')) {
       paths.push(photos[0].storage_path)
       pathToItemId[photos[0].storage_path] = item.id
     }

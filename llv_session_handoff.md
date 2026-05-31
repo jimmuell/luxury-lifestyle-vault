@@ -1,6 +1,6 @@
 # Luxury Lifestyle Vault — Session Handoff Document
 
-**Last Updated:** May 30, 2026
+**Last Updated:** May 31, 2026
 **Purpose:** Paste this document into any new Claude Chat session to provide full project context. For Cowork sessions, this file lives in the local project folder and is read automatically.
 
 ---
@@ -12,6 +12,29 @@
 3. **Read `docs/cowork/llv_engineering_polish_todos.md`** for the queued engineering polish items.
 4. **Review the open items / build cycle status** in Section 13 for full context.
 5. **Ask the founder** what they'd like to focus on this session — present the queued list as options.
+
+---
+
+## 🏁 Session Summary — May 31, 2026
+
+Engineering-polish planning session (Cowork). Started toward resuming the test plan (Sections 2–13) but Jim pivoted to clearing the engineering-polish queue first. Per DIVISION_OF_LABOR.md, Cowork produced **5 Code prompts** (one per item) in `docs/cowork/` for Claude Code to execute; no application code was written by Cowork.
+
+### Completed this session (Cowork)
+
+- ✅ **Category Art Card design — approved.** Replaced both the Unsplash fetch AND the previously-planned static-Pexels-bundle with deterministic, theme-aware **Category Art Cards**: a bespoke gold line glyph per item category + brand/name in Cormorant Garamond, inside the Obsidian & Ivory system. No image assets, no network, no rate limits; also serves as the empty-state for real clients and is replaced the moment a real photo is uploaded. Mockup reviewed and approved by Jim.
+- ✅ **5 Code prompts written** (all dated 2026-05-31, in `docs/cowork/`):
+  1. `llv_code_prompt_2026-05-31_photo_seeding_art_cards.md` — Category Art Cards across all render sites + delete Unsplash pipeline + **harden upload** (client-side downscale to ≤2048px + WebP/JPEG re-encode, addressing Jim's storage tech-debt caveat). Seed `ai_analysis` retained (AI search depends on it); seed rows skipped during URL signing.
+  2. `llv_code_prompt_2026-05-31_theme_toggle_3state.md` — Light/Dark/System toggle + dev-badge collision fix.
+  3. `llv_code_prompt_2026-05-31_cleanup_fk_gap.md` — 7 missing FK-to-profiles tables in clear-all + clear-test-accounts.
+  4. `llv_code_prompt_2026-05-31_seeded_badge_label.md` — "X seeded" misnomer on clear ops.
+  5. `llv_code_prompt_2026-05-31_tier_active_synced_indicator.md` — tier green-check active-vs-synced semantics.
+- ✅ **Polish todos updated** — items moved to "In progress" with prompt references; Unsplash production-access item and the deferred photo-fetch UX badges marked **obsoleted** by the art-card approach.
+
+### What's queued for next session
+
+- **Hand the 5 prompts to Claude Code** (any order; they're independent). As each ships, relay the outcome so Cowork can move the todo item to Completed and add its Bug Fix Cycle entry (#23 onward).
+- **Resume test plan Sections 2–13** (`docs/testing/llv_platform_test_plan.docx`) — still the main path to launch. Note: run against the Vercel deployment + hosted Supabase (the plan header still says localhost; environment has since moved). Section 1 passed May 26; Sections 2–13 pending.
+- **Business strategy** — 10 assumptions-register items; Wisconsin providers is the soft-launch blocker.
 
 ---
 
@@ -455,6 +478,7 @@ Founder tests the platform using `llv_platform_test_plan.docx`. When a test fail
 | 20 | May 30, 2026 | Low | Login UI | Bug #18 cleanup miss — `src/app/(auth)/auth/login/page.tsx` line 25 still wrapped `<DemoLogin />` in the old `NODE_ENV !== 'production'` gate. In production builds (local and Vercel) the demo client/admin buttons never rendered even though `NEXT_PUBLIC_ENABLE_DEMO_LOGIN=true` was set. Quick Login dropdown was unaffected since `login-form.tsx` was correctly migrated. Removed the wrapper entirely — `DemoLogin` self-gates internally so the outer check was redundant. | ✅ FIXED |
 | 21 | May 30, 2026 | High | Subscriptions / Stripe | New client signups left subscriptions stuck at `status=incomplete` because `createSubscription` used `payment_behavior: 'default_incomplete'` — a mode designed for SCA flows that requires client-side PaymentIntent confirmation we never performed. Result: invoice generated, PaymentIntent created, but never confirmed → `invoice.payment_succeeded` never fired → subscription never transitioned to active → no actual money charged. Fixed by fetching the customer's default payment method (set during SetupIntent flow), passing it explicitly to `subscriptions.create` with `off_session: true`, and removing `payment_behavior: 'default_incomplete'`. Applied same pattern to `adminSetSubscription`. Surfaced via local Stripe CLI webhook testing. | ✅ FIXED |
 | 22 | May 30, 2026 | Medium | Onboarding UI | After successful "Confirm & start membership," `router.push('/client')` did not auto-navigate users to the client dashboard — they stayed on `/client/onboarding` until manual refresh. DB data correct; only client-side navigation failing. Initial fix (`router.refresh()` + `router.push`) worked locally but not on Vercel. Switched both call sites to `window.location.href = '/client'` (hard browser navigation, bypasses Next.js router entirely). Removed now-unused `useRouter` import and instance. | ✅ FIXED |
+| 23 | 2026-05-31 | Medium | Seed / Wardrobe UX | Replaced the Unsplash runtime seed-photo fetch with deterministic, theme-aware **Category Art Cards** (bespoke gold line glyph + brand/name in Cormorant, per the 14 item categories) rendered wherever an item has no real uploaded photo. Removed `fetch-unsplash-photos.ts`, `scripts/fetch-seed-photos.ts`, the seed-runner photo-fetch button/dialog, the `unsplashPhotos` plumbing in `seed-all.ts`, and the `images.unsplash.com` next.config pattern; dropped `UNSPLASH_ACCESS_KEY`. Seed `ai_analysis` retained for AI search; seed photo rows are explicitly skipped during URL signing. Also hardened `uploadItemPhoto`: client-side downscale to ≤2048px long edge + WebP/JPEG re-encode before upload, ending full-resolution-original storage. | ✅ FIXED |
 
 ### Priority-ordered list of topics not yet fully addressed:
 

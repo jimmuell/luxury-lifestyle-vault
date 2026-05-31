@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getSignedUrls } from '@/lib/storage/server'
 import { ItemPhotoCarousel } from '@/components/client/item-photo-carousel'
+import { CategoryArtCard } from '@/components/wardrobe/category-art-card'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { OrderStatusBadge } from '@/components/shared/order-status-badge'
 import { Badge } from '@/components/ui/badge'
@@ -61,13 +62,15 @@ export default async function ItemDetailPage({
   const conditions = conditionsResult.data ?? []
   const photoRows = photosResult.data ?? []
 
-  const paths = photoRows.map(p => p.storage_path)
+  const paths = photoRows
+    .map(p => p.storage_path)
+    .filter(p => !p.endsWith('seed-main.jpg'))
   const urlMap = paths.length > 0 ? await getSignedUrls(paths) : {}
 
   const photos = photoRows
     .map(p => ({
       id: p.id,
-      signedUrl: urlMap[p.storage_path] ?? '',
+      signedUrl: p.storage_path.endsWith('seed-main.jpg') ? '' : (urlMap[p.storage_path] ?? ''),
       photoType: p.photo_type,
       caption: p.caption,
       aiAnalysis: p.ai_analysis as Record<string, unknown> | null,
@@ -124,8 +127,18 @@ export default async function ItemDetailPage({
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Left: photo carousel */}
-        <ItemPhotoCarousel photos={photos} />
+        {/* Left: photo carousel or art card */}
+        {photos.length > 0 ? (
+          <ItemPhotoCarousel photos={photos} />
+        ) : (
+          <CategoryArtCard
+            category={item.category as ItemCategory}
+            name={item.name}
+            brand={item.brand}
+            size="detail"
+            className="aspect-[3/4] rounded-lg"
+          />
+        )}
 
         {/* Right: metadata + CTA */}
         <div className="space-y-8">

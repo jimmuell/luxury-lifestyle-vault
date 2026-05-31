@@ -51,12 +51,12 @@ export default async function WardrobePage({
       }
     }
 
-    // Use public_url directly when set (seed/Unsplash photos); sign the storage path otherwise
+    // Use public_url directly when available; skip placeholder seed paths; sign real uploads
     const needSigning: string[] = []
     for (const [itemId, { publicUrl, path }] of Object.entries(firstPerItem)) {
       if (publicUrl) {
         photoMap[itemId] = publicUrl
-      } else {
+      } else if (!path.endsWith('seed-main.jpg')) {
         needSigning.push(path)
       }
     }
