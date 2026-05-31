@@ -1,6 +1,6 @@
 import type { ItemCategory } from '@/types/app'
 import { ITEM_CATEGORY_LABELS } from '@/types/app'
-import { CATEGORY_GLYPHS } from './category-glyphs'
+import { resolveGlyph } from './category-glyphs'
 import { cn } from '@/lib/utils'
 
 interface CategoryArtCardProps {
@@ -24,7 +24,6 @@ export function CategoryArtCard({
   className,
   size = 'grid',
 }: CategoryArtCardProps) {
-  const Glyph = CATEGORY_GLYPHS[category]
   const glyphPx = GLYPH_PX[size]
   const showText = size !== 'list'
 
@@ -46,7 +45,7 @@ export function CategoryArtCard({
       {/* Glyph + labels */}
       <div className="flex flex-col items-center gap-1.5 text-accent relative z-10 px-3 text-center">
         <div style={{ width: glyphPx, height: glyphPx }} className="flex-shrink-0">
-          <Glyph className="w-full h-full" />
+          {resolveGlyph(category, name, 'w-full h-full')}
         </div>
 
         {showText && (

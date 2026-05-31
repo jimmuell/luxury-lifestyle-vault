@@ -1,6 +1,6 @@
 import type { ItemCategory } from '@/types/app'
 
-type GlyphFC = React.FC<{ className?: string }>
+type GlyphFC = (props: { className?: string }) => React.ReactElement
 
 const props = {
   viewBox: '0 0 48 48',
@@ -10,6 +10,53 @@ const props = {
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
 }
+
+const NecktieGlyph: GlyphFC = ({ className }) => (
+  <svg {...props} className={className}>
+    <path d="M22 13 L26 13 L25.5 17 L22.5 17 Z"/>
+    <path d="M22.5 17 L21 35 L24 40 L27 35 L25.5 17"/>
+  </svg>
+)
+
+const BowTieGlyph: GlyphFC = ({ className }) => (
+  <svg {...props} className={className}>
+    <path d="M15 17 L24 24 L15 31 Z"/>
+    <path d="M33 17 L24 24 L33 31 Z"/>
+    <rect x="21.5" y="21" width="5" height="6" rx="1"/>
+  </svg>
+)
+
+const NecklaceGlyph: GlyphFC = ({ className }) => (
+  <svg {...props} className={className}>
+    <path d="M13 15 C16 31 32 31 35 15"/>
+    <path d="M24 31 L21.5 35 L24 39 L26.5 35 Z"/>
+  </svg>
+)
+
+const ScarfGlyph: GlyphFC = ({ className }) => (
+  <svg {...props} className={className}>
+    <path d="M19 13 L29 13 L29 36 L19 36 Z"/>
+    <path d="M24 13 L24 36"/>
+    <path d="M20 36 L20 39 M22.5 36 L22.5 39 M25.5 36 L25.5 39 M28 36 L28 39"/>
+  </svg>
+)
+
+const WatchGlyph: GlyphFC = ({ className }) => (
+  <svg {...props} className={className}>
+    <circle cx="24" cy="24" r="6.5"/>
+    <path d="M19 19 L20 12 L28 12 L29 19"/>
+    <path d="M19 29 L20 36 L28 36 L29 29"/>
+    <path d="M24 24 L24 20 M24 24 L27.5 25.5"/>
+  </svg>
+)
+
+const GemGlyph: GlyphFC = ({ className }) => (
+  <svg {...props} className={className}>
+    <path d="M16 20 L32 20 L24 41 Z"/>
+    <path d="M16 20 L20 27 L28 27 L32 20"/>
+    <path d="M20 27 L24 41 M28 27 L24 41"/>
+  </svg>
+)
 
 export const CATEGORY_GLYPHS: Record<ItemCategory, GlyphFC> = {
   eveningwear: ({ className }) => (
@@ -47,13 +94,7 @@ export const CATEGORY_GLYPHS: Record<ItemCategory, GlyphFC> = {
       <path d="M14 27 L17 27 M31 27 L34 27"/>
     </svg>
   ),
-  accessories: ({ className }) => (
-    <svg {...props} className={className}>
-      <path d="M16 18 L24 24 L16 30 Z"/>
-      <path d="M32 18 L24 24 L32 30 Z"/>
-      <rect x="22" y="21.5" width="4" height="5" rx="1"/>
-    </svg>
-  ),
+  accessories: GemGlyph,
   shirts_blouses: ({ className }) => (
     <svg {...props} className={className}>
       <path d="M17 10 L14 14 L14 28 L17 28 L17 44 L31 44 L31 28 L34 28 L34 14 L31 10"/>
@@ -111,4 +152,28 @@ export const CATEGORY_GLYPHS: Record<ItemCategory, GlyphFC> = {
       <path d="M13 31 L13 33 C13 34 14 34 15 34 L33 34 C34 34 35 33 35 33 L35 31"/>
     </svg>
   ),
+}
+
+const ACCESSORY_GLYPH_RULES: { keywords: string[]; glyph: GlyphFC }[] = [
+  { keywords: ['bow tie', 'bowtie', 'bow-tie'], glyph: BowTieGlyph },
+  { keywords: ['necktie', 'neck tie', 'tie'],   glyph: NecktieGlyph },
+  { keywords: ['necklace', 'pendant', 'strand'], glyph: NecklaceGlyph },
+  { keywords: ['scarf', 'shawl', 'wrap', 'stole'], glyph: ScarfGlyph },
+  { keywords: ['watch', 'timepiece'], glyph: WatchGlyph },
+]
+
+export function resolveGlyph(
+  category: ItemCategory,
+  name: string | null | undefined,
+  className?: string,
+): React.ReactElement {
+  if (category === 'accessories' && name) {
+    const lower = name.toLowerCase()
+    for (const rule of ACCESSORY_GLYPH_RULES) {
+      if (rule.keywords.some(kw => lower.includes(kw))) {
+        return rule.glyph({ className })
+      }
+    }
+  }
+  return CATEGORY_GLYPHS[category]({ className })
 }
