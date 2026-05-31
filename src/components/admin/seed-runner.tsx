@@ -3,8 +3,8 @@
 import { useState, useEffect, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Play, Trash2, RefreshCw, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
-import { runSeedScript, runAllSeeds, clearAllSeeds, getSeedStatus, previewTestAccountCleanup, clearAllTestAccounts } from '@/actions/seed'
+import { Play, Trash2, RefreshCw, ChevronDown, ChevronUp, AlertTriangle, Images } from 'lucide-react'
+import { runSeedScript, runAllSeeds, clearAllSeeds, getSeedStatus, previewTestAccountCleanup, clearAllTestAccounts, fetchNextSeedPhoto } from '@/actions/seed'
 import type { SeedResult } from '@/lib/seed/types'
 import type { AllSeedsResult } from '@/lib/seed/seed-all'
 import { SEED_MANIFEST } from '@/lib/seed/manifest'
@@ -68,6 +68,12 @@ export function SeedRunner() {
   // Test account cleanup state
   const [testPreview, setTestPreview] = useState<{ count: number; emails: string[] } | null>(null)
   const [testCleanupConfirm, setTestCleanupConfirm] = useState(false)
+
+  // Photo fetch state
+  const [photoFetchActive, setPhotoFetchActive] = useState(false)
+  const [photoProgress, setPhotoProgress] = useState<{
+    uploaded: number; failed: number; remaining: number
+  } | null>(null)
 
   async function refreshStatus() {
     try {
@@ -173,6 +179,54 @@ export function SeedRunner() {
         setActiveScript(null)
       }
     })
+  }
+
+  async function handleFetchPhotos() {
+    setPhotoFetchActive(true)
+    setPhotoProgress({ uploaded: 0, failed: 0, remaining: 0 })
+    let totalUploaded = 0
+    let totalFailed = 0
+    let finalRemaining = 0
+    let rateLimited = false
+    const failedIds: string[] = []
+    const MAX_PER_RUN = 45
+
+    try {
+      while (totalUploaded + totalFailed < MAX_PER_RUN) {
+        const result = await fetchNextSeedPhoto(failedIds)
+        if (result.done && !result.uploaded) break
+
+        if (result.rateLimited) {
+          rateLimited = true
+          finalRemaining = result.remaining
+          break
+        }
+        if (result.uploaded) {
+          totalUploaded++
+        } else if (result.failed) {
+          totalFailed++
+          if (result.itemId) failedIds.push(result.itemId)
+        }
+        finalRemaining = result.remaining
+        setPhotoProgress({ uploaded: totalUploaded, failed: totalFailed, remaining: result.remaining })
+
+        if (result.done) break
+      }
+
+      const errors: string[] = []
+      if (rateLimited) {
+        errors.push(`Rate limited after ${totalUploaded} item${totalUploaded !== 1 ? 's' : ''}. ${finalRemaining} remaining — run again in ~1 hour.`)
+      } else if (finalRemaining > 0 && totalUploaded + totalFailed >= MAX_PER_RUN) {
+        errors.push(`Cap reached (${MAX_PER_RUN} items). ${finalRemaining} remaining — run again.`)
+      }
+      addLog('Fetch Wardrobe Photos', { seeded: totalUploaded, skipped: 0, errors }, null)
+    } catch (err) {
+      addLog('Fetch Wardrobe Photos', null, err instanceof Error ? err.message : String(err))
+    } finally {
+      setPhotoFetchActive(false)
+      setPhotoProgress(null)
+      await refreshStatus()
+    }
   }
 
   const isRunning = isPending || activeScript !== null
@@ -301,6 +355,40 @@ export function SeedRunner() {
               </Button>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Fetch Wardrobe Photos — standalone, not part of Seed All */}
+      <div className="rounded-lg border border-border bg-card p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium">Fetch Wardrobe Photos</p>
+            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+              Downloads Unsplash photos for seed items. Runs separately from Seed All. Capped at 45 per run — re-run after ~1 hour if items remain. Fully idempotent.
+            </p>
+            {photoFetchActive && photoProgress && (
+              <p className="text-xs text-accent mt-2 font-medium">
+                Fetching photos: {photoProgress.uploaded} uploaded
+                {photoProgress.failed > 0 && ` · ${photoProgress.failed} failed`}
+                {photoProgress.remaining > 0 && ` · ${photoProgress.remaining} remaining`}
+                {'…'}
+              </p>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { void handleFetchPhotos() }}
+            disabled={isRunning || photoFetchActive}
+            className="flex-shrink-0 gap-1.5"
+          >
+            {photoFetchActive ? (
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Images className="h-3.5 w-3.5" />
+            )}
+            {photoFetchActive ? 'Fetching…' : 'Fetch Photos'}
+          </Button>
         </div>
       </div>
 

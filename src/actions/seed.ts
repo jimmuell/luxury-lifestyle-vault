@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { seedAll } from '@/lib/seed/seed-all'
+import { fetchOnePhoto } from '@/lib/seed/photo-fetch'
+export type { PhotoFetchItemResult } from '@/lib/seed/photo-fetch'
 import { clearAll } from '@/lib/seed/clear-all'
 import { previewTestAccounts, clearTestAccounts } from '@/lib/seed/clear-test-accounts'
 import { SEED_MANIFEST } from '@/lib/seed/manifest'
@@ -47,6 +49,11 @@ export async function clearAllTestAccounts(): Promise<SeedResult> {
     throw new Error('ENABLE_DEMO_LOGIN flag not set — refusing in this environment')
   }
   return clearTestAccounts()
+}
+
+export async function fetchNextSeedPhoto(excludeIds: string[]) {
+  await requireAdmin()
+  return fetchOnePhoto(excludeIds)
 }
 
 export async function getSeedStatus() {
