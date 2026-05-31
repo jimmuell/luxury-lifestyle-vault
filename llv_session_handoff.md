@@ -1,16 +1,98 @@
 # Luxury Lifestyle Vault — Session Handoff Document
 
-**Last Updated:** May 26, 2026
+**Last Updated:** May 30, 2026
 **Purpose:** Paste this document into any new Claude Chat session to provide full project context. For Cowork sessions, this file lives in the local project folder and is read automatically.
 
 ---
 
 ## IMPORTANT: First Steps for Any New Session
 
-1. **Read `DIVISION_OF_LABOR.md`** to understand your role (Claude Chat = strategy/research, Cowork = documents/coordination, Claude Code = engineering).
-2. **Read the project files** — these contain the full strategy, target companies, competitive analysis, and technology architecture.
-3. **Review the open items** at the bottom of this document to understand what's next.
-4. **Ask the founder** what they'd like to focus on this session.
+1. **Read `DIVISION_OF_LABOR.md`** to understand your role. As of May 30, 2026, this is a **two-tool model**: Cowork owns strategy, research, documents, and Code prompts; Claude Code owns implementation, DevOps, and git operations. Claude Chat is no longer in the daily workflow (kept as optional backup).
+2. **Read this document's "Session Summary — May 30, 2026" block below** for the most recent state.
+3. **Read `docs/cowork/llv_engineering_polish_todos.md`** for the queued engineering polish items.
+4. **Review the open items / build cycle status** in Section 13 for full context.
+5. **Ask the founder** what they'd like to focus on this session — present the queued list as options.
+
+---
+
+## 🏁 Session Summary — May 30, 2026
+
+A massive deployment day — went from "code exists locally" to "fully working test environment on Vercel that any tester can sign up and use." Built the entire production-style infrastructure from scratch and verified the platform's signup-to-active-subscription pipeline end-to-end on both local dev and Vercel deployment.
+
+### Completed this session
+
+**Infrastructure stood up:**
+- ✅ **Hosted Supabase project provisioned** (project ref + DB password in Jim's password manager). All 25 migrations pushed.
+- ✅ **Vercel deployment live** at `https://luxury-lifestyle-vault.vercel.app` (free Hobby tier, team `jamesloganmueller-4442s-projects`)
+- ✅ **Inngest cloud integration** connected via Vercel integration — auto-installs INNGEST_EVENT_KEY + INNGEST_SIGNING_KEY env vars, registers functions at `/api/inngest`
+- ✅ **Stripe webhook integration** — local Stripe CLI forwarding to `localhost:3000/api/webhooks/stripe` AND production webhook endpoint configured in Stripe Dashboard pointing at the Vercel URL (6 events: subscription created/updated/deleted, invoice.paid, invoice.payment_failed, setup_intent.succeeded)
+- ✅ **Test card flow verified** with `4242 4242 4242 4242` — Stripe Dashboard shows green `Succeeded` charges
+
+**22 bugs shipped (Bug Fix Cycle entries #5–#22, see Section 13 for details):**
+- Audit log pill fixes, tier copy cleanup (#5–#7, #10)
+- Stripe customer creation self-heal patch (#11)
+- Silent onboarding completion failure fix (#12–#13)
+- On-Demand tier_type data correction (#14)
+- Clear All Test Accounts admin tool + demo accounts seeding (#15–#16)
+- Demo accounts in quick-login dropdown (#17)
+- NODE_ENV → NEXT_PUBLIC_ENABLE_DEMO_LOGIN feature flag (#18, #20)
+- Temp-disabled Unsplash photo fetch (#19)
+- **Subscription payment fix — off_session + default_payment_method instead of default_incomplete (#21)** — biggest of the day, unlocked real payments going through
+- Onboarding redirect fix (#22) — eventually swapped router.refresh+push for `window.location.href = '/client'` because Vercel was bypassing the cache invalidation
+
+**Documents produced:**
+- `docs/cowork/llv_engineering_polish_todos.md` — running list of code-level polish queued for future Code prompts
+- `docs/cowork/llv_sql_delete_user.sql` — utility to delete a single user + all FK-cascaded data from hosted DB
+- 4 Code prompts in `docs/cowork/` documenting today's handoffs
+- `CLAUDE.md` — added Icons coding standard (Lucide only, no emoji in UI)
+
+### Current state
+
+| Layer | Status |
+|---|---|
+| **Local dev** | ✅ Fully verified — webhooktest3@example.com signup walked end-to-end, subscription active |
+| **Vercel deployment** | ✅ Fully verified — vercelsmoke@example.com + finalsmoke@example.com signups walked end-to-end |
+| **Stripe Dashboard (test mode)** | ✅ Multiple Succeeded charges visible, 3 subscription products synced (Seasonal Essentials, Seasonal Premier, On-Demand Occasion) |
+| **Hosted Supabase** | ✅ All seed data + demo accounts populated, single source of truth shared between local + Vercel |
+| **Webhook delivery** | ✅ 200 OK on every event |
+| **Demo affordances** | ✅ Visible on both local + Vercel (gated by `NEXT_PUBLIC_ENABLE_DEMO_LOGIN=true`) |
+
+### What's queued for next session
+
+**Engineering polish** (see `docs/cowork/llv_engineering_polish_todos.md` for full details):
+
+1. **Photo seeding architecture rewrite** — replace Unsplash runtime fetch with static `public/seed-photos/` bundle (~50 photos curated from Pexels). Currently the Unsplash fetch is temp-disabled.
+2. **3-state theme toggle (Light/Dark/System)** + visibility fix — current toggle is 2-state and obscured by Next.js dev indicator
+3. **Admin visibility + cleanup enhancements** — show all admin accounts in admin panel with optional cleanup-non-current-admins feature
+4. **`clear-all.ts` + `clear-test-accounts.ts` FK gap** — 7 missing tables (pricing_change_log, email_sends, admin_settings, reminder_sends, ai_search_logs, notification_template_config, admin_broadcasts) need to be added to the cleanup cascade
+5. **"Seeded" badge label misnomer** on clear operations (says "X seeded" when it means "X deleted")
+6. **Tier list "active" vs "synced" indicator semantics** — green check only reflects `active`, not whether tier is synced to Stripe
+
+**Testing** (was paused mid-session):
+
+- Test plan Section 2 onwards (`docs/testing/llv_platform_test_plan.docx`) — Section 1 passed; Sections 2–13 pending
+- Smoke testing other surfaces on the deployed environment
+
+**Business strategy** (10 items in `docs/strategy/llv_business_strategy_assumptions_register.docx`):
+
+- Wisconsin providers research
+- Pricing validation
+- Provider partnership terms
+- Insurance & liability
+- Daughter's formal role
+- Capital strategy
+- Choke points 3 & 4
+- Business entity formation
+- Wisconsin storage facility
+- Founding member recruitment strategy
+
+### Next session priorities (recommended)
+
+1. **Resume test plan execution** — Sections 2–13 (now that everything works end-to-end)
+2. **OR pick a polish item** from the queue (photo seeding rewrite is the most impactful for user-facing demo quality)
+3. **OR begin business strategy work** — particularly Wisconsin providers, since they're a soft-launch blocker
+
+The platform is functional. The remaining work is testing, polish, and business operations — none of which are blocked on engineering.
 
 ---
 
