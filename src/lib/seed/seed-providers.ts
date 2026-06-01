@@ -1,6 +1,8 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { SeedResult } from './types'
 
+const SEED_PASSWORD = 'TestLLV2026!'
+
 const SEED_PROVIDERS = [
   {
     business_name: 'RAVE FabriCARE',
@@ -87,27 +89,72 @@ export async function seedProviders(): Promise<SeedResult> {
 
   for (const provider of SEED_PROVIDERS) {
     try {
+      // Check if provider row already exists and is linked to an auth profile
       const { data: existing } = await adminClient
         .from('providers')
-        .select('id')
+        .select('id, profile_id')
         .eq('business_name', provider.business_name)
         .maybeSingle()
 
-      if (existing) {
-        // Ensure is_seed_data is true even for providers created before migration 010
+      if (existing?.profile_id) {
         await adminClient.from('providers').update({ is_seed_data: true }).eq('id', existing.id)
         skipped++
         continue
       }
 
-      const { error } = await adminClient.from('providers').insert({
-        ...provider,
-        services: [...provider.services],
-        is_active: true,
-        is_seed_data: true,
-      } as never)
+      // Find or create the auth user for this provider
+      const { data: existingProfile } = await adminClient
+        .from('profiles')
+        .select('id')
+        .eq('email', provider.email)
+        .maybeSingle()
 
-      if (error) throw new Error(error.message)
+      let userId: string
+
+      if (existingProfile) {
+        userId = existingProfile.id
+      } else {
+        const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
+          email: provider.email,
+          password: SEED_PASSWORD,
+          email_confirm: true,
+          user_metadata: { full_name: provider.contact_name },
+        })
+        if (authError) throw new Error(authError.message)
+        if (!authData.user) throw new Error('No user returned from createUser')
+        userId = authData.user.id
+      }
+
+      // Set role=provider (trigger defaults to 'client'), full_name, phone, seed flag
+      const { error: profileError } = await adminClient
+        .from('profiles')
+        .update({
+          role: 'provider',
+          full_name: provider.contact_name,
+          phone: provider.phone,
+          is_seed_data: true,
+        })
+        .eq('id', userId)
+      if (profileError) throw new Error(`Profile update: ${profileError.message}`)
+
+      if (existing) {
+        // Row exists but profile_id was null — link it
+        const { error } = await adminClient
+          .from('providers')
+          .update({ profile_id: userId, is_seed_data: true })
+          .eq('id', existing.id)
+        if (error) throw new Error(error.message)
+      } else {
+        const { error } = await adminClient.from('providers').insert({
+          ...provider,
+          services: [...provider.services],
+          profile_id: userId,
+          is_active: true,
+          is_seed_data: true,
+        } as never)
+        if (error) throw new Error(error.message)
+      }
+
       seeded++
     } catch (err) {
       errors.push(`${provider.business_name}: ${err instanceof Error ? err.message : String(err)}`)

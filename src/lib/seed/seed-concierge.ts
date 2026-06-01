@@ -133,15 +133,28 @@ export async function seedConcierge(): Promise<SeedResult> {
         continue
       }
 
+      // Resolve author_profile_id for provider messages (needed for idempotency patch below)
+      const authorProfileId: string | null =
+        msg.is_provider_message && msg.author_provider_business_name
+          ? (providerProfileMap[msg.author_provider_business_name] ?? null)
+          : null
+
       // Idempotency: check by subject + client_id
       const { data: existing } = await adminClient
         .from('concierge_messages')
-        .select('id')
+        .select('id, author_profile_id, is_provider_message')
         .eq('client_id', clientId)
         .eq('subject', msg.subject)
         .maybeSingle()
 
       if (existing) {
+        // Patch null author_profile_id on provider messages if provider is now seeded
+        if (existing.is_provider_message && !existing.author_profile_id && authorProfileId) {
+          await adminClient
+            .from('concierge_messages')
+            .update({ author_profile_id: authorProfileId })
+            .eq('id', existing.id)
+        }
         skipped++
         continue
       }
@@ -156,13 +169,6 @@ export async function seedConcierge(): Promise<SeedResult> {
           .eq('notes', msg.related_order_notes_key)
           .maybeSingle()
         relatedOrderId = relOrder?.id ?? null
-      }
-
-      // Resolve author_profile_id for provider messages
-      let authorProfileId: string | null = null
-      if (msg.is_provider_message && msg.author_provider_business_name) {
-        authorProfileId = providerProfileMap[msg.author_provider_business_name] ?? null
-        // If provider has no profile yet, fall back to null (still works for seed data)
       }
 
       const { error } = await adminClient.from('concierge_messages').insert({

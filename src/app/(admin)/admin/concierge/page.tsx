@@ -29,7 +29,7 @@ export default async function AdminConciergePage({
 
   let query = supabase
     .from('concierge_messages')
-    .select('*, profiles(full_name, email)')
+    .select('*, profiles!client_id(full_name, email)')
     .order('created_at', { ascending: false })
 
   if (params.status) {

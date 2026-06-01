@@ -32,6 +32,8 @@ const QUICK_ACCOUNTS: QuickAccount[] = [
   { label: 'Client 3 — James Thornton', email: 'client3@test.llv.com', password: 'TestLLV2026!' },
   { label: 'Client 4 — Victoria Simmons', email: 'client4@test.llv.com', password: 'TestLLV2026!' },
   { label: 'Client 5 — Robert Whitmore', email: 'client5@test.llv.com', password: 'TestLLV2026!' },
+  { label: 'Provider — RAVE FabriCARE', email: 'care@ravefabricare.com', password: 'TestLLV2026!' },
+  { label: 'Provider — European Couture Cleaners', email: 'sophia@europeancouture.com', password: 'TestLLV2026!' },
 ]
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
