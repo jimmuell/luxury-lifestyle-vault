@@ -69,24 +69,84 @@ function buildSearchQuery(
   return color ? `${color} ${base}` : base
 }
 
-// ── Unsplash search ──────────────────────────────────────────────────────────
+// ── Pexels search ─────────────────────────────────────────────────────────────
 
 const RATELIMIT_FLOOR = 5
 
-async function searchUnsplash(query: string): Promise<string | null | 'rate_limited'> {
-  const key = process.env.UNSPLASH_ACCESS_KEY
-  if (!key) throw new Error('UNSPLASH_ACCESS_KEY not set')
+type PexelsAttribution = {
+  photographer: string
+  photographer_url: string
+  source_url: string
+}
 
-  const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=portrait`
-  const res = await fetch(url, { headers: { Authorization: `Client-ID ${key}` } })
+type PexelsSearchResult = {
+  imageUrl: string
+  attribution: PexelsAttribution
+}
 
-  const remaining = res.headers.get('X-Ratelimit-Remaining')
-  if (remaining !== null && parseInt(remaining, 10) <= RATELIMIT_FLOOR) return 'rate_limited'
-  if (res.status === 429 || res.status === 403) return 'rate_limited'
-  if (!res.ok) throw new Error(`Unsplash HTTP ${res.status}`)
+// Returns the image URL + attribution on success, null if no results,
+// or 'rate_limited' to signal the caller to stop. Never throws — any
+// non-success produces either null or 'rate_limited' with console.error
+// diagnostics so failures are self-describing in logs.
+async function searchPexels(query: string): Promise<PexelsSearchResult | null | { rateLimited: true; reason: string }> {
+  const key = process.env.PEXELS_API_KEY
+  if (!key) throw new Error('PEXELS_API_KEY not set')
 
-  const data = await res.json() as { results: Array<{ urls: { small: string } }> }
-  return data.results?.[0]?.urls?.small ?? null
+  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=portrait`
+  let res: Response
+  try {
+    res = await fetch(url, {
+      headers: {
+        Authorization: key, // Pexels: raw key, no "Bearer" or "Client-ID" prefix
+        'User-Agent': 'LuxuryLifestyleVault/1.0',
+      },
+    })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`[photo-fetch] Pexels network error: ${msg}`)
+    throw err
+  }
+
+  const limitHeader  = res.headers.get('X-Ratelimit-Limit')
+  const remainingHeader = res.headers.get('X-Ratelimit-Remaining')
+  const remaining = remainingHeader !== null ? parseInt(remainingHeader, 10) : null
+
+  // Floor check before acting on the response (same logic as before)
+  if (remaining !== null && remaining <= RATELIMIT_FLOOR) {
+    const reason = `Pexels quota floor (remaining=${remaining})`
+    console.error(`[photo-fetch] ${reason}`)
+    return { rateLimited: true, reason }
+  }
+
+  if (!res.ok) {
+    // Capture the real body snippet so the next run is self-explaining
+    const bodySnippet = await res.text().catch(() => '(unreadable)').then(t => t.slice(0, 200))
+    const keyFingerprint = `len=${key.length} last4=…${key.slice(-4)}`
+    const reason = `Pexels ${res.status} (limit=${limitHeader ?? '?'} remaining=${remainingHeader ?? '?'} key=${keyFingerprint} body=${bodySnippet})`
+    console.error(`[photo-fetch] ${reason}`)
+    if (res.status === 401) return { rateLimited: true, reason: `Pexels 401 — bad key (${keyFingerprint})` }
+    if (res.status === 429 || res.status === 403) return { rateLimited: true, reason: `Pexels ${res.status} (remaining=${remainingHeader ?? '?'})` }
+    return { rateLimited: true, reason }
+  }
+
+  const data = await res.json() as { photos?: Array<{
+    src: { large: string; portrait: string }
+    photographer: string
+    photographer_url: string
+    url: string
+  }> }
+
+  const photo = data.photos?.[0]
+  if (!photo) return null
+
+  return {
+    imageUrl: photo.src.large ?? photo.src.portrait,
+    attribution: {
+      photographer: photo.photographer,
+      photographer_url: photo.photographer_url,
+      source_url: photo.url,
+    },
+  }
 }
 
 // ── Result type ───────────────────────────────────────────────────────────────
@@ -115,7 +175,7 @@ export async function fetchOnePhoto(excludeIds: string[] = []): Promise<PhotoFet
     .like('storage_path', '%/seed-main.jpg')
     .is('public_url', null)
 
-  // Pick the next item to process (skip excludeIds for items with no Unsplash results)
+  // Pick the next item to process (skip excludeIds for items with no Pexels results)
   let itemQuery = sb
     .from('item_photos')
     .select('id, item_id, items ( id, client_id, name, category, brand, color )')
@@ -149,20 +209,21 @@ export async function fetchOnePhoto(excludeIds: string[] = []): Promise<PhotoFet
 
   // Try primary query, then category-only fallback
   let downloadUrl: string | null = null
+  let attribution: PexelsAttribution | null = null
   for (const query of [primaryQuery, CATEGORY_TERMS[item.category] ?? null]) {
     if (!query || (query === primaryQuery && downloadUrl !== null)) continue
-    const result = await searchUnsplash(query)
-    if (result === 'rate_limited') {
-      return { uploaded: false, failed: false, rateLimited: true, done: false, remaining, itemName: item.name, itemId: item.id }
+    const result = await searchPexels(query)
+    if (result && 'rateLimited' in result) {
+      return { uploaded: false, failed: false, rateLimited: true, done: false, remaining, itemName: item.name, itemId: item.id, error: result.reason }
     }
-    if (result) { downloadUrl = result; break }
+    if (result) { downloadUrl = result.imageUrl; attribution = result.attribution; break }
   }
 
   if (!downloadUrl) {
-    return { uploaded: false, failed: true, rateLimited: false, done: false, remaining, itemName: item.name, itemId: item.id, error: 'No Unsplash results' }
+    return { uploaded: false, failed: true, rateLimited: false, done: false, remaining, itemName: item.name, itemId: item.id, error: 'No Pexels results' }
   }
 
-  // Download (urls.small = 400px — keeps server action well under Vercel timeout)
+  // Download (src.large ≈ 1280px — reasonable size for seed photos)
   const imgRes = await fetch(downloadUrl)
   if (!imgRes.ok) {
     return { uploaded: false, failed: true, rateLimited: false, done: false, remaining, itemName: item.name, itemId: item.id, error: `Image download failed: ${imgRes.status}` }
@@ -178,10 +239,10 @@ export async function fetchOnePhoto(excludeIds: string[] = []): Promise<PhotoFet
     return { uploaded: false, failed: true, rateLimited: false, done: false, remaining, itemName: item.name, itemId: item.id, error: `Storage upload failed: ${upErr.message}` }
   }
 
-  // Update storage_path in item_photos (public_url stays null — private bucket, signing handles display)
+  // Update storage_path + attribution in item_photos
   const { error: dbErr } = await sb
     .from('item_photos')
-    .update({ storage_path: storagePath })
+    .update({ storage_path: storagePath, attribution })
     .eq('id', photo.id)
   if (dbErr) {
     return { uploaded: false, failed: true, rateLimited: false, done: false, remaining, itemName: item.name, itemId: item.id, error: `DB update failed: ${dbErr.message}` }

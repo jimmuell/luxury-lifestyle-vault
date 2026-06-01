@@ -188,6 +188,7 @@ export function SeedRunner() {
     let totalFailed = 0
     let finalRemaining = 0
     let rateLimited = false
+    let rateLimitReason: string | undefined
     const failedIds: string[] = []
     const MAX_PER_RUN = 45
 
@@ -198,6 +199,7 @@ export function SeedRunner() {
 
         if (result.rateLimited) {
           rateLimited = true
+          rateLimitReason = result.error
           finalRemaining = result.remaining
           break
         }
@@ -215,7 +217,8 @@ export function SeedRunner() {
 
       const errors: string[] = []
       if (rateLimited) {
-        errors.push(`Rate limited after ${totalUploaded} item${totalUploaded !== 1 ? 's' : ''}. ${finalRemaining} remaining — run again in ~1 hour.`)
+        const detail = rateLimitReason ? ` (${rateLimitReason})` : ''
+        errors.push(`Stopped after ${totalUploaded} item${totalUploaded !== 1 ? 's' : ''}${detail}. ${finalRemaining} remaining — run again.`)
       } else if (finalRemaining > 0 && totalUploaded + totalFailed >= MAX_PER_RUN) {
         errors.push(`Cap reached (${MAX_PER_RUN} items). ${finalRemaining} remaining — run again.`)
       }
@@ -364,7 +367,7 @@ export function SeedRunner() {
           <div className="min-w-0">
             <p className="text-sm font-medium">Fetch Wardrobe Photos</p>
             <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-              Downloads Unsplash photos for seed items. Runs separately from Seed All. Capped at 45 per run — re-run after ~1 hour if items remain. Fully idempotent.
+              Downloads Pexels photos for seed items. Runs separately from Seed All. Capped at 45 per run — re-run if items remain. Fully idempotent.
             </p>
             {photoFetchActive && photoProgress && (
               <p className="text-xs text-accent mt-2 font-medium">

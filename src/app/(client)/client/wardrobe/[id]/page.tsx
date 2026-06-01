@@ -45,7 +45,7 @@ export default async function ItemDetailPage({
       .order('assessed_at', { ascending: false }),
     supabase
       .from('item_photos')
-      .select('id, storage_path, photo_type, caption, ai_analysis, storage_bucket')
+      .select('id, storage_path, photo_type, caption, ai_analysis, attribution, storage_bucket')
       .eq('item_id', id)
       .order('sort_order', { ascending: true }),
     supabase
@@ -74,8 +74,11 @@ export default async function ItemDetailPage({
       photoType: p.photo_type,
       caption: p.caption,
       aiAnalysis: p.ai_analysis as Record<string, unknown> | null,
+      attribution: p.attribution as { photographer: string; photographer_url: string; source_url: string } | null,
     }))
     .filter(p => p.signedUrl)
+
+  const photoAttribution = photos.find(p => p.attribution)?.attribution ?? null
 
   const orderHistory = (orderHistoryResult.data ?? [])
     .map(oi => oi.orders)
@@ -127,18 +130,32 @@ export default async function ItemDetailPage({
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Left: photo carousel or art card */}
-        {photos.length > 0 ? (
-          <ItemPhotoCarousel photos={photos} />
-        ) : (
-          <CategoryArtCard
-            category={item.category as ItemCategory}
-            name={item.name}
-            brand={item.brand}
-            size="detail"
-            className="aspect-[3/4] rounded-lg"
-          />
-        )}
+        {/* Left: photo carousel or art card + optional attribution */}
+        <div className="space-y-2">
+          {photos.length > 0 ? (
+            <ItemPhotoCarousel photos={photos} />
+          ) : (
+            <CategoryArtCard
+              category={item.category as ItemCategory}
+              name={item.name}
+              brand={item.brand}
+              size="detail"
+              className="aspect-[3/4] rounded-lg"
+            />
+          )}
+          {photoAttribution && (
+            <p className="text-[10px] text-muted-foreground/60 text-right">
+              Photo by{' '}
+              <a href={photoAttribution.photographer_url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-muted-foreground">
+                {photoAttribution.photographer}
+              </a>
+              {' '}on{' '}
+              <a href={photoAttribution.source_url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-muted-foreground">
+                Pexels
+              </a>
+            </p>
+          )}
+        </div>
 
         {/* Right: metadata + CTA */}
         <div className="space-y-8">

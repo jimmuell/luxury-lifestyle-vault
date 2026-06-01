@@ -662,6 +662,7 @@ export type Database = {
           sort_order: number
           caption: string | null
           ai_analysis: Json | null
+          attribution: Json | null
           related_order_id: string | null
           is_seed_data: boolean
           created_at: string
@@ -677,6 +678,7 @@ export type Database = {
           sort_order?: number
           caption?: string | null
           ai_analysis?: Json | null
+          attribution?: Json | null
           related_order_id?: string | null
           is_seed_data?: boolean
           created_at?: string
@@ -692,6 +694,7 @@ export type Database = {
           sort_order?: number
           caption?: string | null
           ai_analysis?: Json | null
+          attribution?: Json | null
           related_order_id?: string | null
           is_seed_data?: boolean
           created_at?: string
