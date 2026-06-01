@@ -45,6 +45,15 @@ export function NotificationBell({
 
   const unreadCount = notifications.filter(n => !n.read_at).length
 
+  // Sync bell when notifications page fires mark-all-read
+  useEffect(() => {
+    function handleAllRead() {
+      setNotifications(prev => prev.map(n => ({ ...n, read_at: n.read_at ?? new Date().toISOString() })))
+    }
+    window.addEventListener('notifications:allRead', handleAllRead)
+    return () => window.removeEventListener('notifications:allRead', handleAllRead)
+  }, [])
+
   // Realtime subscription
   useEffect(() => {
     const supabase = createClient()

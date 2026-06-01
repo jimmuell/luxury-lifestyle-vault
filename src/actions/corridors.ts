@@ -41,7 +41,12 @@ export async function createCorridor(data: {
     sort_order: data.sortOrder ?? 0,
   })
 
-  if (error) throw new Error(error.message)
+  if (error) {
+    if (error.code === '23505') {
+      throw new Error(`A corridor for ${data.originRegionCode.toUpperCase()} ↔ ${data.destinationRegionCode.toUpperCase()} already exists.`)
+    }
+    throw new Error(error.message)
+  }
   revalidatePath('/admin/settings/corridors')
 }
 

@@ -80,7 +80,10 @@ export function NotificationList({ notifications }: { notifications: Notificatio
 
   function handleMarkAll() {
     setItems(prev => prev.map(n => ({ ...n, read_at: n.read_at ?? new Date().toISOString() })))
-    startTransition(async () => { await markAllNotificationsRead() })
+    startTransition(async () => {
+      await markAllNotificationsRead()
+      window.dispatchEvent(new CustomEvent('notifications:allRead'))
+    })
   }
 
   const unreadCount = items.filter(n => !n.read_at).length
