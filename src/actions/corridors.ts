@@ -43,11 +43,12 @@ export async function createCorridor(data: {
 
   if (error) {
     if (error.code === '23505') {
-      throw new Error(`A corridor for ${data.originRegionCode.toUpperCase()} ↔ ${data.destinationRegionCode.toUpperCase()} already exists.`)
+      return { error: `A corridor for ${data.originRegionCode.toUpperCase()} ↔ ${data.destinationRegionCode.toUpperCase()} already exists.` }
     }
-    throw new Error(error.message)
+    return { error: error.message }
   }
   revalidatePath('/admin/settings/corridors')
+  return { ok: true }
 }
 
 export async function updateCorridor(corridorId: string, data: {

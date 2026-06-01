@@ -20,19 +20,19 @@ export function CorridorCreateForm({ onClose }: { onClose: () => void }) {
     }
     setSaving(true)
     startTransition(async () => {
-      try {
-        await createCorridor({
-          slug: `${origin.toLowerCase()}_${destination.toLowerCase()}`,
-          displayName,
-          originRegionCode: origin,
-          destinationRegionCode: destination,
-        })
+      const result = await createCorridor({
+        slug: `${origin.toLowerCase()}_${destination.toLowerCase()}`,
+        displayName,
+        originRegionCode: origin,
+        destinationRegionCode: destination,
+      })
+      if (result?.error) {
+        toast.error(result.error)
+        setSaving(false)
+      } else {
         toast.success('Corridor created')
         router.refresh()
         onClose()
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : 'Failed to create corridor')
-        setSaving(false)
       }
     })
   }
