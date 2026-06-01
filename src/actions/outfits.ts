@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 async function getAuthUser() {
@@ -80,7 +79,6 @@ export async function deleteOutfit(outfitId: string) {
   if (error) return { error: error.message }
 
   revalidatePath('/client/outfits')
-  redirect('/client/outfits')
 }
 
 export async function addItemToOutfit(outfitId: string, itemId: string) {

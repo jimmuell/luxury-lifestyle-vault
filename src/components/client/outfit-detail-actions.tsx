@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { deleteOutfit } from '@/actions/outfits'
 import { Pencil, Trash2 } from 'lucide-react'
@@ -16,6 +17,7 @@ export function OutfitDetailActions({
   const [confirming, setConfirming] = useState(false)
   const [, startTransition] = useTransition()
   const [deleting, setDeleting] = useState(false)
+  const router = useRouter()
 
   function handleDelete() {
     if (!confirming) {
@@ -25,7 +27,14 @@ export function OutfitDetailActions({
     setDeleting(true)
     startTransition(async () => {
       try {
-        await deleteOutfit(outfitId)
+        const result = await deleteOutfit(outfitId)
+        if (result?.error) {
+          toast.error(result.error)
+          setDeleting(false)
+          setConfirming(false)
+        } else {
+          router.push('/client/outfits')
+        }
       } catch {
         toast.error('Failed to delete outfit')
         setDeleting(false)

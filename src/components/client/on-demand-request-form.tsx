@@ -8,7 +8,7 @@ import { ITEM_CATEGORY_LABELS } from '@/types/app'
 import type { ItemCategory } from '@/types/app'
 import { cn } from '@/lib/utils'
 import { Check, ChevronRight, Zap } from 'lucide-react'
-import { format, addDays } from 'date-fns'
+import { format, addDays, parse } from 'date-fns'
 
 interface StoredItem {
   id: string
@@ -313,7 +313,7 @@ export function OnDemandRequestForm({ items, addresses, pricing }: OnDemandReque
             )}
             <div className="px-5 py-3.5">
               <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Requested delivery</p>
-              <p className="text-sm">{format(new Date(deliveryDate), 'MMMM d, yyyy')}</p>
+              <p className="text-sm">{format(parse(deliveryDate, 'yyyy-MM-dd', new Date()), 'MMMM d, yyyy')}</p>
             </div>
             {estimatedTotal != null && (
               <div className="px-5 py-3.5 flex items-center justify-between">

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { adminDispatchToProvider } from '@/actions/orders'
-import { format, addHours, addDays } from 'date-fns'
+import { format, addHours, addDays, parse } from 'date-fns'
 
 interface Provider {
   id: string
@@ -25,7 +25,7 @@ function toDatetimeLocal(date: Date): string {
 export function DispatchModal({ orderId, providers, requestedDeliveryDate, onClose }: DispatchModalProps) {
   const now = new Date()
   const defaultDeadline = requestedDeliveryDate
-    ? new Date(new Date(requestedDeliveryDate).getTime() - 48 * 60 * 60 * 1000)
+    ? addDays(parse(requestedDeliveryDate, 'yyyy-MM-dd', new Date()), -2)
     : addDays(now, 5)
 
   const [providerId, setProviderId] = useState(providers[0]?.id ?? '')
@@ -120,7 +120,7 @@ export function DispatchModal({ orderId, providers, requestedDeliveryDate, onClo
             />
             {requestedDeliveryDate && (
               <p className="text-[10px] text-muted-foreground">
-                Client requested {format(new Date(requestedDeliveryDate), 'MMM d')} — default is 48h before that
+                Client requested {format(parse(requestedDeliveryDate, 'yyyy-MM-dd', new Date()), 'MMM d')} — default is 48h before that
               </p>
             )}
           </div>

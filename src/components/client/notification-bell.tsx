@@ -52,14 +52,17 @@ export function NotificationBell({
       .channel(`notifications:${profileId}`)
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `recipient_profile_id=eq.${profileId}`,
-        },
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_profile_id=eq.${profileId}` },
         (payload) => {
           setNotifications(prev => [payload.new as Notification, ...prev])
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `recipient_profile_id=eq.${profileId}` },
+        (payload) => {
+          const updated = payload.new as Notification
+          setNotifications(prev => prev.map(n => n.id === updated.id ? { ...n, read_at: updated.read_at } : n))
         }
       )
       .subscribe()

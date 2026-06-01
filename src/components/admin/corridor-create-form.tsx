@@ -7,8 +7,8 @@ import { createCorridor } from '@/actions/corridors'
 
 export function CorridorCreateForm({ onClose }: { onClose: () => void }) {
   const [displayName, setDisplayName] = useState('')
-  const [origin, setOrigin] = useState('')
-  const [destination, setDestination] = useState('')
+  const [origin, setOrigin] = useState('WI')
+  const [destination, setDestination] = useState('AZ')
   const [saving, setSaving] = useState(false)
   const [, startTransition] = useTransition()
   const router = useRouter()
