@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { updateTierPricing, updateTierConfig, syncTierToStripe, deactivateTier } from '@/actions/tiers'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { CheckCircle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react'
@@ -105,6 +106,7 @@ export function TierEditForm({
   pricingLog: PricingLogEntry[]
 }) {
   const router = useRouter()
+  const openConfirm = useConfirm()
   const [, startTransition] = useTransition()
   const [syncing, setSyncing] = useState(false)
   const [showLog, setShowLog] = useState(false)
@@ -161,7 +163,7 @@ export function TierEditForm({
     })
   }
 
-  function handleSavePricing() {
+  async function handleSavePricing() {
     const monthlyPriceCents = displayToCents(monthlyPrice)
     const perRequestBaseCents = displayToCents(perRequestBase)
     const perItemCents = displayToCents(perItemSurcharge)
@@ -182,9 +184,11 @@ export function TierEditForm({
     const priceChanging = monthlyPriceCents !== tier.monthly_price_cents && tierType === 'subscription'
 
     if (priceChanging) {
-      const ok = confirm(
-        'This will create a new Stripe price. Existing subscribers will keep their current price unless you migrate them. Continue?'
-      )
+      const ok = await openConfirm({
+        title: 'New Stripe price',
+        body: 'This will create a new Stripe price. Existing subscribers will keep their current price unless you migrate them.',
+        confirmLabel: 'Continue',
+      })
       if (!ok) return
     }
 
@@ -220,7 +224,12 @@ export function TierEditForm({
   }
 
   async function handleDeactivate() {
-    const ok = confirm('Deactivate this tier? Existing subscribers will not be affected.')
+    const ok = await openConfirm({
+      title: 'Deactivate tier?',
+      body: 'Existing subscribers will not be affected.',
+      confirmLabel: 'Deactivate',
+      tone: 'destructive',
+    })
     if (!ok) return
     try {
       await deactivateTier(tier.id)

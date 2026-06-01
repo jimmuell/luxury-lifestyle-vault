@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Cormorant_Garamond, Inter, Geist_Mono } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from '@/components/ui/sonner'
+import { ConfirmDialogProvider } from '@/components/ui/confirm-dialog'
 import './globals.css'
 
 const inter = Inter({
@@ -47,8 +48,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster position="bottom-right" />
+          <ConfirmDialogProvider>
+            {children}
+            <Toaster position="bottom-right" />
+          </ConfirmDialogProvider>
         </ThemeProvider>
       </body>
     </html>

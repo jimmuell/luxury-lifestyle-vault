@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { updatePreferredChannel, softDeleteAccount } from '@/actions/settings'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 
 type Channel = 'email' | 'sms' | 'both'
 
@@ -62,9 +63,14 @@ export function PreferredChannelForm({ preferredChannel }: AccountSettingsFormPr
 export function SignOutEverywhereButton() {
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const openConfirm = useConfirm()
 
-  function handleSignOut() {
-    if (!confirm('Sign out of all devices?')) return
+  async function handleSignOut() {
+    const ok = await openConfirm({
+      title: 'Sign out of all devices?',
+      confirmLabel: 'Sign out',
+    })
+    if (!ok) return
     startTransition(async () => {
       const supabase = createClient()
       await supabase.auth.signOut({ scope: 'global' })
@@ -86,9 +92,16 @@ export function SignOutEverywhereButton() {
 
 export function DeleteAccountButton() {
   const [isPending, startTransition] = useTransition()
+  const openConfirm = useConfirm()
 
-  function handleDelete() {
-    if (!confirm('Close your account? Your wardrobe data will be preserved for 90 days before permanent deletion. This cannot be undone.')) return
+  async function handleDelete() {
+    const ok = await openConfirm({
+      title: 'Close account?',
+      body: 'Your wardrobe data will be preserved for 90 days before permanent deletion. This cannot be undone.',
+      confirmLabel: 'Close account',
+      tone: 'destructive',
+    })
+    if (!ok) return
     startTransition(async () => {
       try {
         await softDeleteAccount()

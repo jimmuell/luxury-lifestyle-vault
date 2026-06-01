@@ -21,6 +21,11 @@ const eslintConfig = defineConfig([
         ignoreRestSiblings: true,
         varsIgnorePattern: "^_",
       }],
+      "no-restricted-globals": ["error",
+        { name: "confirm", message: "Use useConfirm() from @/components/ui/confirm-dialog instead." },
+        { name: "alert",   message: "Do not use native alert() — use toast() from sonner instead." },
+        { name: "prompt",  message: "Do not use native prompt()." },
+      ],
     },
   },
 ]);

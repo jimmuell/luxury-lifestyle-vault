@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { clientCancelOrder, clientInitiateReturn } from '@/actions/orders'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 
 interface OrderActionButtonsProps {
   orderId: string
@@ -15,9 +16,16 @@ export function OrderActionButtons({ orderId, canCancel, canReturn }: OrderActio
   const [cancelPending, startCancel] = useTransition()
   const [returnPending, startReturn] = useTransition()
   const router = useRouter()
+  const openConfirm = useConfirm()
 
-  function handleCancel() {
-    if (!confirm('Cancel this order? This cannot be undone.')) return
+  async function handleCancel() {
+    const ok = await openConfirm({
+      title: 'Cancel order?',
+      body: 'This cannot be undone.',
+      confirmLabel: 'Cancel order',
+      tone: 'destructive',
+    })
+    if (!ok) return
     startCancel(async () => {
       try {
         await clientCancelOrder(orderId)
@@ -29,8 +37,12 @@ export function OrderActionButtons({ orderId, canCancel, canReturn }: OrderActio
     })
   }
 
-  function handleReturn() {
-    if (!confirm('Initiate a return for this order?')) return
+  async function handleReturn() {
+    const ok = await openConfirm({
+      title: 'Initiate return?',
+      confirmLabel: 'Initiate return',
+    })
+    if (!ok) return
     startReturn(async () => {
       try {
         await clientInitiateReturn(orderId)

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { adminTransitionOrderStatus, adminAssignProvider, adminUpdateOrderNotes, adminRefundOrder, adminMarkReturnReceived } from '@/actions/orders'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { ORDER_STATUS_TRANSITIONS, ORDER_STATUS_LABELS } from '@/types/app'
 import type { OrderStatus } from '@/types/app'
 import { cn } from '@/lib/utils'
@@ -54,6 +55,7 @@ export function AdminOrderStatusPanel({
   const [isRefundPending, startRefundTransition] = useTransition()
   const [isReturnPending, startReturnTransition] = useTransition()
   const router = useRouter()
+  const openConfirm = useConfirm()
 
   const validTransitions = ORDER_STATUS_TRANSITIONS[currentStatus] ?? []
 
@@ -87,8 +89,14 @@ export function AdminOrderStatusPanel({
     })
   }
 
-  function handleRefund() {
-    if (!window.confirm('Issue a full refund for this order? This cannot be undone.')) return
+  async function handleRefund() {
+    const ok = await openConfirm({
+      title: 'Issue full refund?',
+      body: 'This cannot be undone.',
+      confirmLabel: 'Issue refund',
+      tone: 'destructive',
+    })
+    if (!ok) return
     startRefundTransition(async () => {
       try {
         await adminRefundOrder(orderId)
@@ -100,8 +108,13 @@ export function AdminOrderStatusPanel({
     })
   }
 
-  function handleMarkReturnReceived() {
-    if (!window.confirm('Mark this return as received? Item locations will be reset to intake.')) return
+  async function handleMarkReturnReceived() {
+    const ok = await openConfirm({
+      title: 'Mark return received?',
+      body: 'Item locations will be reset to intake.',
+      confirmLabel: 'Mark received',
+    })
+    if (!ok) return
     startReturnTransition(async () => {
       try {
         await adminMarkReturnReceived(orderId)
