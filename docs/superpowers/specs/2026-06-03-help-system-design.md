@@ -101,7 +101,7 @@ Dot-namespaced `surface.area` form. Launch set:
 | `client.ondemand` | `/client/orders/new` page header |
 | `client.rotation` | `/client/rotations/new` page header |
 | `client.billing` | `/client/settings/billing` page header |
-| `client.returns` | `/client/orders` page header (returns flow not yet built) |
+| `client.returns` | `/client/orders` page header |
 | `provider.stages` | `/provider/help` reference panel |
 
 New areas require no migration or component change — just a new row in `help_tooltips`.
@@ -147,16 +147,22 @@ async function HelpTip({ areaKey }: { areaKey: string }) {
 ### `src/components/help/help-escalate.tsx` — Client Component
 
 ```tsx
+interface HelpEscalateProps {
+  href?: string  // defaults to '/client/concierge'
+}
+
 <Link
-  href="/client/concierge"
+  href={href ?? '/client/concierge'}
   className={buttonVariants({ variant: 'outline', size: 'sm' })}
 >
   <MessageCircle className="..." /> Talk to your concierge
 </Link>
 ```
 
+- `href` prop defaults to `/client/concierge`; pass a different value on non-client surfaces.
 - `prefill` prop accepted but passed as query param (`?subject=...`); concierge page can use it if it chooses — no concierge page changes required in this PR.
 - Route verified: `/client/concierge` exists at `src/app/(client)/client/concierge/page.tsx`.
+- **Provider portal**: The provider portal has no provider-facing messaging/support route (confirmed: only `/provider` dashboard and `/provider/orders/[id]` exist). `HelpEscalate` is **omitted** from `/provider/help` — do not route providers to `/client/concierge`.
 
 ---
 
@@ -193,8 +199,8 @@ All five target pages are server components — the client wizard/form component
 
 - Fetches published articles where `audience = 'provider'`, ordered by `sort_order`
 - Simple list (no search needed at launch — minimal content)
-- `<HelpEscalate />` at the bottom
-- Linked from provider nav/layout
+- **No `<HelpEscalate />`** — the provider portal has no provider messaging/support route; omitting the button avoids routing providers to the client concierge channel.
+- Linked from provider layout (add a "Reference" or "Help" link; the provider layout has no dedicated nav component — add the link directly in `src/app/(provider)/layout.tsx`)
 
 ### `/admin/help`
 
@@ -242,9 +248,22 @@ The other 4 area keys (`client.wardrobe`, `client.rotation`, `client.billing`, `
 
 ## Nav Links
 
-- **Client nav** (`src/app/(client)/layout.tsx` or its nav component): add "Help" link → `/client/help`
-- **Provider nav** (`src/app/(provider)/layout.tsx` or its nav component): add "Help" link → `/provider/help`
-- **Admin sidebar**: add "Help" link → `/admin/help` (under Settings or a new "Content" group)
+- **Client nav** (`src/components/client/client-nav.tsx` — `NAV_LINKS` array): add `{ href: '/client/help', label: 'Help', icon: HelpCircle }` entry.
+- **Provider layout** (`src/app/(provider)/layout.tsx` — no dedicated nav component; nav is inline): add a simple "Reference" link to `/provider/help` in the layout header area.
+- **Admin sidebar** (`src/app/(admin)/layout.tsx` — `NAV_ITEMS` array): add `{ href: '/admin/help', label: 'Help Content', icon: BookOpen }` entry.
+
+---
+
+## Dynamic Reads (Acceptance #2 requirement)
+
+All help-data reads must be dynamic so a newly added row appears immediately without a redeploy.
+
+**Why they're already dynamic:** Every help page and `HelpTip` component calls `createClient()` from `@/lib/supabase/server`, which reads the incoming request's cookies via Next.js `cookies()`. This opts the route into dynamic rendering automatically — Next.js does not statically cache routes that read cookies.
+
+**Rules to maintain this:**
+- Do **not** add `export const revalidate = <number>` or `export const dynamic = 'force-static'` to any help page or to `HelpTip`.
+- Do **not** wrap help fetches in `unstable_cache()`.
+- The `HelpTip` component inherits dynamic behavior from its parent server page (which already uses `createClient()`). No additional `noStore()` call is needed.
 
 ---
 
@@ -282,4 +301,6 @@ The other 4 area keys (`client.wardrobe`, `client.rotation`, `client.billing`, `
 | Admin tooltips tab | `src/components/admin/help-tooltips-tab.tsx` (list + add/edit dialog) |
 | Admin articles tab | `src/components/admin/help-articles-tab.tsx` (list + add/edit dialog) |
 | HelpTip placements (5 files) | wardrobe, orders/new, rotations/new, billing, orders pages |
-| Nav link additions (3 files) | client layout, provider layout, admin sidebar |
+| Client nav | `src/components/client/client-nav.tsx` (add Help to NAV_LINKS) |
+| Provider layout | `src/app/(provider)/layout.tsx` (add inline Reference link) |
+| Admin layout | `src/app/(admin)/layout.tsx` (add Help Content to NAV_ITEMS) |
