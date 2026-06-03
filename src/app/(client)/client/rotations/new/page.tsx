@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { RotationRequestWizard } from '@/components/client/rotation-request-wizard'
 import { buttonVariants } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { HelpTip } from '@/components/help/help-tip'
 
 const REQUESTABLE_STATUSES = ['stored', 'cleaning_complete'] as const
 
@@ -49,7 +50,10 @@ export default async function NewRotationPage({
 
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground">Seasonal rotation</p>
-          <h1 className="font-serif text-3xl font-light mt-1">Request a delivery</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <h1 className="font-serif text-3xl font-light">Request a delivery</h1>
+            <HelpTip areaKey="client.rotation" />
+          </div>
           <p className="text-sm text-muted-foreground mt-2">
             Select items from your vault and we&apos;ll deliver them to your current residence.
           </p>

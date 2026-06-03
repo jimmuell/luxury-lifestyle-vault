@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { OnDemandRequestForm } from '@/components/client/on-demand-request-form'
 import { buttonVariants } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { HelpTip } from '@/components/help/help-tip'
 
 const REQUESTABLE_STATUSES = ['stored', 'cleaning_complete'] as const
 
@@ -60,7 +61,10 @@ export default async function NewOnDemandOrderPage() {
 
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground">On-demand request</p>
-          <h1 className="font-serif text-3xl font-light mt-1">Request an item</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <h1 className="font-serif text-3xl font-light">Request an item</h1>
+            <HelpTip areaKey="client.ondemand" />
+          </div>
           <p className="text-sm text-muted-foreground mt-2">
             Need something from your vault for an occasion? We&apos;ll have it ready for you.
           </p>

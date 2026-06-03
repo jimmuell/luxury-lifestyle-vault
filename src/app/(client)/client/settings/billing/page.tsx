@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { ExternalLink, FileText, CreditCard } from 'lucide-react'
+import { HelpTip } from '@/components/help/help-tip'
 
 export default async function BillingSettingsPage() {
   const supabase = await createClient()
@@ -36,6 +37,10 @@ export default async function BillingSettingsPage() {
 
   return (
     <div className="space-y-8">
+      <div className="flex items-center gap-2">
+        <h1 className="font-serif text-3xl font-light">Billing</h1>
+        <HelpTip areaKey="client.billing" />
+      </div>
       {/* Active subscription */}
       <div className="space-y-4">
         <h2 className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">Subscription</h2>

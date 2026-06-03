@@ -7,6 +7,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { WardrobeCatalogShell } from '@/components/client/wardrobe-catalog-shell'
 import { Plus } from 'lucide-react'
 import type { ItemCategory, ItemLocation } from '@/types/app'
+import { HelpTip } from '@/components/help/help-tip'
 
 const PAGE_SIZE = 48
 
@@ -72,7 +73,10 @@ export default async function WardrobePage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-serif text-3xl font-light">Wardrobe</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="font-serif text-3xl font-light">Wardrobe</h1>
+          <HelpTip areaKey="client.wardrobe" />
+        </div>
         <Link href="/client/wardrobe/intake" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
           <Plus className="h-4 w-4 mr-2" />
           Add item

@@ -8,6 +8,7 @@ import { ORDER_TYPE_LABELS } from '@/types/app'
 import type { OrderStatus, OrderType, ItemCategory } from '@/types/app'
 import { format, subDays, startOfYear } from 'date-fns'
 import { ArrowRight, Plus, RotateCcw, Zap, ChevronRight } from 'lucide-react'
+import { HelpTip } from '@/components/help/help-tip'
 import { cn } from '@/lib/utils'
 
 const PAGE_SIZE = 25
@@ -166,7 +167,10 @@ export default async function ClientOrdersPage({
     <div className="space-y-6 print:hidden">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="font-serif text-3xl font-light">Orders</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="font-serif text-3xl font-light">Orders</h1>
+          <HelpTip areaKey="client.returns" />
+        </div>
         <div className="flex items-center gap-3">
           <Link href="/client/rotations/new" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
             <RotateCcw className="h-4 w-4 mr-2" />
