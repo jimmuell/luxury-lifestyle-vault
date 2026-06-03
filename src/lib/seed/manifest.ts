@@ -1,3 +1,4 @@
+import { seedHelp } from './seed-help'
 import { seedProviders } from './seed-providers'
 import { seedClients } from './seed-clients'
 import { seedDemoAccounts } from './seed-demo-accounts'
@@ -84,5 +85,11 @@ export const SEED_MANIFEST: SeedScript[] = [
     name: 'Admin Audit Log',
     description: '15 audit log entries spanning 6 months of order lifecycle events plus client onboarding records.',
     script: seedAudit,
+  },
+  {
+    id: 'help',
+    name: 'Help Content',
+    description: '2 tooltips (client.ondemand, client.returns) + 2 articles (on-demand fulfillment + garment care stages). Proves the framework; other area keys intentionally empty.',
+    script: seedHelp,
   },
 ]
