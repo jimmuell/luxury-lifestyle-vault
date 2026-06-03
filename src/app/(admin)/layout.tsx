@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { LayoutGrid, Users, Package, Building2, MessageSquare, LogOut, FlaskConical, ShoppingBag, Settings, Route, CreditCard, BarChart2, ScrollText } from 'lucide-react'
+import { LayoutGrid, Users, Package, Building2, MessageSquare, LogOut, FlaskConical, ShoppingBag, Settings, Route, CreditCard, BarChart2, ScrollText, BookOpen } from 'lucide-react'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
+import { AuthWatcher } from '@/components/shared/auth-watcher'
 import { signOut } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { href: '/admin/settings/corridors', label: 'Corridors', icon: Route },
   { href: '/admin/settings/notifications', label: 'Notifications', icon: MessageSquare },
   { href: '/admin/seed-data', label: 'Seed Data', icon: FlaskConical },
+  { href: '/admin/help', label: 'Help Content', icon: BookOpen },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -73,6 +75,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </aside>
       <main className="flex-1 overflow-y-auto bg-background">
         <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-8">
+          <AuthWatcher />
           {children}
         </div>
       </main>
