@@ -1544,6 +1544,87 @@ export type Database = {
           }
         ]
       }
+      help_articles: {
+        Row: {
+          id: string
+          slug: string
+          category: string
+          title: string
+          body: string
+          area_key: string | null
+          audience: string
+          sort_order: number
+          is_published: boolean
+          is_seed_data: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          category: string
+          title: string
+          body: string
+          area_key?: string | null
+          audience?: string
+          sort_order?: number
+          is_published?: boolean
+          is_seed_data?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          category?: string
+          title?: string
+          body?: string
+          area_key?: string | null
+          audience?: string
+          sort_order?: number
+          is_published?: boolean
+          is_seed_data?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      help_tooltips: {
+        Row: {
+          id: string
+          area_key: string
+          title: string
+          body: string
+          linked_article_slug: string | null
+          is_published: boolean
+          is_seed_data: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          area_key: string
+          title: string
+          body: string
+          linked_article_slug?: string | null
+          is_published?: boolean
+          is_seed_data?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          area_key?: string
+          title?: string
+          body?: string
+          linked_article_slug?: string | null
+          is_published?: boolean
+          is_seed_data?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -131,3 +131,16 @@ export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 // Statuses where a client can cancel their own order
 export const CLIENT_CANCELLABLE_STATUSES: OrderStatus[] = ['requested', 'confirmed']
+
+export type HelpTooltip = Database['public']['Tables']['help_tooltips']['Row']
+export type HelpArticle = Database['public']['Tables']['help_articles']['Row']
+
+export const HELP_CATEGORY_LABELS: Record<string, string> = {
+  getting_started: 'Getting Started',
+  rotations: 'Seasonal Rotations',
+  on_demand: 'On-Demand',
+  billing: 'Billing',
+  returns: 'Returns',
+  coverage: 'Coverage & Care',
+  provider: 'Provider Reference',
+}
