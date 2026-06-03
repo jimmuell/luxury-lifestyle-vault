@@ -17,6 +17,9 @@ export function HelpTipPopover({ title, body, linkedArticleSlug }: HelpTipPopove
       <PopoverTrigger
         className="text-muted-foreground hover:text-foreground transition-colors"
         aria-label={`Help: ${title}`}
+        openOnHover
+        delay={120}
+        closeDelay={300}
       >
         <HelpCircle className="h-4 w-4" />
       </PopoverTrigger>
