@@ -62,9 +62,6 @@ export default async function AdminItemDetailPage({
 
   const clientName = item.profiles?.full_name ?? item.profiles?.email ?? 'Unknown client'
 
-  const makeUpdateFn = (field: Parameters<typeof adminUpdateItem>[1]) =>
-    async (value: string) => adminUpdateItem(id, field, value)
-
   return (
     <div className="space-y-8 max-w-5xl">
       {/* Back + header */}
@@ -155,31 +152,31 @@ export default async function AdminItemDetailPage({
               <ItemFieldEditor
                 label="Name"
                 value={item.name}
-                onSave={makeUpdateFn('name')}
+                onSave={adminUpdateItem.bind(null, id, 'name')}
                 placeholder="Item name"
               />
               <ItemFieldEditor
                 label="Brand"
                 value={item.brand}
-                onSave={makeUpdateFn('brand')}
+                onSave={adminUpdateItem.bind(null, id, 'brand')}
                 placeholder="Brand"
               />
               <ItemFieldEditor
                 label="Color"
                 value={item.color}
-                onSave={makeUpdateFn('color')}
+                onSave={adminUpdateItem.bind(null, id, 'color')}
                 placeholder="Primary color"
               />
               <ItemFieldEditor
                 label="Size"
                 value={item.size}
-                onSave={makeUpdateFn('size')}
+                onSave={adminUpdateItem.bind(null, id, 'size')}
                 placeholder="Size / fit"
               />
               <ItemFieldEditor
                 label="Material"
                 value={item.material}
-                onSave={makeUpdateFn('material')}
+                onSave={adminUpdateItem.bind(null, id, 'material')}
                 placeholder="Fabric / material"
               />
               <div className="space-y-1.5">
@@ -191,14 +188,14 @@ export default async function AdminItemDetailPage({
             <ItemFieldEditor
               label="Description"
               value={item.description}
-              onSave={makeUpdateFn('description')}
+              onSave={adminUpdateItem.bind(null, id, 'description')}
               multiline
               placeholder="Item description"
             />
             <ItemFieldEditor
               label="Care Instructions"
               value={item.care_instructions}
-              onSave={makeUpdateFn('care_instructions')}
+              onSave={adminUpdateItem.bind(null, id, 'care_instructions')}
               multiline
               placeholder="Care notes"
             />
@@ -215,13 +212,13 @@ export default async function AdminItemDetailPage({
             <ItemFieldEditor
               label="Location Notes"
               value={item.location_label}
-              onSave={makeUpdateFn('location_label')}
+              onSave={adminUpdateItem.bind(null, id, 'location_label')}
               placeholder="e.g. master bedroom closet, Rack A-12"
             />
             <ItemFieldEditor
               label="Internal Notes"
               value={item.internal_notes}
-              onSave={makeUpdateFn('internal_notes')}
+              onSave={adminUpdateItem.bind(null, id, 'internal_notes')}
               multiline
               placeholder="Internal staff notes (not visible to client)"
             />
