@@ -1,7 +1,11 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { LogOut } from 'lucide-react'
 import { AuthWatcher } from '@/components/shared/auth-watcher'
+import { ProviderNav } from '@/components/provider/provider-nav'
+import { signOut } from '@/actions/auth'
+import { Button } from '@/components/ui/button'
 
 export default async function ProviderLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -21,18 +25,29 @@ export default async function ProviderLayout({ children }: { children: React.Rea
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-8">
-        <AuthWatcher />
-        <div className="flex items-center justify-end mb-6">
+      <header className="border-b border-border">
+        <div className="max-w-screen-xl mx-auto px-6 md:px-12 flex items-center justify-between h-14">
           <Link
-            href="/provider/help"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            href="/provider"
+            className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground hover:text-foreground transition-colors"
           >
-            Reference guide
+            Luxury Lifestyle Vault
           </Link>
+          <ProviderNav />
+          <form action={signOut}>
+            <Button variant="ghost" size="sm" type="submit" className="gap-2 text-muted-foreground">
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </Button>
+          </form>
         </div>
-        {children}
-      </div>
+      </header>
+      <main>
+        <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-8">
+          <AuthWatcher />
+          {children}
+        </div>
+      </main>
     </div>
   )
 }

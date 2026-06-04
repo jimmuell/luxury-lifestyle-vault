@@ -1,7 +1,4 @@
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { buttonVariants } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
 
 export default async function ProviderHelpPage() {
   const supabase = await createClient()
@@ -15,18 +12,12 @@ export default async function ProviderHelpPage() {
 
   return (
     <div className="max-w-2xl space-y-8">
-      <div className="space-y-4">
-        <Link href="/provider" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Link>
-        <div>
-          <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground">Reference</p>
-          <h1 className="font-serif text-3xl font-light mt-1">Handling Protocols</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Stage definitions and care standards for Luxury Lifestyle Vault garments.
-          </p>
-        </div>
+      <div>
+        <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground">Reference</p>
+        <h1 className="font-serif text-3xl font-light mt-1">Handling Protocols</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Stage definitions and care standards for Luxury Lifestyle Vault garments.
+        </p>
       </div>
 
       {(articles ?? []).length === 0 ? (
