@@ -1,0 +1,72 @@
+diff --git a/node_modules/next/dist/bin/next b/node_modules/next/dist/bin/next
+index f55cb6c..f324a2b 100755
+--- a/node_modules/next/dist/bin/next
++++ b/node_modules/next/dist/bin/next
+@@ -11,7 +11,8 @@ const _picocolors = require("../lib/picocolors");
+ const _formatclihelpoutput = require("../lib/format-cli-help-output");
+ const _constants = require("../lib/constants");
+ const _utils = require("../server/lib/utils");
+-const _nexttest = require("../cli/next-test.js");
++const _nexttestStub = { SUPPORTED_TEST_RUNNERS_LIST: ["playwright"], nextTest: ()=>{ return require("../cli/next-test.js").nextTest(...arguments); } };
++const _nexttest = _nexttestStub;
+ function _interop_require_default(obj) {
+     return obj && obj.__esModule ? obj : {
+         default: obj
+@@ -175,7 +176,7 @@ program.command('upgrade').description('Upgrade Next.js apps to desired versions
+     const mod = await import('../cli/next-upgrade.js');
+     mod.spawnNextUpgrade(directory, options);
+ });
+-program.command('experimental-test').description(`Execute \`next/experimental/testmode\` tests using a specified test runner. The test runner defaults to 'playwright' if the \`experimental.defaultTestRunner\` configuration option or the \`--test-runner\` option are not set.`).argument('[directory]', `A Next.js project directory to execute the test runner on. ${(0, _picocolors.italic)('If no directory is provided, the current directory will be used.')}`).argument('[test-runner-args...]', 'Any additional arguments or options to pass down to the test runner `test` command.').option('--test-runner [test-runner]', `Any supported test runner. Options: ${(0, _picocolors.bold)(_nexttest.SUPPORTED_TEST_RUNNERS_LIST.join(', '))}. ${(0, _picocolors.italic)("If no test runner is provided, the Next.js config option `experimental.defaultTestRunner`, or 'playwright' will be used.")}`).allowUnknownOption().action((directory, testRunnerArgs, options)=>{
++program.command('experimental-test').description(`Execute \`next/experimental/testmode\` tests using a specified test runner. The test runner defaults to 'playwright' if the \`experimental.defaultTestRunner\` configuration option or the \`--test-runner\` option are not set.`).argument('[directory]', `A Next.js project directory to execute the test runner on. ${(0, _picocolors.italic)('If no directory is provided, the current directory will be used.')}`).argument('[test-runner-args...]', 'Any additional arguments or options to pass down to the test runner `test` command.').option('--test-runner [test-runner]', `Any supported test runner. Options: ${(0, _picocolors.bold)((_nexttest.SUPPORTED_TEST_RUNNERS_LIST||[]).join(', '))}. ${(0, _picocolors.italic)("If no test runner is provided, the Next.js config option `experimental.defaultTestRunner`, or 'playwright' will be used.")}`).allowUnknownOption().action((directory, testRunnerArgs, options)=>{
+     return import('../cli/next-test.js').then((mod)=>{
+         mod.nextTest(directory, testRunnerArgs, options);
+     });
+diff --git a/node_modules/next/dist/server/dev/hot-reloader-shared-utils.js b/node_modules/next/dist/server/dev/hot-reloader-shared-utils.js
+index cb12156..ac2d746 100644
+--- a/node_modules/next/dist/server/dev/hot-reloader-shared-utils.js
++++ b/node_modules/next/dist/server/dev/hot-reloader-shared-utils.js
+@@ -30,7 +30,7 @@ async function getVersionInfo() {
+         let res;
+         try {
+             // use NPM registry regardless user using Yarn
+-            res = await fetch('https://registry.npmjs.org/-/package/next/dist-tags');
++            const _vc = new AbortController(); const _vt = setTimeout(() => _vc.abort(), 5000); res = await fetch('https://registry.npmjs.org/-/package/next/dist-tags', { signal: _vc.signal }).finally(() => clearTimeout(_vt));
+         } catch  {
+         // ignore fetch errors
+         }
+diff --git a/node_modules/next/dist/server/dev/hot-reloader-turbopack.js b/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+index 3eec722..26a1997 100644
+--- a/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
++++ b/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+@@ -52,11 +52,11 @@ const _devtoolsconfigmiddleware = require("../../next-devtools/server/devtools-c
+ const _attachnodejsdebuggermiddleware = require("../../next-devtools/server/attach-nodejs-debugger-middleware");
+ const _debugchannel = require("./debug-channel");
+ const _hotreloadersharedutils = require("./hot-reloader-shared-utils");
+-const _getmcpmiddleware = require("../mcp/get-mcp-middleware");
+-const _geterrors = require("../mcp/tools/get-errors");
+-const _getpagemetadata = require("../mcp/tools/get-page-metadata");
+-const _formaterrors = require("../mcp/tools/utils/format-errors");
+-const _mcptelemetrytracker = require("../mcp/mcp-telemetry-tracker");
++const _getmcpmiddleware = { getMcpMiddleware: () => ((_req, _res, next) => next ? next() : undefined) };
++const _geterrors = { handleErrorStateResponse: () => {} };
++const _getpagemetadata = { handlePageMetadataResponse: () => {} };
++const _formaterrors = { setStackFrameResolver: () => {} };
++const _mcptelemetrytracker = { recordMcpTelemetry: () => {} };
+ const _filelogger = require("./browser-logs/file-logger");
+ const _serializederrors = require("./serialized-errors");
+ function _interop_require_default(obj) {
+diff --git a/node_modules/next/dist/server/dev/on-demand-entry-handler.js b/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+index 1dd8cb9..ac3adcd 100644
+--- a/node_modules/next/dist/server/dev/on-demand-entry-handler.js
++++ b/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+@@ -71,8 +71,8 @@ const _batcher = require("../../lib/batcher");
+ const _apppaths = require("../../shared/lib/router/utils/app-paths");
+ const _pagetypes = require("../../lib/page-types");
+ const _flightdatahelpers = require("../../client/flight-data-helpers");
+-const _geterrors = require("../mcp/tools/get-errors");
+-const _getpagemetadata = require("../mcp/tools/get-page-metadata");
++const _geterrors = { handleErrorStateResponse: () => {} };
++const _getpagemetadata = { handlePageMetadataResponse: () => {} };
+ function _interop_require_default(obj) {
+     return obj && obj.__esModule ? obj : {
+         default: obj
