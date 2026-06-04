@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { LayoutGrid, Users, Package, Building2, MessageSquare, LogOut, FlaskConical, ShoppingBag, Settings, Route, CreditCard, BarChart2, ScrollText, BookOpen } from 'lucide-react'
+import { LayoutGrid, Users, Package, Building2, MessageSquare, LogOut, FlaskConical, ShoppingBag, Settings, Route, CreditCard, BarChart2, ScrollText, BookOpen, Mail } from 'lucide-react'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { AuthWatcher } from '@/components/shared/auth-watcher'
 import { signOut } from '@/actions/auth'
@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { href: '/admin/settings/notifications', label: 'Notifications', icon: MessageSquare },
   { href: '/admin/seed-data', label: 'Seed Data', icon: FlaskConical },
   { href: '/admin/help', label: 'Help Content', icon: BookOpen },
+  { href: '/admin/email', label: 'Email', icon: Mail },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
