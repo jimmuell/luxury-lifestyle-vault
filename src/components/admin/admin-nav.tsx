@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useSyncExternalStore, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Collapsible } from '@base-ui/react/collapsible'
@@ -62,19 +62,41 @@ const COLLAPSIBLE_LABELS = NAV_GROUPS
 
 const LS_KEY = 'llv.adminNav.collapsed'
 
-function readCollapsedFromStorage(): Set<string> {
-  if (typeof window === 'undefined') return new Set()
-  try {
-    const stored = localStorage.getItem(LS_KEY)
-    if (stored) return new Set(JSON.parse(stored) as string[])
-  } catch {}
-  return new Set()
+const storeListeners = new Set<() => void>()
+
+function emitChange() {
+  storeListeners.forEach(l => l())
 }
 
-function writeCollapsedToStorage(collapsed: Set<string>) {
+function subscribe(cb: () => void) {
+  storeListeners.add(cb)
+  if (typeof window !== 'undefined') window.addEventListener('storage', cb)
+  return () => {
+    storeListeners.delete(cb)
+    if (typeof window !== 'undefined') window.removeEventListener('storage', cb)
+  }
+}
+
+// Snapshot returns the raw stored string, not a new object — useSyncExternalStore
+// compares with Object.is, so returning a fresh Set/array every call would loop.
+function getSnapshot(): string {
+  if (typeof window === 'undefined') return ''
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify([...collapsed]))
+    return localStorage.getItem(LS_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function getServerSnapshot(): string {
+  return ''
+}
+
+function setCollapsedInStorage(next: Set<string>) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify([...next]))
   } catch {}
+  emitChange() // same-tab notify — native 'storage' event only fires in other tabs
 }
 
 function getActiveGroupLabel(pathname: string): string | null {
@@ -95,10 +117,16 @@ function getActiveGroupLabel(pathname: string): string | null {
 export function AdminNav() {
   const pathname = usePathname()
 
-  // Lazy initializer reads localStorage on client; returns empty set on server.
-  // React may re-render on hydration if stored state differs from server HTML —
-  // acceptable for an authenticated admin nav (no SEO or security concern).
-  const [collapsed, setCollapsed] = useState<Set<string>>(readCollapsedFromStorage)
+  const storedRaw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+
+  const collapsed = useMemo<Set<string>>(() => {
+    if (!storedRaw) return new Set()
+    try {
+      return new Set(JSON.parse(storedRaw) as string[])
+    } catch {
+      return new Set()
+    }
+  }, [storedRaw])
 
   const activeLabel = getActiveGroupLabel(pathname)
 
@@ -110,18 +138,14 @@ export function AdminNav() {
   }, [collapsed, activeLabel])
 
   function toggle(label: string) {
-    setCollapsed(prev => {
-      const next = new Set(prev)
-      // Never collapse the active group — clicking its header does nothing
-      if (label === activeLabel) return prev
-      if (next.has(label)) {
-        next.delete(label)
-      } else {
-        next.add(label)
-      }
-      writeCollapsedToStorage(next)
-      return next
-    })
+    if (label === activeLabel) return // never collapse the active group
+    const next = new Set(collapsed)
+    if (next.has(label)) {
+      next.delete(label)
+    } else {
+      next.add(label)
+    }
+    setCollapsedInStorage(next)
   }
 
   const linkClass =
