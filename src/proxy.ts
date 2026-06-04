@@ -11,7 +11,7 @@ const ROLE_PREFIXES = {
 
 const PUBLIC_PREFIXES = ['/auth', '/api/webhooks', '/api/inngest']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) {
@@ -46,7 +46,12 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
+    const redirectResponse = NextResponse.redirect(new URL('/auth/login', request.url))
+    // Clear stale session cookies so an invalid refresh token doesn't loop
+    request.cookies.getAll().forEach(({ name }) => {
+      if (name.startsWith('sb-')) redirectResponse.cookies.delete(name)
+    })
+    return redirectResponse
   }
 
   const { data: profile } = await supabase

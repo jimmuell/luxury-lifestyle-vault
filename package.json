@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "verify": "eslint && tsc --noEmit"
+    "verify": "eslint && tsc --noEmit",
+    "postinstall": "node scripts/patch-next-bin.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",
@@ -18,10 +19,11 @@
     "@stripe/stripe-js": "^9.6.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
+    "chalk": "^5.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "date-fns": "^4.3.0",
+    "date-fns": "^4.4.0",
     "heic2any": "^0.0.4",
     "inngest": "^4.4.0",
     "lucide-react": "^1.16.0",
@@ -47,6 +49,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "patch-package": "^8.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

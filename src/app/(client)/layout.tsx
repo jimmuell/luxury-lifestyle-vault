@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ClientNav } from '@/components/client/client-nav'
 import { NotificationBell } from '@/components/client/notification-bell'
+import { AuthWatcher } from '@/components/shared/auth-watcher'
 
 export default async function ClientLayout({
   children,
@@ -41,6 +42,7 @@ export default async function ClientLayout({
               profileId={user.id}
             />
           </div>
+          <AuthWatcher />
           {children}
         </div>
       </main>
