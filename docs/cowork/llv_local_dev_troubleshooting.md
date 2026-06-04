@@ -24,6 +24,30 @@ npm run dev                                     # YOU are the only one running t
 
 ---
 
+## Update (2026-06-04) — durable fix landed + QA browser
+
+**The recurring corrupted-`node_modules` issue now has a durable fix.** The Next patches that used to be written into `node_modules` in-place by `scripts/patch-next-bin.js` are now a **version-pinned `patch-package` patch** (`patches/next+16.2.6.patch`, applied automatically via `"postinstall": "patch-package"`; rationale in `patches/README.md`). The old in-place script is deleted. A clean `rm -rf node_modules && npm install` now re-applies the patches cleanly and idempotently — no more half-applied/corrupted state — and a Next version bump surfaces a loud `patch-package` warning instead of silently breaking. **Never hand-edit `node_modules`; edit the patch instead (`npx patch-package next` after changing the files, then commit `patches/`).**
+
+**Ctrl+C won't kill the server?** Ctrl+C only stops the foreground server in that terminal — if Claude Code is holding it in another shell, force-kill by port:
+
+```bash
+lsof -ti:3000 | xargs kill -9
+pkill -f next-server; pkill -f "next dev"
+lsof -i:3000           # should print nothing, then `npm run dev` fresh
+```
+
+## Local browser QA — use Brave, not Chrome
+
+Browser-driven QA against `http://localhost:3000` must use the **Brave** browser, not Chrome.
+
+- The founder's **Chrome profiles block `localhost`** (Chrome error page) — a **synced extension** intercepts the `localhost` origin (ruled out: HSTS, service worker, cached site data). Incognito works (extensions off) but can't be automated.
+- **`127.0.0.1` is not a substitute** for logged-in testing: pages load, but the **Supabase auth session only sticks on the `localhost` origin**, so login won't hold on `127.0.0.1`.
+- **Brave** (clean, no blocking extension) loads `localhost` and holds the session — it's the working QA browser, with the Claude in Chrome extension installed.
+- Quick-login note: the dropdown fills email/password via a React `onChange` that browser automation doesn't fire — automation should set the inputs directly (native-setter + `input` event) or type the creds. Demo creds: `demo.admin@llv.dev` / `demo1234`, `demo.client@llv.dev` / `demo1234`; seeded clients/providers use `TestLLV2026!`.
+- *Durable fix for the Chrome block (not yet done): binary-search-disable Chrome extensions to find the culprit (ad-blocker / privacy / VPN likeliest), then allow-list `localhost`.*
+
+---
+
 ## Symptoms we've seen
 
 - `next dev` reaches `✓ Ready` then **exits back to the shell prompt** (no stack trace) — it was *killed*, not crashed.
