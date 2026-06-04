@@ -40,3 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 *.bak
+
+# editor/agent local config (per-developer AI tool state, not shared project config)
+.agents/
+.claude/
+.continue/
+.junie/
+.kiro/
+skills-lock.json
