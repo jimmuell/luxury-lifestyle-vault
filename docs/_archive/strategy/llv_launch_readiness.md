@@ -29,8 +29,8 @@ This document tracks everything between the current state — a launch-ready pla
 
 Each item below has a working assumption built into the platform. The platform will run on these assumptions; updating any of them is a configuration change (admin panel or DB), not a code change. See `docs/strategy/llv_business_strategy_assumptions_register.docx` for the full register including platform-impact assessments and timelines.
 
-- **Item 1 — Wisconsin providers.** Research needed. Working assumption: 1–3 premium WI providers onboarded via admin panel.
-- **Item 2 — Pricing validation.** Assumptions built in (Tier 1 $249/mo, Tier 2 $449/mo, Tier 3 $75 base + $15/item, 20% founding-member discount). Requires competitive + provider-cost analysis to validate; all values editable via the admin pricing configuration.
+- **Item 1 — Wisconsin providers.** ✅ Research complete (June 1, 2026) — shortlist in `docs/strategy/llv_wisconsin_providers_research.md` (lead: Martinizing; secondary: Klinke; specialist: The London Cleaners). Outreach kit ready (`docs/cowork/llv_wisconsin_provider_outreach_kit.md`). Remaining: outreach calls → sign 1 primary + 1 secondary → load into admin. Working assumption: 1–3 premium WI providers onboarded via admin panel.
+- **Item 2 — Pricing validation.** Live platform config (verified in QA June 1, 2026): **Seasonal Essentials (Tier 1) $299/mo, Seasonal Premier (Tier 2) $599/mo, On-Demand Occasion (Tier 3) $75 base + per-item surcharge, 20% founding-member discount.** *(Note: the original working assumption was $249/$449; the deployed tiers are $299/$599 — treat $299/$599 as current. Per-item surcharge: confirm the live value in admin — QA observed an effective ≈$28/item after discount.)* Still requires competitive + provider-cost analysis to validate; all values editable via the admin pricing configuration.
 - **Item 3 — Provider terms.** Conversations needed with RAVE FabriCARE, European Couture Cleaners, and prospective WI providers. Working assumption: retail pricing initially, no revenue share; providers are vendors, LLV owns the client relationship.
 - **Item 4 — Insurance.** Bailee coverage broker consultation needed. Working assumption: general liability + bailee, $5K per item / $50K per client caps; insurable evidence (item values, condition records) is already captured.
 - **Item 5 — Daughter's role.** Family conversation needed. Working assumption: AZ Corridor Manager, $1,500–$2,500/month stipend, equity deferred. Role-based access already supports multiple admins.
@@ -55,8 +55,10 @@ Concrete actions between today and October 2026 launch. Group by owner so the fo
 
 ### Provider network
 
-- [ ] **Sign WI provider(s)** — Research + qualify + contract 1–3 premium garment-care providers in Brookfield/Milwaukee (Item 1, Item 3).
-- [ ] **Confirm AZ provider(s)** — RAVE FabriCARE (top priority), European Couture Cleaners, Mastel Dry Cleaning. Walk through the provider portal with each (Item 3).
+- [x] **Research WI providers** — ✅ Done June 1, 2026. Shortlist + rationale in `docs/strategy/llv_wisconsin_providers_research.md`; outreach email + call script + one-page proposal in `docs/cowork/llv_wisconsin_provider_outreach_kit.md` (Item 1).
+- [ ] **Outreach calls to WI shortlist** — Call Martinizing (lead) + Klinke (secondary), then The London Cleaners. Use the outreach kit to confirm capacity, B2B terms, insurance, and pickup/delivery (Item 1, Item 3).
+- [ ] **Sign WI provider(s)** — Contract 1 primary + 1 secondary in Brookfield/Milwaukee after the calls (Item 1, Item 3).
+- [ ] **Confirm AZ provider(s)** — RAVE FabriCARE (top priority), European Couture Cleaners, Mastel Dry Cleaning. Walk through the provider portal with each (Item 3). *(An AZ outreach kit can be mirrored from the WI one on request.)*
 - [ ] **Load real provider data into admin** — Once contracts are signed, replace any demo provider rows with real ones via the admin Provider CRUD. Assign corridor roles via the corridor management surface.
 
 ### Pricing & service definitions

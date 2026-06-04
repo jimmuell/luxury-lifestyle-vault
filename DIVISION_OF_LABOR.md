@@ -4,7 +4,7 @@
 
 This document defines the roles and responsibilities between the two Claude instances working on the Luxury Lifestyle Vault (LLV) project. Both serve the same founder but operate in different environments with different strengths. This document should be read by any Claude instance before starting work to avoid duplication, scope confusion, or conflicting outputs.
 
-**This was previously a three-tool model** (Claude Chat + Cowork + Code). As of May 30, 2026, Cowork has absorbed Claude Chat's responsibilities — web research, strategic writing, and architecture decisions — into its scope. Cowork has direct web search capability and direct file system access in the project folder, which removed most of the original justification for keeping Chat as a distinct active role. Chat remains available as an optional escalation channel (see "When to use Claude Chat" near the bottom).
+**This is a two-tool model** (in effect since May 30, 2026): **Claude Cowork** and **Claude Code** are the two active instances. Cowork owns strategy, research, documents/coordination, Code-prompt authoring, and browser-driven QA; Claude Code owns engineering, implementation, DevOps, and git. Cowork has direct web search and direct file-system access to the project folder, so it absorbed the research, strategic-writing, and architecture responsibilities that were previously split out to Claude Chat. **Claude Chat is optional backup only** — not part of the daily workflow — useful for a clean-room second opinion or for thinking through something away from the Mac (see "When to use Claude Chat" near the bottom).
 
 ---
 
@@ -12,7 +12,7 @@ This document defines the roles and responsibilities between the two Claude inst
 
 **Environment:** Claude Desktop app with full read/write access to the local LLV project folder on the founder's computer. Has direct web search via WebSearch and a sandboxed Linux shell for running ad-hoc commands.
 
-**Role:** Strategic advisor, document owner, project coordinator, researcher, and bridge to engineering.
+**Role:** Strategic advisor, document owner, project coordinator, researcher, QA driver, and bridge to engineering.
 
 ### Setup
 
@@ -40,6 +40,12 @@ Create a Cowork session pointed at the local LLV project folder (`~/Documents/Cl
 - Spreadsheet work — build and maintain budget spreadsheets, pricing models, provider comparison matrices, timeline trackers, and client tracking sheets.
 - Provider outreach materials — draft emails, proposals, and partnership term sheets for approaching RAVE FabriCARE, European Couture Cleaners, and Wisconsin providers.
 - Operational checklists — create pre-launch checklists, onboarding workflows, quality control protocols, and standard operating procedures.
+
+**Quality assurance:**
+
+- Browser-driven QA — drive the live deployment in a connected browser session to execute the platform test plan end-to-end, walk client/provider/admin journeys, and reproduce reported issues.
+- Bug triage — capture failures, diagnose likely root cause, and turn each into a Code prompt with verification steps; re-verify fixes on the live deployment after Code ships them.
+- External-dashboard verifications that must be founder-run (Stripe, Resend, Inngest) are flagged for the founder; Cowork records the outcomes.
 
 **Bridge to engineering:**
 
@@ -229,5 +235,5 @@ Cowork is allowed (and encouraged) to suggest escalating to Chat when one of the
 
 ---
 
-*Last updated: May 30, 2026 — restructured from three-tool to two-tool model after Cowork absorbed the research and strategy responsibilities previously held by Claude Chat.*
+*Last updated: June 3, 2026 — ratified the two-tool model (Cowork + Code; Chat optional backup). Added browser-driven QA and bug triage to Cowork's responsibilities, reflecting how the Sections 2–13 QA run was actually executed.*
 *This document should be updated whenever roles, responsibilities, or workflows change.*

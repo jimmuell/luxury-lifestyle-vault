@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Luxury Lifestyle Vault — Brochure 2026</title>
+<style>
+  /* ---- Brand tokens (Obsidian & Ivory + gold) ---- */
+  :root{
+    --obsidian:#0A0A0A;
+    --ivory:#F8F4EE;
+    --mist:#E8E4DE;
+    --stone:#6B6B6B;
+    --gold:#C9A96E;
+    --card:#FFFFFF;
+    --border:#E0DACE;
+  }
+
+  @page { size: Letter; margin: 0; }
+
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  html,body{ margin:0; padding:0; }
+
+  body{
+    font-family: "Inter","Helvetica Neue",Arial,sans-serif;
+    color:var(--obsidian);
+    background:var(--ivory);
+    font-size:10.5px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .serif{ font-family:"Cormorant Garamond","Georgia",serif; }
+
+  .page{
+    position:relative;
+    width:8.5in;
+    height:11in;
+    padding:0.7in 0.75in;
+    background:var(--ivory);
+    overflow:hidden;
+    page-break-after:always;
+  }
+  .page:last-child{ page-break-after:auto; }
+
+  .eyebrow{
+    font-size:8px;
+    letter-spacing:0.32em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:600;
+    margin:0 0 10px;
+  }
+  .section-label{
+    font-size:8px;
+    letter-spacing:0.30em;
+    text-transform:uppercase;
+    color:var(--stone);
+    font-weight:600;
+    margin:0 0 6px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-label::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--border);
+  }
+
+  /* ---- Page 1 hero ---- */
+  .brand{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--border);
+    padding-bottom:14px;
+  }
+  h1.title{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-weight:400;
+    font-size:38px;
+    line-height:1.02;
+    margin:0;
+    letter-spacing:0.01em;
+  }
+  .monogram{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-size:24px;
+    letter-spacing:0.18em;
+    color:var(--gold);
+    font-weight:500;
+  }
+  .tagline{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-style:italic;
+    font-size:17px;
+    color:var(--stone);
+    margin:8px 0 0;
+  }
+  .lede{
+    font-size:11.5px;
+    line-height:1.65;
+    margin:14px 0 0;
+    max-width:6.0in;
+  }
+
+  .block{ margin-top:20px; }
+  .block p{ margin:0 0 8px; }
+  .block h2{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-weight:500;
+    font-size:18px;
+    margin:0 0 6px;
+  }
+  .pull{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-style:italic;
+    font-size:15px;
+    color:var(--obsidian);
+    border-left:2px solid var(--gold);
+    padding-left:12px;
+    margin:10px 0 0;
+  }
+
+  /* ---- Stats ---- */
+  .stats{
+    display:flex;
+    gap:0;
+    margin-top:10px;
+    border:1px solid var(--border);
+    background:var(--card);
+  }
+  .stat{
+    flex:1;
+    padding:14px 14px;
+    border-right:1px solid var(--border);
+  }
+  .stat:last-child{ border-right:none; }
+  .stat .num{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-size:26px;
+    color:var(--gold);
+    line-height:1;
+    font-weight:500;
+  }
+  .stat .cap{
+    font-size:8.5px;
+    color:var(--stone);
+    margin-top:6px;
+    line-height:1.4;
+  }
+  .proof-note{
+    font-size:9px;
+    color:var(--stone);
+    margin-top:8px;
+  }
+
+  /* ---- How it works ---- */
+  .steps{
+    display:flex;
+    gap:12px;
+    margin-top:10px;
+  }
+  .step{
+    flex:1;
+  }
+  .step .n{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-size:20px;
+    color:var(--gold);
+    border-bottom:1px solid var(--border);
+    padding-bottom:4px;
+    margin-bottom:6px;
+    display:block;
+  }
+  .step .t{
+    font-size:10px;
+    font-weight:600;
+    margin-bottom:3px;
+  }
+  .step .d{
+    font-size:9px;
+    color:var(--stone);
+    line-height:1.45;
+  }
+
+  /* ---- Page 2 tiers ---- */
+  .tiers{
+    display:flex;
+    gap:12px;
+    margin-top:12px;
+  }
+  .tier{
+    flex:1;
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:16px 14px 14px;
+  }
+  .tier.feature{
+    border:1px solid var(--gold);
+  }
+  .tier .tno{
+    font-size:8px;
+    letter-spacing:0.26em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:600;
+  }
+  .tier h3{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-weight:500;
+    font-size:17px;
+    margin:4px 0 8px;
+    line-height:1.15;
+    min-height:2.4em;
+  }
+  .tier .desc{
+    font-size:9.5px;
+    color:var(--stone);
+    line-height:1.5;
+    min-height:4.4em;
+  }
+  .tier .price{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-size:22px;
+    margin-top:12px;
+    padding-top:10px;
+    border-top:1px solid var(--border);
+    font-weight:500;
+  }
+  .tier .price small{ font-size:11px; color:var(--stone); }
+  .tier .diff{
+    font-size:8.5px;
+    color:var(--gold);
+    font-weight:600;
+    margin-top:6px;
+    letter-spacing:0.02em;
+  }
+
+  .founding{
+    margin-top:14px;
+    text-align:center;
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-style:italic;
+    font-size:13px;
+    color:var(--obsidian);
+  }
+
+  .custody{
+    margin-top:16px;
+    background:var(--mist);
+    border-left:2px solid var(--gold);
+    padding:12px 14px;
+  }
+  .custody .h{
+    font-size:10px;
+    font-weight:700;
+    margin-bottom:3px;
+  }
+  .custody .b{
+    font-size:9.5px;
+    color:#4a4a4a;
+    line-height:1.5;
+  }
+
+  .madefor{
+    margin-top:14px;
+    font-size:9.5px;
+    text-align:center;
+    color:var(--stone);
+  }
+  .madefor strong{ color:var(--obsidian); font-weight:600; }
+
+  /* ---- CTA band ---- */
+  .cta{
+    margin-top:16px;
+    background:var(--obsidian);
+    color:var(--ivory);
+    padding:22px 24px;
+    text-align:center;
+  }
+  .cta h2{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-weight:400;
+    font-size:24px;
+    margin:0 0 8px;
+  }
+  .cta p{
+    font-size:10px;
+    color:#cfc8ba;
+    max-width:5.3in;
+    margin:0 auto 14px;
+    line-height:1.55;
+  }
+  .cta .inquire{
+    display:inline-block;
+    border:1px solid var(--gold);
+    color:var(--gold);
+    padding:8px 20px;
+    font-size:9px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    font-weight:600;
+  }
+
+  .footer{
+    position:absolute;
+    left:0.75in;
+    right:0.75in;
+    bottom:0.45in;
+    border-top:1px solid var(--border);
+    padding-top:8px;
+    font-size:7.5px;
+    color:var(--stone);
+    line-height:1.5;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page">
+  <p class="eyebrow">Luxury Wardrobe Logistics</p>
+
+  <div class="brand">
+    <div>
+      <h1 class="title serif">Luxury Lifestyle Vault</h1>
+      <p class="tagline">Your Lifestyle, Wherever Life Takes You.</p>
+    </div>
+    <div class="monogram">LLV</div>
+  </div>
+
+  <p class="lede">A managed concierge platform that stores, cares for, moves, and protects luxury
+  wardrobes for affluent households living across more than one home.</p>
+
+  <div class="block">
+    <p class="section-label">The Opportunity</p>
+    <p>Affluent households increasingly live across two or more residences and own wardrobes worth
+    tens or hundreds of thousands of dollars — designer apparel, handbags, watches, fine accessories.
+    Yet there is no trusted way to store, move, and manage those assets across homes. Seasonal moves
+    are done by hand: slow, stressful, and risky. Pieces are forgotten, damaged, or never worn — and
+    there is no simple path to protect or eventually monetize them.</p>
+  </div>
+
+  <div class="block">
+    <p class="section-label">The Concept</p>
+    <p>Luxury Lifestyle Vault is the concierge layer for that entire lifecycle. We take custody of a
+    client's wardrobe — cataloged, photographed, climate-controlled, and insured — and handle
+    everything around it: seasonal rotation between residences, white-glove delivery, and on-demand
+    fulfillment of any specific piece for any occasion, anywhere. We own the custody and the digital
+    record; we partner with vetted premium providers for cleaning and transport.</p>
+    <p class="pull">Arrive at every home to a wardrobe that is already cleaned, pressed, organized — and waiting.</p>
+  </div>
+
+  <div class="block">
+    <p class="section-label">A Proven Behavior, at Scale</p>
+    <div class="stats">
+      <div class="stat"><div class="num">$2.4B+</div><div class="cap">luxury goods moving through a single resale platform in a year</div></div>
+      <div class="stat"><div class="num">1M+</div><div class="cap">affluent buyers already trusting third parties with luxury assets</div></div>
+      <div class="stat"><div class="num">+24%</div><div class="cap">year-over-year growth in that market</div></div>
+    </div>
+    <p class="proof-note">Affluent consumers already ship, trust, and transact high-value luxury goods
+    through third parties. Luxury Lifestyle Vault serves the ownership and stewardship stage that comes
+    first. (Category proof: The RealReal, 2026.)</p>
+  </div>
+
+  <div class="block">
+    <p class="section-label">How It Works</p>
+    <div class="steps">
+      <div class="step">
+        <span class="n serif">1</span>
+        <div class="t">Collect</div>
+        <div class="d">White-glove pickup from your home, on your schedule.</div>
+      </div>
+      <div class="step">
+        <span class="n serif">2</span>
+        <div class="t">Catalog &amp; Protect</div>
+        <div class="d">Every piece photographed and condition-documented, held in your private digital vault under insured, climate-controlled custody.</div>
+      </div>
+      <div class="step">
+        <span class="n serif">3</span>
+        <div class="t">Manage</div>
+        <div class="d">We rotate wardrobes between residences each season and prepare them before you arrive.</div>
+      </div>
+      <div class="step">
+        <span class="n serif">4</span>
+        <div class="t">Access Anytime</div>
+        <div class="d">Browse your vault and request any piece, prepared and shipped to arrive for any event, anywhere.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Confidential &amp; Proprietary — prepared for evaluation and discussion. &nbsp;•&nbsp;
+    Luxury Lifestyle Vault &nbsp;•&nbsp; Your Lifestyle, Wherever Life Takes You.
+  </div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page">
+  <p class="eyebrow">Three Tiers of Service</p>
+
+  <div class="tiers">
+    <div class="tier">
+      <div class="tno">Tier 1</div>
+      <h3 class="serif">Seasonal Rotation</h3>
+      <div class="desc">A subscription to clean, store, and rotate your seasonal wardrobe between
+      residences — the essentials, handled.</div>
+      <div class="price serif">From $299<small>/mo</small></div>
+    </div>
+
+    <div class="tier">
+      <div class="tno">Tier 2</div>
+      <h3 class="serif">Total Wardrobe Management</h3>
+      <div class="desc">We manage the entire transition. Arrive to a fully prepared closet —
+      everything cleaned, pressed, and organized.</div>
+      <div class="price serif">From $599<small>/mo</small></div>
+    </div>
+
+    <div class="tier feature">
+      <div class="tno">Tier 3</div>
+      <h3 class="serif">On-Demand Fulfillment</h3>
+      <div class="desc">Browse your own cataloged wardrobe remotely and have any piece prepared and
+      shipped for any occasion, anywhere.</div>
+      <div class="price serif">$75 <small>+ $15/item</small></div>
+      <div class="diff">The differentiator — no one else offers this.</div>
+    </div>
+  </div>
+
+  <p class="founding">Founding members receive 20% off for the first 12 months.</p>
+
+  <div class="custody">
+    <div class="h">Insured, documented custody.</div>
+    <div class="b">Every item is held under a documented chain of custody with full insurance
+    protection — the discipline used for fine art and collections, applied to your wardrobe.</div>
+  </div>
+
+  <p class="madefor"><strong>Made for:</strong> snowbirds &amp; second-home owners &nbsp;•&nbsp;
+  frequent travelers &nbsp;•&nbsp; collectors &nbsp;•&nbsp; luxury retirees &nbsp;•&nbsp;
+  family offices &amp; estates.</p>
+
+  <div class="cta">
+    <h2 class="serif">Become a Founding Member</h2>
+    <p>We are selecting 10–15 founding members for our October 2026 launch in the Wisconsin–Arizona
+    corridor. Founding members help shape the service and lock in preferred pricing for life.</p>
+    <span class="inquire">Inquire — concierge@luxurylifestylevault.com</span>
+  </div>
+
+  <div class="footer">
+    Confidential &amp; Proprietary — prepared for evaluation and discussion. &nbsp;•&nbsp;
+    Luxury Lifestyle Vault &nbsp;•&nbsp; Your Lifestyle, Wherever Life Takes You. <br>
+    Pricing reflects current working rates and is subject to confirmation; founding-member discount applied separately.
+  </div>
+</section>
+
+</body>
+</html>

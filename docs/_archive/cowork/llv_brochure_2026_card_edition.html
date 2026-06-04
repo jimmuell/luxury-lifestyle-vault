@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Luxury Lifestyle Vault — Brochure 2026 (Card Edition)</title>
+<style>
+  :root{
+    --obsidian:#0A0A0B;
+    --obsidian-2:#111113;
+    --ivory:#F8F4EE;
+    --mist:#ECE7DD;
+    --stone:#6B6B6B;
+    --gold:#C9A96E;
+    --gold-bright:#E4C98C;
+    --silver:#DADDE1;
+    --gray-dark:#C5BEB0;   /* light text on black */
+    --border:#E0DACE;
+  }
+
+  @page{ size:Letter; margin:0; }
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:"Inter","Helvetica Neue",Arial,sans-serif;
+    color:#1a1a1a;
+    font-size:10.5px;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{ font-family:"Cormorant Garamond","Georgia",serif; }
+
+  .page{
+    position:relative;
+    width:8.5in;
+    height:11in;
+    background:var(--ivory);
+    overflow:hidden;
+    page-break-after:always;
+    display:flex;
+    flex-direction:column;
+  }
+  .page:last-child{ page-break-after:auto; }
+
+  /* ---------- bands ---------- */
+  .dark{ background:var(--obsidian); color:var(--gray-dark); position:relative; }
+  .light{ background:var(--ivory); }
+
+  .pad{ padding:0.62in 0.78in; }
+
+  /* gold double frame + filigree corners for the showcase panels */
+  .framed .frame-outer{
+    position:absolute; inset:0.30in;
+    border:1.1px solid rgba(201,169,110,0.85);
+    pointer-events:none;
+  }
+  .framed .frame-inner{
+    position:absolute; inset:0.345in;
+    border:0.6px solid rgba(201,169,110,0.55);
+    pointer-events:none;
+  }
+  .fl{ position:absolute; width:0.52in; height:0.52in; }
+  .fl.tl{ top:0.30in; left:0.30in; }
+  .fl.tr{ top:0.30in; right:0.30in; transform:rotate(90deg); }
+  .fl.br{ bottom:0.30in; right:0.30in; transform:rotate(180deg); }
+  .fl.bl{ bottom:0.30in; left:0.30in; transform:rotate(270deg); }
+
+  /* ---------- eyebrows / labels ---------- */
+  .eyebrow{
+    display:flex; align-items:center; gap:9px;
+    font-size:8px; letter-spacing:0.34em; text-transform:uppercase;
+    color:var(--gold); font-weight:600; margin:0 0 14px;
+  }
+  .eyebrow .sq{ width:8px; height:8px; background:var(--gold); display:inline-block; }
+
+  .label{
+    font-size:8px; letter-spacing:0.30em; text-transform:uppercase;
+    color:var(--gold); font-weight:600; margin:0 0 4px;
+  }
+  .label .rule{ display:block; width:34px; height:1.4px; background:var(--gold); margin-top:6px; margin-bottom:12px; }
+
+  /* ---------- hero ---------- */
+  .hero{ position:relative; }
+  .hero .wordmark{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    color:var(--silver);
+    font-weight:500;
+    font-size:33px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    line-height:1.05;
+    margin:0;
+  }
+  .hero .tagline{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-style:italic; font-size:16px; color:var(--gold);
+    margin:10px 0 0; letter-spacing:0.01em;
+  }
+  .hero .lede{
+    color:var(--gray-dark); font-size:11px; line-height:1.6;
+    margin:16px 0 0; max-width:5.3in;
+  }
+  .monoseal{
+    position:absolute; bottom:0.66in; right:0.96in;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+  }
+  .monoseal .llv{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-size:25px; letter-spacing:0.20em; color:var(--silver); font-weight:500;
+    padding-left:0.20em;
+  }
+  .monoseal .ms{
+    font-size:7px; letter-spacing:0.24em; text-transform:uppercase; color:var(--gold);
+  }
+  .vcenter{ justify-content:center; }
+  .diadiv{ display:flex; align-items:center; gap:6px; }
+  .diadiv .line{ width:22px; height:0.8px; background:var(--gold); }
+  .dia{ width:4px; height:4px; background:var(--gold); transform:rotate(45deg); display:inline-block; }
+
+  /* ---------- body sections ---------- */
+  .sec{ margin-top:20px; }
+  .sec:first-child{ margin-top:0; }
+  .sec p{ margin:0; }
+  .pull{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-style:italic; font-size:16px; color:#222; line-height:1.4;
+    border-left:2px solid var(--gold); padding-left:14px; margin-top:14px;
+  }
+
+  /* ---------- stats ---------- */
+  .stats{ display:flex; gap:18px; margin-top:6px; }
+  .stat{ flex:1; }
+  .stat .num{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-size:30px; color:var(--gold); line-height:1; font-weight:600;
+  }
+  .stat .cap{ font-size:9px; color:var(--gray-dark); margin-top:8px; line-height:1.45; }
+  .proof{ font-size:9px; color:#8d877b; margin-top:16px; line-height:1.5; }
+  .hairline{ height:0.8px; background:rgba(201,169,110,0.35); margin:0 0 18px; }
+
+  /* ---------- how it works ---------- */
+  .steps{ display:flex; gap:14px; margin-top:4px; }
+  .step{ flex:1; }
+  .step .n{
+    font-family:"Cormorant Garamond","Georgia",serif;
+    font-size:24px; color:var(--gold); display:block;
+    border-bottom:1px solid var(--border); padding-bottom:5px; margin-bottom:8px; font-weight:500;
+  }
+  .step .t{ font-size:10.5px; font-weight:700; margin-bottom:4px; color:#1a1a1a; }
+  .step .d{ font-size:9.5px; color:var(--stone); line-height:1.5; }
+
+  /* ---------- tiers ---------- */
+  .tiers{ display:flex; gap:14px; margin-top:6px; }
+  .tier{ flex:1; background:#fff; border:1px solid var(--border); padding:18px 15px 16px; position:relative; }
+  .tier.dark{
+    background:var(--obsidian); border:1px solid var(--gold);
+    color:var(--gray-dark);
+  }
+  .tier .tno{ font-size:8px; letter-spacing:0.26em; text-transform:uppercase; color:var(--gold); font-weight:600; }
+  .tier h3{
+    font-family:"Cormorant Garamond","Georgia",serif; font-weight:600;
+    font-size:18px; margin:5px 0 9px; line-height:1.12; min-height:2.4em; color:#141414;
+  }
+  .tier.dark h3{ color:var(--silver); }
+  .tier .desc{ font-size:9.5px; color:var(--stone); line-height:1.5; min-height:4.6em; }
+  .tier.dark .desc{ color:var(--gray-dark); }
+  .tier .price{
+    font-family:"Cormorant Garamond","Georgia",serif; font-size:23px; font-weight:600;
+    margin-top:12px; padding-top:11px; border-top:1px solid var(--border); color:#141414;
+  }
+  .tier.dark .price{ color:var(--gold); border-top:1px solid rgba(201,169,110,0.4); }
+  .tier .price small{ font-size:12px; color:var(--stone); font-weight:500; }
+  .tier.dark .price small{ color:var(--gray-dark); }
+  .tier .diff{ font-family:"Cormorant Garamond","Georgia",serif; font-style:italic; font-size:11px; color:var(--gold); margin-top:7px; }
+
+  .note{ margin-top:16px; font-size:10px; line-height:1.55; }
+  .note .b{ font-weight:700; color:#141414; }
+  .founding-line{
+    text-align:center; font-family:"Cormorant Garamond","Georgia",serif; font-style:italic;
+    font-size:13.5px; color:#1a1a1a; margin-top:16px;
+  }
+  .custody{ background:var(--mist); border-left:2px solid var(--gold); padding:13px 15px; margin-top:14px; }
+  .madefor{ margin-top:14px; font-size:9.5px; color:var(--stone); }
+  .madefor .b{ color:#141414; font-weight:700; }
+
+  /* ---------- CTA ---------- */
+  .cta{ position:relative; }
+  .cta .inner{ text-align:center; }
+  .cta h2{
+    font-family:"Cormorant Garamond","Georgia",serif; color:var(--silver);
+    font-weight:500; font-size:27px; margin:0 0 6px; letter-spacing:0.06em;
+  }
+  .cta .badge{
+    font-size:7.5px; letter-spacing:0.30em; text-transform:uppercase; color:var(--gold);
+    margin-bottom:14px;
+  }
+  .cta p{ font-size:10px; color:var(--gray-dark); max-width:5.2in; margin:0 auto 16px; line-height:1.6; }
+  .cta .inquire{
+    display:inline-block; border:1px solid var(--gold); color:var(--gold);
+    padding:9px 22px; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; font-weight:600;
+  }
+
+  .footer{
+    padding:10px 0.78in 0;
+    font-size:7.5px; color:var(--stone); line-height:1.5; text-align:center;
+  }
+  .footer .top{ border-top:1px solid var(--border); padding-top:9px; }
+
+  .flexfill{ flex:1; }
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE 1 ================= -->
+<section class="page">
+
+  <!-- HERO (black, framed, filigree) -->
+  <div class="dark framed hero pad" style="padding-top:0.78in;padding-bottom:0.72in;">
+    <div class="frame-outer"></div>
+    <div class="frame-inner"></div>
+    <svg class="fl tl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#C9A96E" stroke-width="1.6" stroke-linecap="round"><path d="M2 48 C2 23 23 2 48 2"/><path d="M2 64 C34 64 64 34 64 2" stroke-width="0.9"/><path d="M15 41 C6 41 4 30 13 27 C19 25 21 34 13 36"/><path d="M41 15 C41 6 30 4 27 13 C25 19 34 21 36 13"/></g><g fill="#C9A96E" stroke="none"><circle cx="48" cy="2" r="1.8"/><circle cx="2" cy="48" r="1.8"/></g></svg>
+    <svg class="fl tr" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#C9A96E" stroke-width="1.6" stroke-linecap="round"><path d="M2 48 C2 23 23 2 48 2"/><path d="M2 64 C34 64 64 34 64 2" stroke-width="0.9"/><path d="M15 41 C6 41 4 30 13 27 C19 25 21 34 13 36"/><path d="M41 15 C41 6 30 4 27 13 C25 19 34 21 36 13"/></g><g fill="#C9A96E" stroke="none"><circle cx="48" cy="2" r="1.8"/><circle cx="2" cy="48" r="1.8"/></g></svg>
+    <svg class="fl br" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#C9A96E" stroke-width="1.6" stroke-linecap="round"><path d="M2 48 C2 23 23 2 48 2"/><path d="M2 64 C34 64 64 34 64 2" stroke-width="0.9"/><path d="M15 41 C6 41 4 30 13 27 C19 25 21 34 13 36"/><path d="M41 15 C41 6 30 4 27 13 C25 19 34 21 36 13"/></g><g fill="#C9A96E" stroke="none"><circle cx="48" cy="2" r="1.8"/><circle cx="2" cy="48" r="1.8"/></g></svg>
+    <svg class="fl bl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#C9A96E" stroke-width="1.6" stroke-linecap="round"><path d="M2 48 C2 23 23 2 48 2"/><path d="M2 64 C34 64 64 34 64 2" stroke-width="0.9"/><path d="M15 41 C6 41 4 30 13 27 C19 25 21 34 13 36"/><path d="M41 15 C41 6 30 4 27 13 C25 19 34 21 36 13"/></g><g fill="#C9A96E" stroke="none"><circle cx="48" cy="2" r="1.8"/><circle cx="2" cy="48" r="1.8"/></g></svg>
+
+    <div class="monoseal">
+      <div class="llv">LLV</div>
+      <div class="diadiv"><span class="line"></span><span class="dia"></span><span class="line"></span></div>
+      <div class="ms">Member Since 2026</div>
+    </div>
+
+    <p class="eyebrow"><span class="sq"></span> Luxury Wardrobe Logistics</p>
+    <h1 class="wordmark">Luxury&nbsp;Lifestyle&nbsp;Vault</h1>
+    <p class="tagline">Your Lifestyle, Wherever Life Takes You.</p>
+    <p class="lede">A managed concierge platform that stores, cares for, moves, and protects luxury
+    wardrobes for affluent households living across more than one home.</p>
+  </div>
+
+  <!-- BODY (ivory) -->
+  <div class="light pad flexfill vcenter" style="padding-top:0.5in;padding-bottom:0.4in;">
+    <div class="sec">
+      <p class="label">The Opportunity<span class="rule"></span></p>
+      <p>Affluent households increasingly live across two or more residences and own wardrobes worth
+      tens or hundreds of thousands of dollars — designer apparel, handbags, watches, fine accessories.
+      Yet there is no trusted way to store, move, and manage those assets across homes. Seasonal moves
+      are done by hand: slow, stressful, and risky. Pieces are forgotten, damaged, or never worn — and
+      there is no simple path to protect or eventually monetize them.</p>
+    </div>
+    <div class="sec">
+      <p class="label">The Concept<span class="rule"></span></p>
+      <p>Luxury Lifestyle Vault is the concierge layer for that entire lifecycle. We take custody of a
+      client's wardrobe — cataloged, photographed, climate-controlled, and insured — and handle
+      everything around it: seasonal rotation between residences, white-glove delivery, and on-demand
+      fulfillment of any specific piece for any occasion, anywhere. We own the custody and the digital
+      record; we partner with vetted premium providers for cleaning and transport.</p>
+      <p class="pull">Arrive at every home to a wardrobe that is already cleaned, pressed, organized — and waiting.</p>
+    </div>
+  </div>
+
+  <!-- STATS (black) -->
+  <div class="dark pad" style="padding-top:0.5in;padding-bottom:0.55in;">
+    <p class="eyebrow"><span class="sq"></span> A Proven Behavior, at Scale</p>
+    <div class="hairline"></div>
+    <div class="stats">
+      <div class="stat"><div class="num serif">$2.4B+</div><div class="cap">luxury goods moving through a single resale platform in a year</div></div>
+      <div class="stat"><div class="num serif">1M+</div><div class="cap">affluent buyers already trusting third parties with luxury assets</div></div>
+      <div class="stat"><div class="num serif">+24%</div><div class="cap">year-over-year growth in that market</div></div>
+    </div>
+    <p class="proof">Affluent consumers already ship, trust, and transact high-value luxury goods through
+    third parties. Luxury Lifestyle Vault serves the ownership and stewardship stage that comes first.
+    (Category proof: The RealReal, 2026.)</p>
+  </div>
+
+</section>
+
+<!-- ================= PAGE 2 ================= -->
+<section class="page">
+
+  <!-- IVORY top: how it works + tiers -->
+  <div class="light pad flexfill" style="padding-top:0.6in;padding-bottom:0.3in;">
+
+    <div class="sec">
+      <p class="label">How It Works<span class="rule"></span></p>
+      <div class="steps">
+        <div class="step"><span class="n serif">1</span><div class="t">Collect</div><div class="d">White-glove pickup from your home, on your schedule.</div></div>
+        <div class="step"><span class="n serif">2</span><div class="t">Catalog &amp; Protect</div><div class="d">Every piece photographed, condition-documented, and held in your private digital vault under insured, climate-controlled custody.</div></div>
+        <div class="step"><span class="n serif">3</span><div class="t">Manage</div><div class="d">We rotate wardrobes between residences each season and prepare the closet before you arrive.</div></div>
+        <div class="step"><span class="n serif">4</span><div class="t">Access Anytime</div><div class="d">Browse your vault and request any piece, prepared and shipped to arrive for any event, anywhere.</div></div>
+      </div>
+    </div>
+
+    <div class="sec" style="margin-top:26px;">
+      <p class="label">Three Tiers of Service<span class="rule"></span></p>
+      <div class="tiers">
+        <div class="tier">
+          <div class="tno">Tier 1</div>
+          <h3 class="serif">Seasonal Rotation</h3>
+          <div class="desc">A subscription to clean, store, and rotate your seasonal wardrobe between residences — the essentials, handled.</div>
+          <div class="price serif">From $299<small>/mo</small></div>
+        </div>
+        <div class="tier">
+          <div class="tno">Tier 2</div>
+          <h3 class="serif">Total Wardrobe Management</h3>
+          <div class="desc">We manage the entire transition. Arrive to a fully prepared closet — everything cleaned, pressed, and organized.</div>
+          <div class="price serif">From $599<small>/mo</small></div>
+        </div>
+        <div class="tier dark">
+          <div class="tno">Tier 3</div>
+          <h3 class="serif">On-Demand Fulfillment</h3>
+          <div class="desc">Browse your own cataloged wardrobe remotely and have any piece prepared and shipped for any occasion, anywhere.</div>
+          <div class="price serif">$75 <small>+ $15/item</small></div>
+          <div class="diff">The differentiator — no one else offers this.</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="founding-line">Founding members receive 20% off for the first 12 months.</p>
+
+    <div class="custody">
+      <p class="note" style="margin-top:0;"><span class="b">Insured, documented custody.</span> Every item is held
+      under a documented chain of custody with full insurance protection — the discipline used for fine art and
+      collections, applied to your wardrobe.</p>
+    </div>
+
+    <p class="madefor"><span class="b">Made for:</span> snowbirds &amp; second-home owners &nbsp;•&nbsp;
+    frequent travelers &nbsp;•&nbsp; collectors &nbsp;•&nbsp; luxury retirees &nbsp;•&nbsp; family offices &amp; estates.</p>
+  </div>
+
+  <!-- CTA (black, framed, filigree) -->
+  <div class="dark framed cta pad" style="padding-top:0.62in;padding-bottom:0.62in;">
+    <div class="frame-outer"></div>
+    <div class="frame-inner"></div>
+    <svg class="fl tl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#C9A96E" stroke-width="1.6" stroke-linecap="round"><path d="M2 48 C2 23 23 2 48 2"/><path d="M2 64 C34 64 64 34 64 2" stroke-width="0.9"/><path d="M15 41 C6 41 4 30 13 27 C19 25 21 34 13 36"/><path d="M41 15 C41 6 30 4 27 13 C25 19 34 21 36 13"/></g><g fill="#C9A96E" stroke="none"><circle cx="48" cy="2" r="1.8"/><circle cx="2" cy="48" r="1.8"/></g></svg>
+    <svg class="fl tr" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#C9A96E" stroke-width="1.6" stroke-linecap="round"><path d="M2 48 C2 23 23 2 48 2"/><path d="M2 64 C34 64 64 34 64 2" stroke-width="0.9"/><path d="M15 41 C6 41 4 30 13 27 C19 25 21 34 13 36"/><path d="M41 15 C41 6 30 4 27 13 C25 19 34 21 36 13"/></g><g fill="#C9A96E" stroke="none"><circle cx="48" cy="2" r="1.8"/><circle cx="2" cy="48" r="1.8"/></g></svg>
+    <svg class="fl br" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#C9A96E" stroke-width="1.6" stroke-linecap="round"><path d="M2 48 C2 23 23 2 48 2"/><path d="M2 64 C34 64 64 34 64 2" stroke-width="0.9"/><path d="M15 41 C6 41 4 30 13 27 C19 25 21 34 13 36"/><path d="M41 15 C41 6 30 4 27 13 C25 19 34 21 36 13"/></g><g fill="#C9A96E" stroke="none"><circle cx="48" cy="2" r="1.8"/><circle cx="2" cy="48" r="1.8"/></g></svg>
+    <svg class="fl bl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#C9A96E" stroke-width="1.6" stroke-linecap="round"><path d="M2 48 C2 23 23 2 48 2"/><path d="M2 64 C34 64 64 34 64 2" stroke-width="0.9"/><path d="M15 41 C6 41 4 30 13 27 C19 25 21 34 13 36"/><path d="M41 15 C41 6 30 4 27 13 C25 19 34 21 36 13"/></g><g fill="#C9A96E" stroke="none"><circle cx="48" cy="2" r="1.8"/><circle cx="2" cy="48" r="1.8"/></g></svg>
+
+    <div class="inner">
+      <div class="badge">Founding Member &nbsp;·&nbsp; Member Since 2026</div>
+      <h2 class="serif">Become a Founding Member</h2>
+      <p>We are selecting 10–15 founding members for our October 2026 launch in the Wisconsin–Arizona
+      corridor. Founding members help shape the service and lock in preferred pricing for life.</p>
+      <span class="inquire">Inquire — concierge@luxurylifestylevault.com</span>
+    </div>
+  </div>
+
+  <div class="footer"><div class="top">
+    Confidential &amp; Proprietary — prepared for evaluation and discussion. &nbsp;•&nbsp;
+    Luxury Lifestyle Vault &nbsp;•&nbsp; Your Lifestyle, Wherever Life Takes You.<br>
+    Pricing reflects current rates and is subject to confirmation; founding-member discount applied separately.
+  </div></div>
+
+</section>
+
+</body>
+</html>

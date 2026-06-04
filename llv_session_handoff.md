@@ -1,21 +1,192 @@
 # Luxury Lifestyle Vault — Session Handoff Document
 
-**Last Updated:** June 1, 2026
-**Purpose:** Paste this document into any new Claude Chat session to provide full project context. For Cowork sessions, this file lives in the local project folder and is read automatically.
+**Last Updated:** June 4, 2026
+**Purpose:** Full project context for any new session. In Cowork (the daily driver) this file lives in the local project folder and is read automatically; it can also be pasted into an optional Claude Chat backup session.
 
 ---
 
 ## IMPORTANT: First Steps for Any New Session
 
 1. **Read `DIVISION_OF_LABOR.md`** to understand your role. As of May 30, 2026, this is a **two-tool model**: Cowork owns strategy, research, documents, and Code prompts; Claude Code owns implementation, DevOps, and git operations. Claude Chat is no longer in the daily workflow (kept as optional backup).
-2. **Read this document's "Session Summary — May 31, 2026" block below** (the newest block at the top) for the most recent state. Older summary blocks (May 30, May 25) follow it in reverse-chronological order.
-3. **Read `docs/cowork/llv_engineering_polish_todos.md`** for the queued engineering polish items.
-4. **Review the open items / build cycle status** in Section 13 for full context.
-5. **Ask the founder** what they'd like to focus on this session — present the queued list as options.
+2. **The live punch list is the Notion tracker — "LLV Launch — Project Tracker"** (https://app.notion.com/p/0e5fde0ea97542cdb1258b96e507ee73). The "By Phase / Track" board is the 30,000-ft view; Cowork keeps it current as work ships. Then read the newest **Session Summary** block below for narrative context.
+3. **Document homes (single source of truth):** the Google Drive "Luxury Lifestyle Vault" library is canonical for all business/strategy/brand docs (incl. the Launch Implementation Plan in folder 08); the repo keeps only Code-facing docs; **`docs/_archive/` is historical only.** See the "Document authority" block at the top of `CLAUDE.md`.
+4. **If local dev won't start:** read `docs/cowork/llv_local_dev_troubleshooting.md` (recurring corrupted-`node_modules` issue; fix = clean reinstall). **The founder runs the dev server — Claude Code must not.** Build-cycle history is in Section 13.
+5. **▶ START HERE next session:** (a) **Push the help system to origin** — it's built + verified but lives on local `main` only (deploys via Vercel on push; migration 028 already applied to the hosted DB). Finish the last two help checks first (admin add-a-tip → billing, `/provider/help`). (b) **Hand Claude Code prompt 13.1** — the CRITICAL seed-guard security fix. (c) **Keep the three long-lead launch gates moving** (Tracks A/C): A2P 10DLC, bailee + general-liability insurance, entity + trademark — weeks of external lead time. (d) Remaining founder QA-gate items: external-dashboard verifications (Stripe/Resend/Inngest) + admin return-processing T12.1 4–6.
 
 ---
 
-## 🏁 Session Summary — June 1, 2026
+## 🏁 Session Summary — June 4, 2026 (Help System, Doc Single-Source, PM Tracker, Brand Domain & Email)
+
+**Focus:** A large build-and-operations session — shipped the help system, restructured document & project management, fixed the recurring dev-server failure, and stood up the brand domain + email.
+
+### Shipped / decided
+- **Help system (Phase 1.5 / §11 / prompt 13.4) — shipped by Code & verified.** Migration `028_help_system.sql` (`help_tooltips` + `help_articles`, admin-sees-drafts RLS). `<HelpTip>` opens on **hover + click + keyboard**; `/client/help`, `/provider/help`, `/admin/help` CRUD; seed via `/admin/seed`. **On local `main` only — NOT pushed to origin/Vercel yet** (push next session after final checks).
+- **Admin "Email (Resend)" page — shipped & verified.** `/admin/email`: config display + test-send (prefilled-editable recipient) + recent-sends. Test emails deliver from the brand sender.
+- **Two-tool model ratified** (`DIVISION_OF_LABOR.md` + Section 11): Cowork + Code; Chat optional backup; browser-driven QA added to Cowork's role.
+- **Document single-source-of-truth established.** Drive "Luxury Lifestyle Vault" = canonical for business/strategy/brand; repo keeps only Code-facing docs; **47 docs archived to `docs/_archive/`**; `CLAUDE.md` gained a "Document authority" directive. (The handoff had been a symlink — restored to a real file at the repo root.)
+- **Recurring local dev-server failure diagnosed + documented.** Root cause = corrupted `node_modules/next` (from in-place instrumentation/patches); fix = `rm -rf .next node_modules && npm install`. Runbook at `docs/cowork/llv_local_dev_troubleshooting.md`; `CLAUDE.md` now states **the founder runs the dev server, not Code**. Drive folder 10 (Engineering & Troubleshooting) holds the runbook + incident log + dev-stability Code prompt.
+- **Project management moved to Notion.** Live **"LLV Launch — Project Tracker"** (40+ tasks, Phases 0–4 + Tracks A–D, board views) — `0e5fde0ea97542cdb1258b96e507ee73`. Cowork = acting PM, updates as work ships. PM digests written to **Drive folder 11** on request/at session-end (the connector can't bulk-read the board, so no unattended cron; Resend/SMS auto-send parked — Cowork's sandbox can't reach Resend). Inaugural digest is in folder 11.
+- **Brand domain + email are LIVE.** Registered **luxurylifestylevault.com** via Vercel (ICANN verified, apex connected, SSL active). Resend **send.luxurylifestylevault.com** verified; `RESEND_FROM_EMAIL=noreply@send.luxurylifestylevault.com` set in local `.env` + Vercel. App now sends branded email. New-domain spam risk noted (deliverability-hardening item logged for pre-launch).
+- **Pricing/brand assets:** brochure corrected to **$299 / $599** (card edition + faithful "v2"); pricing now consistent across the assumptions register, launch-readiness, and handoff.
+
+### Where to pick up
+See **First Steps** above: push the help system, hand Code prompt 13.1 (seed-guard), keep the long-lead launch gates moving, and clear the founder QA-gate items. **The Notion tracker is the live punch list going forward.**
+
+### Key references
+Notion tracker `0e5fde0ea97542cdb1258b96e507ee73`; Drive folders **08** (Launch Plan), **10** (Engineering & Troubleshooting), **11** (Project Management); active Code prompts in `docs/cowork/` (help-system finalize, admin email; seed-guard 13.1 lives in the folder-08 Launch Plan §13); domain/email steps in `docs/cowork/llv_domain_setup_checklist.md`.
+
+---
+
+## 🏁 Session Summary — June 2, 2026 (Branding, Marketing Assets & Launch Runway)
+
+**Focus:** A branding, marketing-asset, and document/runway session — not platform testing.
+
+### TL;DR — where to pick up next session
+1. **Close out the remaining QA gate.** Sections 1–13 of the test plan have already been executed and all surfaced bugs fixed and verified. The remaining gate before production cutover is the founder-run external-dashboard verifications (Stripe / Resend / Inngest) plus admin return-processing steps T12.1 4–6.
+2. **In parallel, hand Claude Code prompt 13.1 (seed-guard security fix)** from the Launch Implementation Plan. Self-contained and the highest-priority engineering item. The current guard is browser-exposed.
+3. **Start the three external-lead-time items now** (Tracks A/C): A2P 10DLC SMS registration, bailee + general-liability insurance, and entity + trademark filings. These gate launch and take weeks.
+
+Everything else flows from the **Launch Implementation Plan** (Drive folder 08) — now the single source of truth for the runway.
+
+### What we did today
+- **Verified the Google Drive consolidation.** Confirmed the canonical folder structure (01–09 + 99 Archive), that the archive is fully accounted for, and that the five prior in-place doc edits landed. Investor deck confirmed in folder 02.
+- **Locked the brand membership card.** Matte-black metal, silver/ivory wordmark, gold accents, "Founding Member," "Member Since 2026," LLV monogram, no ® (trademark not yet filed). Final PNG in folder 09.
+- **Created folder 09 "Brand Assets"** + a brand notes doc capturing the card status and deferred items (digital card component with name fields, hi-res print export for a metal-card vendor, tier variants).
+- **Designed in-app card usage** — three per-device concepts (mobile, iPad, desktop) for the onboarding reveal + "My Membership" screen; saved to folder 09. (Wireframes; production uses the locked photoreal card.)
+- **Built a new marketing brochure** — two-page branded PDF (problem → concept → market proof → three tiers → founding-member CTA) for folder 02. *Caveats: "insured" language depends on bailee insurance being secured before circulation; pricing reflects the founding-member working assumption; CTA email is a placeholder.*
+- **Added a comprehensive help system to scope** — baseline pre-launch + phased post-launch (Launch Plan §11, prompt 13.4).
+- **Built + formatted the Launch Implementation Plan** into folder 08 — gated Phases 0–4, parallel Tracks A–D, the help system, indicative June–October timeline, owners, and ready-to-paste Claude Code prompts (§13). Rebuilt with real heading/bullet styles after the first import showed literal markdown characters.
+- **Fixed a duplicate-folder problem.** A stale "08" folder id caused the plan to land in an orphaned folder; corrected. Canonical 08 now holds both the Readiness Tracker and the formatted plan.
+
+### Current project status
+| Track | Status |
+|---|---|
+| **Platform (Phase A + B)** | ✅ Code-complete, launch-ready (54 routes, 27 migrations, 431 seed records) |
+| **Testing** | ✅ Sections 1–13 executed (Section 1 May 26; Sections 2–13 June 1, browser-driven); all surfaced bugs fixed + verified. Remaining gate: founder-run dashboard verifications (Stripe/Resend/Inngest) + admin return-processing T12.1 4–6 |
+| **Strategy & docs** | ✅ Consolidated into Drive folders 01–09 |
+| **Brand** | ✅ Card locked; brand assets + in-app concepts done |
+| **Launch plan** | ✅ Built and formatted in folder 08 |
+| **Business strategy** | ⛔ Open items tracked; resolve after/alongside testing |
+
+### Work queue
+**Engineering (Launch Plan Phases 1–2 → Code prompts §13):** 1.1 Seed/reset production guard — CRITICAL (prompt 13.1, browser-exposed); 1.2 wire Twilio SMS (13.2); 1.3 verify Resend email completeness; 1.4 add `.env.example` (13.3); 1.5 baseline help system (13.4); 2.1 Sentry error monitoring (13.5).
+
+**Production cutover (Phase 3, after testing passes):** prod Supabase + 27 migrations + RLS + backups; Stripe sandbox → live; Resend domain auth; Twilio prod + A2P 10DLC; Inngest prod; Vercel prod + domain + SSL; strip seed/test tools; security/RLS audit; load real provider + pricing config. Then Phase 4 smoke test + go/no-go.
+
+**Track A — Legal & formation:** WI LLC + AZ foreign registration; trademark (unlocks ® on the card); bailee + GL insurance (gates the "insured" claim); ToS/Privacy; provider agreements.
+
+**Track B — Business decisions (assumptions register):** pricing validation (live config: Seasonal Essentials (T1) $299/mo, Seasonal Premier (T2) $599/mo, On-Demand (T3) $75 base + $15/item surcharge, 20% founding-member discount — all admin-editable); provider terms; daughter's role (AZ Corridor Manager, $1,500–$2,500/mo); capital (self-fund pilot); WI storage.
+
+**Track C — Provider onboarding:** confirm AZ (RAVE FabriCARE top; European Couture, Mastel alt); sign WI (Martinizing lead, Klinke secondary, London Cleaners specialist) — one primary + one secondary.
+
+**Track D — Founding-member recruitment:** 10–15 via personal/referral channels; brochure + card ready to support.
+
+### Google Drive map (canonical IDs)
+Parent "Luxury Lifestyle Vault": `10-HtTcGZDQpj9AvXKvJzlzYXhRF1Pu9S`
+
+| Folder | ID |
+|---|---|
+| 01 Vision & Strategy | `16SqtgKZkUep9cXPQvVQT6WQrkdvPW2Zb` |
+| 02 Investor Materials | `1X7da2uXNXh4pD6pafl0Z6CK7HdUYF30h` |
+| 03 Financial Model & Projections | `13Edvo3a2yx34aF6IeJzSF8-B-aRhZun3` |
+| 04 Operations & Logistics | `1_Uj3hcxS9nGGwOuUSXO4vc0cffwhtfU5` |
+| 05 RealReal Partnership & Integration | `1vInD3fy2rVpZHppv0YlGa7AXm2YGhP15` |
+| 06 Source Material & Filings | `19V6hHUzE5CNiiH_7dYWh_All6ABwYUBc` |
+| 07 Technology & Platform | `17tSwH_mn7oc0YNpInrrBAoAlVF0xBp7c` |
+| **08 Launch Implementation Plan (canonical)** | **`1KSbEShBcJBlffFuaTBeEsy0sdF7suKD_`** |
+| 09 Brand Assets | `15Eo5t5gRKWIm0mKXK7bp5wUdqQo4R6nE` |
+| **10 — Engineering & Troubleshooting** (created 2026-06-03) | `1k1--9y3e20t-t-dGXH8-U5copAW0Vq9N` |
+| 99 Archive | `1ZocuCXrTY-6d8f7X8y2eFxEzkFxOHDpR` |
+
+Folder 10 contents: **LLV Local Dev Troubleshooting Runbook** (Doc `1IdgKuL6XH2WLNYPuZnVtHEog5NaWe4InmONKEdBSYQU`), **LLV Error & Incident Log** (Sheet `1MUWqXYKt6D6PlpEBmH5NL2DFArT0Tk-4R9Ouc2s6Myg`), **LLV Code Prompt — Local Dev-Server Stability** (Doc `1500ZCF1nztqsAa5oHlCim-tVNW4BzrTgEm3gqmatsO4`). Repo copies under `docs/cowork/` remain canonical for Claude Code.
+
+Folder 08 contents: **LLV Launch Readiness Tracker** (`1u0PzBzwNdK6QKkCD2SobqCS50O8dbI8ubVlMNAv8HWs`) + **LLV Launch Implementation Plan** (`18_lkqnvNKzY8Hs__6bOqjDr55lSoak4-yI99VBEl7iU`, formatted). **Note:** an older session recorded the 08 folder id as `15Gau96vSm196zq3nYLQvvNq2bX8UAGHF` — that is a **stale/orphaned** duplicate, not the canonical 08. Use `1KSbE…` going forward.
+
+### Pending cleanup (founder — connector can't delete)
+- Delete the orphaned duplicate "08" folder `15Gau96vSm196zq3nYLQvvNq2bX8UAGHF` (also removes the stray plan doc `1W6kovlzEyAGcRl0T9aOMpL46X0YKuCI2M_jR5SON-XQ` inside it).
+- Confirm the formatted Launch Implementation Plan (`18_lkqn…`) is the only plan in folder 08. *(Founder reported the plan doc updated — assumed done.)*
+
+### Open doc-hygiene (offered, not done)
+- The **brand notes doc in folder 09** was created the same way as the first launch plan, so it likely shows literal "#"/"-" markdown. Can hand over a formatted version on request.
+
+---
+
+## 🏁 Session Summary — June 1, 2026 (PM — Photo Pipeline Diagnosis & Pexels Migration)
+
+**Focus:** Started on the dashboard QA verifications (Stripe/Resend/Inngest), then pivoted to the founder's question about why the Unsplash wardrobe-photo fetch showed no activity. A long, productive diagnosis followed. Net outcome: a documentation correction + a decision to switch the seed-photo source to **Pexels**.
+
+### ⚠️ Documentation correction — Unsplash was NOT removed
+The Bug Log entries **#19** (May 30, "temporarily disable Unsplash fetch") and **#23** (May 31, "Category Art Cards + remove Unsplash pipeline (Bug #23)") were accurate *at the time*, but two later commits **reversed them and were never logged here**:
+- `7c3cdca` — "feat(scripts): rebuild Unsplash seed-photo fetch with rate-limit handling"
+- `ebc533e` — "feat(admin): restore Fetch Wardrobe Photos card to seed runner UI"
+
+So current `main` has **both**: the Category Art Cards (as the photo fallback/empty-state) **and** a live Unsplash fetch behind the admin "Fetch Photos" button. `src/lib/seed/photo-fetch.ts` and `src/scripts/fetch-seed-photos.ts` exist and are wired. **Treat the code as truth, not the bug log.** Future sessions: don't assume the photo pipeline matches the #19/#23 narrative.
+
+### Diagnosis of the photo fetch (the long thread)
+Symptom: admin "Fetch Photos" reported **"Rate limited after 0 items. 49 remaining"** (≈49 seed items still on `seed-main.jpg` placeholders; the other ~half already had real photos from earlier runs). Unsplash dashboard (app **961550**) showed **50/50 remaining, no traffic today** — contradicting a real rate limit.
+- **Found + fixed:** `UNSPLASH_ACCESS_KEY` was missing on Vercel (Jim set it — same class of gap as the earlier `ANTHROPIC_API_KEY`/Bug #28).
+- **Still failed after that.** A `curl` from Jim's Mac (key read from `.env`) returned **HTTP 200, x-ratelimit-remaining: 49** — proving key + quota + network are healthy from his machine. Yet the app (local **and** Vercel, fresh restart) still returned the masked "rate limited."
+- **Ruled out exhaustively:** bad/missing key, exhausted quota, wrong app, whitespace in key, shell-env override (`echo $UNSPLASH_ACCESS_KEY` empty), stale dev server (clean restart still failed), proxy vars (all empty), and User-Agent (empty-UA curl still 200).
+- **Conclusion:** the app's server-side `fetch` receives a non-200 (likely a CDN/edge 403 — Unsplash is behind Fastly) that the code collapses into "rate limited," hiding the real status. The root cause is *invisible until the response is logged*.
+
+### Decision → migrate seed photos to Pexels
+Rather than keep chasing the Unsplash-vs-Vercel edge issue, switch the seed-photo source to **Pexels**: 25,000-req/month quota (validated via curl: HTTP 200, `x-ratelimit-remaining: 24999`), commercial use OK, and **no required download-trigger call** (simpler than Unsplash). Pexels key validated and added to **local `.env` + Vercel**.
+
+**Code prompt written, shipped by Claude Code, and ✅ VERIFIED WORKING:** `docs/cowork/llv_code_prompt_2026-06-01_pexels_migration.md` — swaps the fetch to Pexels (raw-key `Authorization` header, *not* `Client-ID`), and **bundles diagnostic logging** (prints real `res.status` + `X-Ratelimit-Remaining` + body snippet + masked key, distinguishing 401/403/429/low-remaining) so any remaining failure is self-describing. Also handles attribution (Pexels photographer name/url) and updates `next.config.ts` + seed-runner copy.
+- Note: `docs/cowork/llv_code_prompt_2026-06-01_unsplash_fetch_hardening.md` was written earlier in the thread (per-category batching, /download trigger, attribution, diagnostic logging). Its source-swap is **superseded by the Pexels migration**, but its batching/attribution/diagnostic notes remain reusable.
+
+### Heads-up for the Pexels swap
+Pexels sits behind **Cloudflare** (`__cf_bm` bot-management cookie seen in the curl). If the unresolved Unsplash failure was a CDN blocking the server `fetch`, Cloudflare *could* do the same — but the bundled User-Agent header + status logging will expose it immediately instead of another opaque "rate limited."
+
+### Also produced this session
+- **Dashboard QA verification checklist** — saved at **`docs/testing/llv_dashboard_qa_verification_checklist.md`** — covers the only remaining Sections 2–13 QA items: Stripe (customer/subscription/proration/refund/per-request line items), Resend emails, Inngest (per-request billing run + seasonal reminder schedule), and the in-app admin return-processing step (T12.1 steps 4–6). Has a result table for pass/fail capture. Still pending Jim's walk-through in those external dashboards — **this is the agreed starting point for next session.**
+
+### What's queued next
+1. ✅ **DONE — Pexels swap shipped & verified (Bug Fix Cycle #36).** All 49 seed photos fetched from Pexels (45 + 4, clean). The new diagnostic logging surfaced the only snag — `PEXELS_API_KEY` was missing from local `.env` (the Pexels curl test used an inline key that was never saved) — fixed by adding it to `.env` + restarting the dev server. Migration `027` applied via `npx supabase db push`. *Optional follow-up:* the standalone CLI `src/scripts/fetch-seed-photos.ts` should be confirmed migrated to Pexels too (button path uses `photo-fetch.ts`, which is verified).
+2. **▶ NEXT SESSION STARTS HERE — Dashboard QA verifications.** Walk `docs/testing/llv_dashboard_qa_verification_checklist.md`: Stripe (customer/subscription/proration/refund/per-request line items), Resend emails, Inngest (per-request billing run + seasonal reminder schedule), and the in-app admin return-processing step (T12.1 steps 4–6). They run in Jim's external dashboards; record pass/fail in the checklist's result table; any failure becomes a Code prompt (Bug Fix Cycle #37+). Clearing these closes out the Sections 2–13 QA entirely.
+3. **Provider outreach** (WI soft-launch blocker) + business-strategy items remain the larger path to launch.
+
+---
+
+## 🏁 Session Summary — June 1, 2026 (Closeout)
+
+**All test-run bugs cleared.** This session ran the full fix → ship → re-verify loop on every bug surfaced by the Sections 2–13 QA run (see the morning block below for how they were found). Cowork wrote the Code prompts; Claude Code implemented + pushed; Cowork re-verified each on the live Vercel deployment in a connected Chrome session.
+
+### Final bug status — 100% fixed & verified
+| # | Severity | Area | Status |
+|---|---|---|---|
+| 25 | High | Admin / Pricing | ✅ Save-pricing "freeze" — root cause was a native `window.confirm()` blocking the renderer (not a Stripe hang). Replaced 8 native confirms with custom `useConfirm()` dialog. Verified ($299→$309 persists). |
+| 26 | High | Admin / Concierge | ✅ Concierge queue empty — PostgREST FK ambiguity; fixed with `!client_id` hint. Verified. |
+| 27 | High | Provider / Auth | ✅ Provider portal unreachable — `seedProviders()` now creates auth user + role + links `providers.profile_id`. Verified. |
+| 34 | High | Provider / RLS | ✅ Provider order 404 — migration 026 added 5 provider SELECT/UPDATE RLS policies. Verified (incl. negative cross-provider check). |
+| 28 | High (config) | AI Search | ✅ AI semantic search — was a missing `ANTHROPIC_API_KEY` on Vercel; Jim set it. Verified with two distinct NL queries returning context-correct ranked results. |
+| 29 | Low | Admin / Corridors | ✅ New-corridor prefilled defaults now in form state. Verified. |
+| 30 | Low | Outfits | ✅ Spurious outfit-delete error toast removed. Verified. |
+| 31 | Low | Orders / Dates | ✅ Requested-delivery off-by-one — local-midnight parse. Verified. |
+| 32 | Low | Notifications | ✅ Bell badge reactive after "Mark all read" — CustomEvent path. Verified (resets 1→0 on same page). |
+| 35 | Low | Admin / Corridors | ✅ Duplicate-corridor error — `return { error }` (Next masks thrown errors in prod). Verified ("A corridor for WI ↔ AZ already exists." toast). |
+
+Full per-bug detail in the **Bug Fix Cycle table** (Section 13). Test residue cleaned: the "Defaults Fixed Check" (WI↔TX) test corridor was deactivated, which also fixed a client-dashboard text bleed.
+
+### Also completed earlier this session
+- **Wisconsin provider research + outreach kit** (`docs/strategy/llv_wisconsin_providers_research.md`, `docs/cowork/llv_wisconsin_provider_outreach_kit.md`) — Martinizing (lead), Klinke, The London Cleaners shortlisted; reusable intro email + discovery call script + one-page partner proposal.
+- **Arizona outreach kit** mirrored (`docs/cowork/llv_arizona_provider_outreach_kit.md`) — RAVE FabriCARE (top), European Couture, Mastel; daughter as AZ Corridor Manager. The two kits = the reusable provider-acquisition playbook for every future corridor.
+- **Pricing docs aligned to live $299/$599** across launch-readiness, assumptions register, and handoff.
+- Outreach kit added to the launch-readiness checklist (`docs/strategy/llv_launch_readiness.md`).
+
+### Still needs founder / dashboard verification (not blockers; can't be done from the app UI)
+- Stripe dashboard: subscription/customer creation, proration on tier change, refund processing, per-request invoice line items.
+- Resend dashboard / dev inbox: email notifications. Inngest dashboard: per-request billing function + seasonal reminder schedules.
+
+### What's queued for next session
+- **Founder dashboard verifications** above (Stripe/Resend/Inngest) — the only QA items left.
+- **Provider outreach** — send the WI/AZ kits (fill brackets; decide Jim-vs-daughter intro). WI providers remain the soft-launch blocker. Per platform safety, Cowork drafts but does not send; connect an email connector for approve-each-send drafts.
+- **Business strategy** — remaining assumptions-register items.
+- Platform is in strong shape against the Sections 2–13 plan; ready to shift toward founding-member recruitment.
+
+---
+
+## 🏁 Session Summary — June 1, 2026 (Morning — QA test run)
 
 **QA test run — Sections 2–13 executed against the live Vercel deployment (Cowork, browser-driven).** Cowork drove the platform end-to-end in a connected Chrome session against `luxury-lifestyle-vault.vercel.app` + hosted Supabase + Stripe sandbox, walking all 30 scenarios in order. Full results: **`docs/testing/llv_test_run_results_2026-06-01.md`**. Test plan updated (environment header + Bug Log populated).
 
@@ -194,7 +365,7 @@ Full pre-launch checklist at `docs/strategy/llv_launch_readiness.md`.
 - Based in Brookfield, Wisconsin. Daughter lives in Tempe, Arizona.
 - Technical founder who plans to build the MVP using Claude Code and Cowork.
 - Prefers working through documents for continuity rather than long conversation threads.
-- Three-tool workflow: Claude Chat (strategy/research), Cowork (documents/coordination), Claude Code (engineering).
+- Two-tool workflow (since May 30, 2026): Cowork (strategy, research, documents/coordination, Code-prompt authoring, browser-driven QA) and Claude Code (engineering, DevOps, git). Claude Chat is optional backup only.
 - Update this handoff document and any relevant project files at the end of every session.
 
 ---
@@ -332,15 +503,17 @@ Desk research complete — shortlist for outreach in **`docs/strategy/llv_wiscon
 
 ---
 
-## 11. Three-Tool Workflow
+## 11. Two-Tool Workflow
+
+In effect since May 30, 2026. **Claude Cowork** and **Claude Code** are the two active tools; **Claude Chat is optional backup only** (clean-room second opinion or thinking away from the Mac — not part of the daily workflow).
 
 | Tool | Role | Key Output |
 |------|------|------------|
-| **Claude Chat** | Strategy, research, architecture | Strategic direction, draft documents, market research |
-| **Claude Cowork** | Document management, coordination, task breakdown | Polished documents, sprint plans, SOPs, outreach materials |
-| **Claude Code** | Engineering, implementation, testing | Production application code |
+| **Claude Cowork** | Strategy, research, architecture, documents/coordination, Code-prompt authoring, browser-driven QA | Polished docs, sprint plans, SOPs, outreach materials, Code prompts, QA results |
+| **Claude Code** | Engineering, implementation, DevOps, git | Production application code |
+| *Claude Chat (optional)* | Backup / clean-room second opinion | Occasional offline thinking; output folded back into the project folder by Cowork |
 
-**Workflow:** Claude Chat defines strategy → Founder saves drafts to local folder → Cowork polishes and maintains documents → Cowork breaks architecture into dev tasks → Claude Code builds the platform. See `DIVISION_OF_LABOR.md` for full details.
+**Workflow:** Cowork researches, drafts/maintains documents, runs browser-driven QA, and breaks work into Code prompts (`docs/cowork/llv_code_prompt_<date>_<topic>.md`) → Founder pastes a prompt into Claude Code → Code ships, commits, pushes, and reports back → Founder relays the outcome → Cowork updates this handoff (Bug Fix Cycle). See `DIVISION_OF_LABOR.md` for full details.
 
 ---
 
@@ -362,7 +535,7 @@ Desk research complete — shortlist for outreach in **`docs/strategy/llv_wiscon
 | `llv_platform_test_plan.docx` | `docs/testing/` | Comprehensive QA test plan — 13 sections, 30 scenarios, ~150 test steps. Covers Critical, High, and Medium priority tests across all platform surfaces. Includes Bug Log table. **Platform must pass all Critical + High tests before founding-member recruitment.** |
 | `llv_session_handoff.md` | Project root | This document — running decisions and open items |
 | `llv_needs_chat_review.md` | Project root | Items requiring Claude Chat resolution (all 12 resolved May 25, 2026) |
-| `DIVISION_OF_LABOR.md` | Project root | Role definitions for Chat, Cowork, and Code |
+| `DIVISION_OF_LABOR.md` | Project root | Role definitions for Cowork and Code (Chat optional backup) |
 
 ---
 
@@ -404,6 +577,11 @@ Desk research complete — shortlist for outreach in **`docs/strategy/llv_wiscon
 
 | Date | Reported by | Completed | Reference |
 |---|---|---|---|
+| June 3, 2026 | Founder + Cowork | **📊 PROJECT TRACKER MOVED TO NOTION (live punch list).** Replaced the idea of a static status doc with a Notion database — **LLV Launch — Project Tracker** (https://app.notion.com/p/0e5fde0ea97542cdb1258b96e507ee73; `data_source_id` `08760e28-e1a4-4da2-b805-31f4ac1f3c54`). 40 tasks loaded across Phases 0–4 + Tracks A–D, with Status / Phase-Track / Priority / Owner / Flags (Launch gate, Long-lead, Soft-launch blocker) / Notes / Ref. Board views "By Phase / Track" (the 30k-ft view) + "By Status". **Cowork is acting PM — updates task Status as work ships** ("as we go"); founder can edit directly. Decision: Notion = project tracking, Drive = business docs, repo = code. Optional weekly PM digest offered (not yet scheduled). | This entry; Notion DB above; memory `project-tracker-notion`. |
+| June 3, 2026 | Founder + Cowork | **✅ HELP SYSTEM SHIPPED & VERIFIED (Phase 1.5 / §11 / prompt 13.4).** Data-driven help system built by Claude Code and verified by the founder in the running app. Migration `028_help_system.sql` (tables `help_tooltips` + `help_articles`, RLS with admin-sees-drafts, `handle_updated_at` triggers) applied. Components: Base UI `popover.tsx`; `<HelpTip areaKey>` (server component, renders nothing when no row); `<HelpTipPopover>` (now **opens on hover** with safePolygon bridge + 300ms close grace, plus click/tap + keyboard); `<HelpEscalate>` ("Talk to your concierge" → `/client/concierge`, omitted on provider page). Pages: `/client/help` (search + category groups), `/provider/help`, `/admin/help` (Tooltips + Articles CRUD, all fields editable, `useConfirm` + sonner). Seed: 2 tooltips (`client.ondemand`, `client.returns`) + 2 articles, idempotent via `/admin/seed`. Verified: returns tip renders + escalates on the Orders list; hover works; unseeded areas render nothing. **Committed to local `main` only (26 files, isolated — no proxy/doc-archive/package.json) — NOT yet pushed to origin/Vercel.** Remaining founder checks: `/admin/help` add-a-tip → billing, `/provider/help`. | This entry; `docs/superpowers/specs/2026-06-03-help-system-design.md`; `supabase/migrations/028_help_system.sql`. |
+| June 3, 2026 | Founder + Cowork | **📁 DOCUMENT SINGLE-SOURCE-OF-TRUTH ESTABLISHED.** Adopted a **two-zone model**: Google Drive "Luxury Lifestyle Vault" is canonical for all business/strategy/brand/ops docs; the local repo keeps only what Claude Code needs to build. Moved 47 business/historical docs into **`docs/_archive/`** (nothing deleted — reversible); active `docs/` now holds only the dev runbook, design system, active test plan (`docs/testing/`), the SQL util, and the two open 2026-06-03 Code prompts. Added a **"Document authority" directive to the top of `CLAUDE.md`** so Code treats Drive as canonical, never resurrects `docs/_archive/` as current, and asks the founder for doc context it can't get locally (Code can't read Drive; Cowork is the bridge and exports a working copy into the repo when a task needs it). Saved to Cowork memory. (Note: the handoff had been a symlink whose target sat under `docs/`; restored as a real file at the project root during this change — no content lost.) | This entry; `CLAUDE.md` (Document authority); `docs/_archive/`; Drive parent `10-HtTcGZDQpj9AvXKvJzlzYXhRF1Pu9S`. |
+| June 3, 2026 | Founder + Cowork | **🛠️ LOCAL DEV-SERVER RECURRING ISSUE — DIAGNOSED + FIXED + DOCUMENTED.** The app repeatedly wouldn't run locally (started yesterday, kept coming back). Walked it live: `next dev` reached "Ready" then got killed / hung at `○ Compiling proxy ...` / crashed under `--webpack` with `loadProjectInfo is not a function`. **Root cause: corrupted `node_modules/next`** from in-place instrumentation (Claude Code's `[LLV-TRACE]` probes) + half-applied patches — the proxy hang was a *symptom*, not a real `proxy.ts` bug. **Fix (recurring): `rm -rf .next node_modules && npm install && npm run dev`** → clean boot (`proxy.ts` compiles ~400ms, `/auth/login` 200). Contributing factors: two `next dev` servers running at once (Code + founder colliding on port 3000; Code's `pkill` killing the founder's server) and a **Node version mismatch** (Code on 22.x vs the project's pinned 20.19.5). **Wrote a runbook** (`docs/cowork/llv_local_dev_troubleshooting.md`) and a **Code brief** (`docs/cowork/llv_code_prompt_2026-06-03_local_dev_stability.md`) so this stops costing time. ⚠️ **Known recurring issue until durable fix lands** (commit a real `patch-package` patch or pin/upgrade Next; stop editing `node_modules`; one dev-server owner; Node 20.19.5). | This entry; `docs/cowork/llv_local_dev_troubleshooting.md`; `docs/cowork/llv_code_prompt_2026-06-03_local_dev_stability.md`. |
+| June 3, 2026 | Cowork | **🧹 DOC HYGIENE — DoL RATIFIED + STATUS/PRICING RECONCILED.** (1) Rewrote `DIVISION_OF_LABOR.md` to formally ratify the **two-tool model** (Cowork + Code; Chat optional backup) and added **browser-driven QA + bug triage** to Cowork's responsibilities. (2) Mirrored two-tool in the handoff: Section 11 converted to a two-tool table, Founder Background + Purpose + doc-index lines updated, Bug Fix Cycle process re-routed from Chat → Cowork. (3) **Corrected stale testing status** everywhere it appeared (First Steps #5, June 2 TL;DR + Session Summary status table, Section 13 "Platform testing" item): Sections 1–13 executed and all surfaced bugs fixed + verified; remaining gate = founder-run dashboard verifications (Stripe/Resend/Inngest) + admin return-processing T12.1 4–6. (4) **Pricing consistency check** — assumptions register, launch readiness, and handoff all align to live **$299 / $599 / $75 + $15/item, 20% founding discount**; fixed the June 2 Track B line (was $249/$449). The marketing brochure (Drive folder 02) showed the old "From $249/mo" / "From $449/mo"; founder confirmed $299/$599 is canonical, so the brochure was **regenerated**: new local source `docs/cowork/llv_brochure_2026.html` + rebuilt `LLV_Brochure_2026.pdf` (project root) on the Obsidian & Ivory brand system, with Tier 1 $299 / Tier 2 $599 / Tier 3 $75 + $15/item and the founding-member discount stated separately. Then, per founder request, produced a **card-styled edition** that copies the original brochure's layout but leans into the black-card brand identity (gold filigree corners + double frame, silver letter-spaced wordmark, "LLV / Member Since 2026" seal, "Founding Member" CTA badge): source `docs/cowork/llv_brochure_2026_card_edition.html` + `LLV_Brochure_2026_card_edition.pdf` (project root). Founder then opted to keep the **original layout + color scheme**, so the canonical updated brochure is **`LLV_Brochure_2026_v2.pdf`** (source `docs/cowork/llv_brochure_2026_v2.html`) — a faithful rebuild of the original (black hero/stats/CTA bands, ivory body, title-case wordmark, no card embellishments) with only the pricing ($299/$599) and footer caveat changed. The card edition is retained as an alternative. The original Drive brochure was **not** overwritten. ⚠️ **Founder step:** re-upload `LLV_Brochure_2026_v2.pdf` to Drive folder 02 to replace the stale $249/$449 one (connector can't overwrite Drive files). | This entry; `DIVISION_OF_LABOR.md`; Section 11; `docs/strategy/llv_business_strategy_assumptions_register.docx`; `docs/cowork/llv_brochure_2026_card_edition.html`; `LLV_Brochure_2026_card_edition.pdf` (project root → re-upload to Drive folder 02). |
 | June 1, 2026 | Cowork | **🧪 QA TEST RUN — SECTIONS 2–13 EXECUTED** against the live Vercel deployment (browser-driven). All 30 scenarios walked in order. **Core pipelines solid** (onboarding→payment→active sub, full 9-status order lifecycle incl. dispatch+UPS shipment, client ordering w/ live cost preview, real-time notifications, reporting, audit, RBAC, RLS). Found **4 High** (Save-pricing freeze; admin concierge queue empty; provider portal unreachable / no provider auth seed; AI search unavailable on Vercel = likely missing `ANTHROPIC_API_KEY`) + **4 Low** (corridor prefilled defaults; outfit-delete toast; date off-by-one; bell badge not reactive). **4 new Code prompts written** (`docs/cowork/llv_code_prompt_2026-06-01_*.md`). Test plan env header + Bug Log updated. | June 1 Session Summary block (top of doc); **`docs/testing/llv_test_run_results_2026-06-01.md`** (full per-section results); Bug Fix Cycle #25–#32 below. |
 | May 31, 2026 | Founder + Cowork | **🎨 ENGINEERING POLISH IN FLIGHT.** Pivoted from test-plan resumption to clearing the polish queue. Cowork wrote **6 Code prompts** (`docs/cowork/llv_code_prompt_2026-05-31_*.md`): photo-seeding → Category Art Cards + upload hardening; 3-state theme toggle; clear-all/clear-test-accounts FK gap; "seeded" badge label; tier active-vs-synced indicator; accessories glyph inference. **Bug Fix Cycle #23 SHIPPED** — Category Art Cards (14 gold glyphs) replace the Unsplash seed fetch across 9 render sites; upload pipeline hardened (downscale ≤2048px + WebP/JPEG). Remaining 5 prompts queued for Code. A flip-card idea (click → reveal real photo) was assessed and **declined** (the art card exists only when there's no photo, so there's nothing to flip to). | May 31 Session Summary block (top of doc); Bug Fix Cycle #23 below; `docs/cowork/llv_engineering_polish_todos.md`. |
 | May 28–30, 2026 | Founder + Cowork | **🚀 DEPLOYED + 22 BUGS SHIPPED.** Hosted Supabase provisioned (25 migrations pushed), Vercel deployment live (`luxury-lifestyle-vault.vercel.app`), Inngest cloud + Stripe webhooks wired, test-card flow verified. Signup → active-subscription verified end-to-end on **both** local and Vercel. Bug Fix Cycle **#5–#22** — audit-log entity-type fixes, tier copy cleanup, Stripe customer self-heal, silent onboarding-completion fix, on-demand tier_type correction, Clear-All-Test-Accounts + demo-account seeding, NODE_ENV→NEXT_PUBLIC_ENABLE_DEMO_LOGIN flag, Unsplash interim disable, subscription off_session payment fix, onboarding redirect fix. | May 30 Session Summary block; Bug Fix Cycle #5–#22 below. |
@@ -471,7 +649,7 @@ Delivered through Phase A (Sprints A1, A2, A3 all complete) — verifiable in th
 
 **Next phase: Testing, then business strategy.** Platform is code-complete and launch-ready. The path to October 2026 soft launch runs through QA first, then business operations:
 
-1. **Platform testing** *(CURRENT PHASE)* — Founder executes `docs/testing/llv_platform_test_plan.docx` (13 sections, 30 scenarios, ~150 steps). **All Critical and High priority tests must pass before founding-member recruitment begins.** Bugs reported in Chat → Chat produces Code prompts → Code fixes → founder re-tests → tracked in the Bug Fix Cycle table below.
+1. **Platform testing** *(substantially complete)* — `docs/testing/llv_platform_test_plan.docx` (13 sections, 30 scenarios, ~150 steps). Section 1 passed May 26; Sections 2–13 executed June 1 (Cowork, browser-driven); all surfaced bugs fixed and verified (Bug Fix Cycle table below). Remaining gate: founder-run external-dashboard verifications (Stripe/Resend/Inngest, see `docs/testing/llv_dashboard_qa_verification_checklist.md`) + admin return-processing steps T12.1 4–6. Process: Cowork captures/diagnoses → Cowork writes Code prompt → Code fixes → Cowork re-verifies on the live deployment.
 2. **Business strategy resolution** — Work through the 10 open items in `docs/strategy/llv_business_strategy_assumptions_register.docx` (WI providers, pricing validation, provider terms, insurance, daughter's role, capital strategy, choke points, entity formation, WI storage, founding-member recruitment). Each is configuration-only; no code changes required.
 3. **Founding-member recruitment** — Build outreach materials, work personal/referral channels, recruit 10–15 founding members.
 4. **Provider onboarding** — Sign WI provider(s); confirm AZ provider(s) (RAVE FabriCARE, European Couture Cleaners); load real provider data into the admin panel.
@@ -481,11 +659,11 @@ Full launch-readiness checklist at `docs/strategy/llv_launch_readiness.md`.
 
 ### Bug Fix Cycle
 
-Founder tests the platform using `llv_platform_test_plan.docx`. When a test fails:
-1. Founder describes the bug in **Claude Chat**.
-2. Chat diagnoses and produces a **Code prompt** describing the fix.
+QA against `llv_platform_test_plan.docx`. When a test fails:
+1. **Cowork** captures the failure (often via browser-driven QA) and diagnoses likely root cause.
+2. Cowork produces a **Code prompt** describing the fix (`docs/cowork/llv_code_prompt_<date>_<topic>.md`).
 3. Founder pastes the Code prompt into **Claude Code** to implement the fix.
-4. Founder re-tests to confirm the bug is resolved.
+4. Cowork re-verifies on the live deployment (and/or founder re-tests).
 5. Bug is logged below.
 
 | # | Date | Priority | Area | Description | Status |
@@ -517,14 +695,15 @@ Founder tests the platform using `llv_platform_test_plan.docx`. When a test fail
 | 25 | June 1, 2026 | High | Admin / Pricing | **Save-pricing freeze — ROOT CAUSE FOUND (not a Stripe hang).** `tier-edit-form.tsx:185` gated the price save on a **native `window.confirm()`** then `if (!ok) return`; the native dialog blocked the page so during QA it was dismissed → save returned early → price never persisted. Fixed as part of the native-dialog sweep (#33) — Save pricing now uses the custom `useConfirm()` dialog. ✅ **Re-tested June 1 (Cowork):** changing Seasonal Essentials $299→$309 now shows the custom "New Stripe price" dialog (no native chrome, no freeze), and the price **persists** on reload + the pricing change log increments. Reverted to $299. | ✅ FIXED & VERIFIED |
 | 26 | June 1, 2026 | High | Admin / Concierge | **Admin concierge queue empty.** `/admin/concierge` page used `.select('*, profiles(...)')` against a table with two FKs to profiles (`client_id` mig 007 + `author_profile_id` mig 021) → PostgREST ambiguity error → page silently rendered empty. Fixed with `!client_id` disambiguation hint (no re-seed needed). ✅ **Re-tested June 1 (Cowork):** queue now lists client + provider messages with source badges, View-order links, status actions; Provider source filter isolates the RAVE message. | ✅ FIXED & VERIFIED |
 | 27 | June 1, 2026 | High | Seed / Providers | **Provider portal unreachable.** `seedProviders()` now creates a Supabase auth user per provider → trigger creates profile → sets `role='provider'` + links `providers.profile_id` (idempotent, repairs null links). `seedConcierge()` patches provider-message authors on re-run. RAVE + European Couture added to quick-login (all 5 providers use `TestLLV2026!`). ✅ **Re-tested June 1 (Cowork):** ran Providers seed (5 seeded) + Concierge; quick-login as European Couture → `/provider` shows "Welcome, Sophia Marchetti" with the order queue ("Awaiting your response (1)" = the #C9892E85 dispatch + 2 active orders). ⚠️ But the provider order **detail** page 404s — new bug #34. | ✅ FIXED & VERIFIED (login + portal queue) |
-| 28 | June 1, 2026 | High (config) | AI Search | **AI semantic search unavailable on Vercel.** Natural-language wardrobe search returns "AI search unavailable — showing best-effort matches"; keyword fallback works. Almost certainly a missing `ANTHROPIC_API_KEY` env var on Vercel. Surfaced T4.2. | 🆕 OPEN — config: set env var + redeploy (noted in `llv_code_prompt_2026-06-01_qa_low_bugs.md`) |
+| 28 | June 1, 2026 | High (config) | AI Search | **AI semantic search unavailable on Vercel.** Natural-language wardrobe search returns "AI search unavailable — showing best-effort matches"; keyword fallback works. Root cause confirmed: missing `ANTHROPIC_API_KEY` env var on Vercel. Surfaced T4.2. Resolution: Jim set `ANTHROPIC_API_KEY` on Vercel (June 1). ✅ **Re-tested & verified June 1 (Cowork):** as Demo Client, "something warm for a cold winter day" → 3 relevant results (Wool Overcoat, Cashmere Crewneck, Navy Wool Suit) each with AI reasoning; "elegant evening event" → 4 relevant results (Navy Wool Suit, White Poplin Dress Shirt, Black Oxford Shoes, Wool Overcoat). Distinct, context-appropriate result sets per query (correctly excludes the linen dress / casual pieces) — genuine Haiku semantic ranking, no "AI search unavailable" fallback. | ✅ FIXED & VERIFIED (config) |
 | 29 | June 1, 2026 | Low | Admin / Corridors | New Corridor modal's prefilled origin/destination code defaults ("WI"/"AZ") aren't in form state → false "All fields are required" unless retyped. Surfaced T2.2. Fix: initialize `useState('WI')` / `useState('AZ')` in `corridor-create-form.tsx`. ✅ Re-tested & verified June 1 (Cowork): "Defaults Fixed Check" created with the prefilled origin "WI" (never retyped) → WI↔TX, "Corridor created". | ✅ FIXED & VERIFIED |
 | 30 | June 1, 2026 | Low | Client / Outfits | Outfit delete succeeds but shows a spurious "Failed to delete outfit" error toast. Surfaced T4.4. Fix: removed `redirect()` from `deleteOutfit` server action (NEXT_REDIRECT was being caught as an error); client component now calls `router.push('/client/outfits')` on success. ✅ Re-tested & verified June 1 (Cowork): created + deleted a throwaway outfit → no error toast, outfit removed, others intact. | ✅ FIXED & VERIFIED |
 | 31 | June 1, 2026 | Low | Orders / Dates | Requested-delivery date shows one day early on mid-flow review/details/dispatch-modal screens (final saved date correct) — timezone/UTC parsing. Surfaced T5.1/T5.2/T6.2. Fix: replaced `new Date('YYYY-MM-DD')` (UTC midnight → prior day in US timezones) with `parse(str, 'yyyy-MM-dd', new Date())` (local midnight) in rotation wizard, on-demand form, and dispatch modal. ✅ Re-tested & verified June 1 (Cowork): on-demand review screen — field 06/03/2026 now shows "June 3, 2026" (was "June 2"); admin order view also correct. | ✅ FIXED & VERIFIED |
 | 32 | June 1, 2026 | Low | Notifications | Notification bell badge not reactive after "Mark all read" (stale until reload; single reads do update it). Surfaced T9.1. First fix (UPDATE realtime listener) failed re-test: bulk server-side UPDATE events were unreliable on the deployment. Root fix: `NotificationList` fires `CustomEvent('notifications:allRead')` after `markAllNotificationsRead()` resolves; bell adds a `window` listener that immediately marks all its items read without relying on realtime. ✅ **Re-tested & verified June 1 (Cowork):** gave Margaret 1 unread → "Mark all read" → bell badge reset 1→0 **on the same page, no navigation** (vs. stuck at "1" for 14s+ before). | ✅ FIXED & VERIFIED |
-| 35 | June 1, 2026 | Low | Admin / Corridors | **Duplicate-corridor creation throws an ungraceful error.** Root cause: `throw` from Server Actions is masked by Next.js in production builds (generic digest). Fix: `createCorridor` now returns `{ error: '…already exists' }` on Postgres `23505` (matching codebase `return { error }` pattern); client checks `result?.error` and shows toast. Modal stays open. | ✅ FIXED |
+| 35 | June 1, 2026 | Low | Admin / Corridors | **Duplicate-corridor creation throws an ungraceful error.** Root cause: `throw` from Server Actions is masked by Next.js in production builds (generic digest). Fix: `createCorridor` now returns `{ error: '…already exists' }` on Postgres `23505` (matching codebase `return { error }` pattern); client checks `result?.error` and shows toast. Modal stays open. ✅ **Re-tested & verified June 1 (Cowork):** attempted to create a WI↔AZ corridor (already exists) → friendly toast **"A corridor for WI ↔ AZ already exists."** (not the generic "Server Components render" digest), modal stayed open. Test residue cleaned: deactivated the "Defaults Fixed Check" (WI↔TX) test corridor — this also fixed the client dashboard text bleed (Margaret's overview now reads "5 items in Wisconsin ↔ Arizona storage." instead of "33 items in Defaults Fixed Check storage"). | ✅ FIXED & VERIFIED |
 | 34 | June 1, 2026 | High | Provider / RLS | **Provider order detail 404s + item counts show 0.** After the #27 seed fix, provider login + portal queue work, but opening any provider order (`/provider/orders/<id>`) 404s. Root cause: no provider SELECT RLS on `orders`/`order_items`/`items`/`item_photos` (only `provider_order_assignments` + `concierge_messages` have provider policies), so the detail page's order query returns null → notFound(). Blocks T7.1–T7.4 (open order, accept/decline, stage updates, damage, messaging). Surfaced during #27 re-verification; confirmed via RLS migration audit. **Code shipped a migration: 5 policies — `orders_provider_read` (SELECT), `order_items_provider_read` (SELECT), `order_items_provider_update` (UPDATE: stage/notes/damage), `items_provider_read` (SELECT), `item_photos_provider_read` (SELECT)** — all scoped to assigned orders via `order_items → provider_order_assignments → providers.profile_id`. Migration `026_provider_order_rls.sql` pushed to hosted DB (June 1). ✅ **Re-tested June 1 (Cowork):** as European Couture Cleaners — order detail loads (no 404) with the 3 items, pickup/delivery, prep instructions; **Accept assignment** works; item expands to the Received→Cleaning→Pressing→Ready stage flow; **Mark as received** persists (UPDATE policy works); damage-flag + "Message LLV operations" UI present. Queue cards now show real item counts (3/4/1). **Negative check ✓:** opening RAVE's order (#9E93E08B) as European Couture → 404 (provider sees only assigned orders). **Section 7 (Provider Journey) is now unblocked & working.** | ✅ FIXED & VERIFIED |
 | 33 | June 1, 2026 | High | UX / Brand | **Native `window.confirm()` dialogs at 8 sites** replaced with a custom in-app confirm dialog. Shipped: new `src/components/ui/confirm-dialog.tsx` (`ConfirmDialogProvider` + promise-based `useConfirm()` / `openConfirm({title, body?, confirmLabel?, cancelLabel?, tone?})`, built on the existing Base UI Dialog; backdrop click resolves false). Provider mounted once at the root in `src/app/layout.tsx` (covers admin/client/provider). All 8 call sites migrated (tier-edit-form: save-pricing + deactivate; admin-order-status-panel: refund + mark-return-received; order-action-buttons: cancel + initiate-return; account-settings-form: sign-out-everywhere + close-account). `eslint.config.mjs` adds `no-restricted-globals` error for `confirm`/`alert`/`prompt`. Closes #25. | ✅ FIXED |
+| 36 | June 1, 2026 | High | Seed / Wardrobe Photos | **Seed-photo fetch migrated Unsplash → Pexels.** Two intertwined issues. (a) *Doc drift:* bug log #19/#23 ("disable"/"remove Unsplash + add art cards") were reversed by unlogged commits `7c3cdca`/`ebc533e` — the Unsplash fetch was actually **live** alongside the art-card fallback (code = truth). (b) *Masked failure:* the in-app Unsplash fetch returned a phantom "Rate limited after 0 items" while a `curl` from Jim's Mac (same key) returned **HTTP 200, x-ratelimit-remaining: 49**. Ruled out (exhaustively): bad/missing key, exhausted quota, wrong app, key whitespace, shell-env override, stale dev server, proxy vars, User-Agent. Concluded the server-side `fetch` received a non-200 (likely a Fastly/CDN edge 403) that the code collapsed into "rate limited," hiding the real status. **Fix:** migrated the seed-photo source to **Pexels** (25k/mo quota, raw-key `Authorization` header — *not* `Client-ID` — and no download-trigger requirement), and added **diagnostic status logging** (`searchPexels` now prints real `res.status` + `X-Ratelimit-Limit/Remaining` + body snippet + masked key, distinguishing 401/403/429/low-remaining). Attribution captured into new `item_photos.attribution jsonb` (migration `027_pexels_attribution.sql`, pushed to hosted DB). UI copy + `next.config.ts` updated. The new logging immediately surfaced the only real snag — `PEXELS_API_KEY` missing from local `.env` (the Pexels curl test used an inline key, never saved); added + dev server restarted. ✅ **Verified June 1 (Jim ran, Cowork-guided):** 49/49 seed photos fetched from Pexels (45 then 4, clean, no errors). Pexels key in local `.env` + Vercel. *Follow-up:* confirm the standalone CLI `src/scripts/fetch-seed-photos.ts` was migrated to Pexels too (button path `photo-fetch.ts` is verified). | ✅ FIXED & VERIFIED |
 
 ### Priority-ordered list of topics not yet fully addressed:
 
