@@ -1,7 +1,10 @@
+import { notFound } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
 import { SeedRunner } from '@/components/admin/seed-runner'
 
 export default function SeedDataPage() {
+  if (process.env.SEED_TOOLS_ENABLED !== 'true') notFound()
+
   return (
     <div className="space-y-8 max-w-3xl">
       <div>
@@ -18,7 +21,9 @@ export default function SeedDataPage() {
         <div className="space-y-1">
           <p className="text-xs font-medium text-yellow-700 dark:text-yellow-500">Development / Staging Only</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            This page is gated by <code className="font-mono bg-muted px-1 rounded">NEXT_PUBLIC_ENABLE_SEED_TOOLS=true</code>.
+            This page requires the server-only env var{' '}
+            <code className="font-mono bg-muted px-1 rounded">SEED_TOOLS_ENABLED=true</code>.
+            It is absent in production — this page 404s there by design.
             Demo clients log in at <strong>client1–5@test.llv.com</strong> with password <strong>TestLLV2026!</strong>
           </p>
         </div>

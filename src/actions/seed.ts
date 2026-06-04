@@ -18,8 +18,15 @@ async function requireAdmin() {
   if (profile?.role !== 'admin') throw new Error('Admin access required')
 }
 
+function requireSeedToolsEnabled() {
+  if (process.env.SEED_TOOLS_ENABLED !== 'true') {
+    throw new Error('Seed tools are disabled in this environment.')
+  }
+}
+
 export async function runSeedScript(id: string): Promise<SeedResult> {
   await requireAdmin()
+  requireSeedToolsEnabled()
   const manifest = SEED_MANIFEST.find(s => s.id === id)
   if (!manifest) throw new Error(`Unknown seed script: ${id}`)
   return manifest.script()
@@ -27,37 +34,37 @@ export async function runSeedScript(id: string): Promise<SeedResult> {
 
 export async function runAllSeeds() {
   await requireAdmin()
+  requireSeedToolsEnabled()
   return seedAll()
 }
 
 export async function clearAllSeeds(): Promise<SeedResult> {
   await requireAdmin()
+  requireSeedToolsEnabled()
   return clearAll()
 }
 
 export async function previewTestAccountCleanup(): Promise<{ count: number; emails: string[] }> {
   await requireAdmin()
-  if (process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN !== 'true') {
-    throw new Error('ENABLE_DEMO_LOGIN flag not set — refusing in this environment')
-  }
+  requireSeedToolsEnabled()
   return previewTestAccounts()
 }
 
 export async function clearAllTestAccounts(): Promise<SeedResult> {
   await requireAdmin()
-  if (process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN !== 'true') {
-    throw new Error('ENABLE_DEMO_LOGIN flag not set — refusing in this environment')
-  }
+  requireSeedToolsEnabled()
   return clearTestAccounts()
 }
 
 export async function fetchNextSeedPhoto(excludeIds: string[]) {
   await requireAdmin()
+  requireSeedToolsEnabled()
   return fetchOnePhoto(excludeIds)
 }
 
 export async function getSeedStatus() {
   await requireAdmin()
+  requireSeedToolsEnabled()
   const adminClient = createAdminClient()
 
   const [
