@@ -84,7 +84,7 @@ export function LegalContent({ nodes }: LegalContentProps) {
           return (
             <div
               key={blockIdx}
-              className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 space-y-1"
+              className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 space-y-1 text-sm text-amber-800"
             >
               {block.items.map((item, i) => (
                 <p key={i} className="text-sm text-amber-800">
@@ -97,7 +97,7 @@ export function LegalContent({ nodes }: LegalContentProps) {
 
         if (block.kind === 'list') {
           return (
-            <ul key={blockIdx} className="list-disc pl-5 space-y-1.5">
+            <ul key={blockIdx} className="list-disc pl-5 space-y-1 text-sm">
               {block.items.map((item, i) => (
                 <li key={i} className="text-sm leading-relaxed text-foreground">
                   {renderInline(item.text)}
@@ -121,7 +121,7 @@ export function LegalContent({ nodes }: LegalContentProps) {
           return (
             <h2
               key={blockIdx}
-              className="font-serif text-xl font-normal mt-8 mb-1 border-b border-border pb-2"
+              className="font-serif text-xl font-normal mt-8 mb-2 border-b border-border pb-1"
             >
               {renderInline(node.text)}
             </h2>
@@ -135,7 +135,7 @@ export function LegalContent({ nodes }: LegalContentProps) {
           )
         }
         if (node.type === 'hr') {
-          return <hr key={blockIdx} className="my-4 border-border" />
+          return <hr key={blockIdx} className="my-6 border-border" />
         }
         // paragraph
         return (
