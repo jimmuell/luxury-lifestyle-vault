@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@send.luxurylifestylevault.com'
+export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@luxurylifestylevault.com'
 export const FROM_NAME = 'Luxury Lifestyle Vault'
 
 export const isDevMode = process.env.RESEND_DEV_MODE === 'true' || !process.env.RESEND_API_KEY
