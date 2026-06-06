@@ -248,7 +248,6 @@ export default async function AdminItemDetailPage({
                   <span className="text-sm font-medium capitalize">{CONDITION_LEVEL_LABELS[c.condition_level as ConditionLevel]}</span>
                   <span className="text-xs text-muted-foreground">
                     {format(new Date(c.assessed_at), 'MMM d, yyyy · h:mm a')}
-                    {/* @ts-expect-error — joined relation */}
                     {c.profiles?.full_name && ` · ${c.profiles.full_name}`}
                   </span>
                 </div>

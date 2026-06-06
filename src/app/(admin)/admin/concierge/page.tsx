@@ -139,7 +139,6 @@ export default async function AdminConciergePage({
                       <span>Provider message</span>
                     ) : (
                       <Link href={`/admin/clients/${message.client_id}`} className="hover:underline">
-                        {/* @ts-expect-error — joined relation */}
                         {message.profiles?.full_name ?? message.profiles?.email ?? 'Unknown client'}
                       </Link>
                     )}
