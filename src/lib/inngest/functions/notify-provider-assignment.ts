@@ -1,6 +1,7 @@
 import { inngest } from '@/lib/inngest/client'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/notifications'
+import { providerAssignmentEmail } from '@/lib/resend/emails/provider-assignment'
 
 export const notifyProviderAssignment = inngest.createFunction(
   {
@@ -30,6 +31,30 @@ export const notifyProviderAssignment = inngest.createFunction(
       linkTarget: `/provider/orders/${orderId}`,
       metadata: { orderId, assignmentId } as Record<string, string>,
     })
+
+    // Send email to the provider
+    const { data: profile } = await adminClient
+      .from('profiles')
+      .select('email, full_name')
+      .eq('id', provider.profile_id)
+      .single()
+
+    if (profile?.email) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+      const providerName = profile.full_name ?? provider.business_name ?? profile.email
+      const emailContent = providerAssignmentEmail({ providerName, orderId, appUrl })
+      await inngest.send({
+        name: 'email/send' as never,
+        data: {
+          recipientProfileId: provider.profile_id,
+          to: profile.email,
+          template: 'provider_assignment' as const,
+          subject: emailContent.subject,
+          html: emailContent.html,
+          text: emailContent.text,
+        },
+      })
+    }
 
     return { notified: provider.profile_id }
   }
