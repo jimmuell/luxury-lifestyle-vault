@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { FROM_EMAIL, FROM_NAME } from '@/lib/resend/client'
 import { EmailTestForm } from '@/components/admin/email-test-form'
@@ -7,10 +6,6 @@ import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default async function AdminEmailPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  const adminEmail = user?.email ?? ''
   const apiKeyConfigured = !!process.env.RESEND_API_KEY
 
   const adminSupabase = createAdminClient()
@@ -52,7 +47,7 @@ export default async function AdminEmailPage() {
       <div className="space-y-4">
         <h2 className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">Send test email</h2>
         <div className="rounded-lg border border-border bg-card p-5">
-          <EmailTestForm adminEmail={adminEmail} />
+          <EmailTestForm />
         </div>
       </div>
 

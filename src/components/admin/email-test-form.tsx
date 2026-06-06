@@ -8,12 +8,10 @@ import { toast } from 'sonner'
 import { sendTestEmail } from '@/actions/email'
 import { Send } from 'lucide-react'
 
-interface EmailTestFormProps {
-  adminEmail: string
-}
+const DEFAULT_TEST_RECIPIENT = 'jimmuell@aol.com'
 
-export function EmailTestForm({ adminEmail }: EmailTestFormProps) {
-  const [to, setTo] = useState(adminEmail)
+export function EmailTestForm() {
+  const [to, setTo] = useState(DEFAULT_TEST_RECIPIENT)
   const [subject, setSubject] = useState('LLV Resend test')
   const [isPending, startTransition] = useTransition()
 
