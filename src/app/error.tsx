@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import * as Sentry from '@sentry/nextjs'
 import { buttonVariants } from '@/components/ui/button'
 
 export default function GlobalError({
@@ -13,7 +14,7 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error(error)
+    Sentry.captureException(error)
   }, [error])
 
   return (
