@@ -1,5 +1,6 @@
 import { inngest } from '@/lib/inngest/client'
 import { sendEmail, type EmailTemplate } from '@/lib/resend/send'
+import { withSentryCapture } from '@/lib/inngest/with-sentry'
 
 type SendEmailEventData = {
   recipientProfileId: string | null
@@ -17,6 +18,8 @@ export const sendEmailFunction = inngest.createFunction(
     retries: 3,
   },
   async ({ event }: { event: { data: SendEmailEventData } }) => {
-    await sendEmail(event.data)
+    return withSentryCapture(async () => {
+      await sendEmail(event.data)
+    }, 'send-email')
   }
 )
