@@ -1,19 +1,20 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { SeedResult } from './types'
+import { qaEmail } from './qa-email'
 
 export const SEED_CLIENT_EMAILS = [
-  'client1@test.llv.com',
-  'client2@test.llv.com',
-  'client3@test.llv.com',
-  'client4@test.llv.com',
-  'client5@test.llv.com',
+  qaEmail('client1'),
+  qaEmail('client2'),
+  qaEmail('client3'),
+  qaEmail('client4'),
+  qaEmail('client5'),
 ]
 
 const SEED_PASSWORD = 'TestLLV2026!'
 
 const SEED_CLIENTS = [
   {
-    email: 'client1@test.llv.com',
+    email: qaEmail('client1'),
     full_name: 'Margaret Hartwell',
     phone: '(262) 555-0101',
     tier: 'elite',
@@ -39,7 +40,7 @@ const SEED_CLIENTS = [
     },
   },
   {
-    email: 'client2@test.llv.com',
+    email: qaEmail('client2'),
     full_name: 'Catherine Beaumont',
     phone: '(414) 555-0202',
     tier: 'premier',
@@ -64,7 +65,7 @@ const SEED_CLIENTS = [
     },
   },
   {
-    email: 'client3@test.llv.com',
+    email: qaEmail('client3'),
     full_name: 'James Thornton',
     phone: '(608) 555-0303',
     tier: 'elite',
@@ -89,7 +90,7 @@ const SEED_CLIENTS = [
     },
   },
   {
-    email: 'client4@test.llv.com',
+    email: qaEmail('client4'),
     full_name: 'Victoria Simmons',
     phone: '(920) 555-0404',
     tier: 'premier',
@@ -115,7 +116,7 @@ const SEED_CLIENTS = [
     },
   },
   {
-    email: 'client5@test.llv.com',
+    email: qaEmail('client5'),
     full_name: 'Robert Whitmore',
     phone: '(262) 555-0505',
     tier: 'standard',

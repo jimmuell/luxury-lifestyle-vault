@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { SEED_CLIENT_EMAILS } from './seed-clients'
+import { qaEmail } from './qa-email'
 import {
   MARGARET_SEASONAL_ITEMS,
   MARGARET_INPROGRESS_ITEMS,
@@ -76,7 +77,7 @@ export async function seedOrders(): Promise<SeedResult> {
   const { data: profiles } = await adminClient
     .from('profiles')
     .select('id, email')
-    .in('email', [...SEED_CLIENT_EMAILS, 'admin@test.llv.com'])
+    .in('email', [...SEED_CLIENT_EMAILS, qaEmail('admin')])
 
   const clientMap: Record<string, string> = {}
   for (const p of profiles ?? []) { clientMap[p.email] = p.id }
