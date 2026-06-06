@@ -1,5 +1,7 @@
 import type Stripe from 'stripe'
+import { inngest } from '@/lib/inngest/client'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { paymentReceiptEmail, paymentFailedEmail } from '@/lib/resend/emails/payment-receipt'
 
 export async function handleInvoiceEvent(event: Stripe.Event) {
   const invoice = event.data.object as Stripe.Invoice
@@ -58,5 +60,60 @@ export async function handleInvoiceEvent(event: Stripe.Event) {
         period_start: invoice.period_start ? new Date(invoice.period_start * 1000).toISOString() : null,
         period_end: invoice.period_end ? new Date(invoice.period_end * 1000).toISOString() : null,
       }, { onConflict: 'stripe_invoice_id' })
+  }
+
+  // Send payment emails if we can resolve a client
+  if (!clientId) return
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('email, full_name')
+    .eq('id', clientId)
+    .single()
+
+  if (!profile?.email) return
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const clientName = profile.full_name ?? profile.email
+  const description = invoice.description ?? invoice.lines.data[0]?.description ?? 'Membership subscription'
+
+  if (event.type === 'invoice.paid' && invoice.amount_paid > 0) {
+    const emailContent = paymentReceiptEmail({
+      clientName,
+      amountCents: invoice.amount_paid,
+      description,
+      invoiceId: invoice.id,
+      appUrl,
+    })
+    await inngest.send({
+      name: 'email/send' as never,
+      data: {
+        recipientProfileId: clientId,
+        to: profile.email,
+        template: 'payment_receipt' as const,
+        subject: emailContent.subject,
+        html: emailContent.html,
+        text: emailContent.text,
+      },
+    })
+  } else if (event.type === 'invoice.payment_failed') {
+    const amountCents = (invoice as unknown as { amount_due?: number }).amount_due ?? 0
+    const emailContent = paymentFailedEmail({
+      clientName,
+      amountCents,
+      description,
+      appUrl,
+    })
+    await inngest.send({
+      name: 'email/send' as never,
+      data: {
+        recipientProfileId: clientId,
+        to: profile.email,
+        template: 'payment_failed' as const,
+        subject: emailContent.subject,
+        html: emailContent.html,
+        text: emailContent.text,
+      },
+    })
   }
 }
