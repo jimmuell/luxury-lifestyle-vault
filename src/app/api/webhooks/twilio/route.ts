@@ -14,6 +14,7 @@ async function findProfileByPhone(phone: string): Promise<string | null> {
     .from('profiles')
     .select('id')
     .eq('phone', phone)
+    .eq('role', 'client')
     .maybeSingle()
 
   if (exact) return exact.id
@@ -30,6 +31,7 @@ async function findProfileByPhone(phone: string): Promise<string | null> {
     .from('profiles')
     .select('id')
     .eq('phone', e164)
+    .eq('role', 'client')
     .maybeSingle()
 
   return normalised?.id ?? null
@@ -59,7 +61,11 @@ export async function POST(req: Request) {
 
   // Validate Twilio signature
   const sig = req.headers.get('x-twilio-signature') ?? ''
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (!appUrl) {
+    console.error('[twilio/webhook] NEXT_PUBLIC_APP_URL is not set')
+    return new NextResponse(null, { status: 500 })
+  }
   const webhookUrl = new URL('/api/webhooks/twilio', appUrl).toString()
 
   const isValid = validateRequest(authToken, sig, webhookUrl, params)
