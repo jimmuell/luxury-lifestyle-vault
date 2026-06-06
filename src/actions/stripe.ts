@@ -4,6 +4,8 @@ import type Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { stripe } from '@/lib/stripe/server'
+import { inngest } from '@/lib/inngest/client'
+import { welcomeEmail } from '@/lib/resend/emails/welcome'
 
 // Stripe SDK v22 wraps responses — cast helper
 function asStripe<T>(val: unknown): T { return val as T }
@@ -186,7 +188,7 @@ export async function activateAndComplete(tierId: string) {
   const adminSupabase = createAdminClient()
   const [cpResult, profileResult] = await Promise.all([
     adminSupabase.from('client_profiles').update({ subscription_active: true }).eq('profile_id', user.id),
-    adminSupabase.from('profiles').update({ onboarding_complete: true }).eq('id', user.id),
+    adminSupabase.from('profiles').update({ onboarding_complete: true }).eq('id', user.id).select('full_name').single(),
   ])
 
   if (cpResult.error) {
@@ -197,6 +199,22 @@ export async function activateAndComplete(tierId: string) {
     // Critical: middleware gates on this column — must succeed
     throw new Error(`Onboarding completion failed: ${profileResult.error.message}`)
   }
+
+  // Welcome email — transactional, fires once at onboarding completion
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const clientName = profileResult.data?.full_name ?? user.email!
+  const emailContent = welcomeEmail({ clientName, appUrl })
+  await inngest.send({
+    name: 'email/send' as never,
+    data: {
+      recipientProfileId: user.id,
+      to: user.email!,
+      template: 'welcome' as const,
+      subject: emailContent.subject,
+      html: emailContent.html,
+      text: emailContent.text,
+    },
+  })
 
   return { subscriptionId }
 }
