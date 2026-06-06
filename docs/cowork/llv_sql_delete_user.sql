@@ -20,6 +20,11 @@
 --   ai_search_logs → notification_template_config → admin_broadcasts →
 --   profiles → auth.users
 --
+-- ⚠️  CONFIG NOTE
+-- admin_settings and notification_template_config are GLOBAL config tables.
+-- Their rows are NOT deleted — only the updated_by reference is set to NULL,
+-- so removing a user never wipes shared app-wide settings.
+--
 -- ⚠️  STRIPE NOTE
 -- This script does NOT delete the user's Stripe customer or subscription.
 -- After running, the Stripe records will be orphaned (no DB row references
@@ -136,12 +141,19 @@ BEGIN
   -- These didn't have direct relationships to client data so they were
   -- missed in the first cut. All have actor/updater FKs that block the
   -- final profile delete if not cleared.
+  --
+  -- NOTE: admin_settings and notification_template_config are GLOBAL config
+  -- tables (app-wide key/value settings), not per-user data. We must NOT
+  -- delete their rows just because this user was the last to edit them —
+  -- that would wipe shared configuration for everyone. Instead we NULL the
+  -- updated_by reference so the profile can be deleted while the setting
+  -- itself survives.
   DELETE FROM pricing_change_log         WHERE actor_profile_id = user_id;
   DELETE FROM email_sends                WHERE recipient_profile_id = user_id;
-  DELETE FROM admin_settings             WHERE updated_by = user_id;
+  UPDATE admin_settings             SET updated_by = NULL WHERE updated_by = user_id;
   DELETE FROM reminder_sends             WHERE client_id = user_id;
   DELETE FROM ai_search_logs             WHERE client_id = user_id;
-  DELETE FROM notification_template_config WHERE updated_by = user_id;
+  UPDATE notification_template_config SET updated_by = NULL WHERE updated_by = user_id;
   DELETE FROM admin_broadcasts           WHERE sent_by = user_id;
 
   -- ── Step 20: profile row itself ───────────────────────────────────────

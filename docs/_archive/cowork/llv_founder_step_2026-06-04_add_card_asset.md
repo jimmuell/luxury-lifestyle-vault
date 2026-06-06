@@ -19,4 +19,4 @@ That's it. The image is 2.6 MB, but the pages use Next.js `<Image>`, which autom
 
 ## Then
 
-Hand the Code prompt `llv_code_prompt_2026-06-04_branded_404_error.md` to Claude Code. It references `public/brand/llv-card.png`. Code will commit the image along with the new pages, so it deploys to Vercel with everything else.
+Hand the Code prompt `docs/_archive/cowork/2026-06-04/07_llv_code_prompt_2026-06-04_branded_404_error.md` to Claude Code. It references `public/brand/llv-card.png`. Code will commit the image along with the new pages, so it deploys to Vercel with everything else.
