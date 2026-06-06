@@ -97,7 +97,7 @@ export async function handleInvoiceEvent(event: Stripe.Event) {
       },
     })
   } else if (event.type === 'invoice.payment_failed') {
-    const amountCents = (invoice as unknown as { amount_due?: number }).amount_due ?? 0
+    const amountCents = invoice.amount_due
     const emailContent = paymentFailedEmail({
       clientName,
       amountCents,
