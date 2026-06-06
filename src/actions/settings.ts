@@ -58,6 +58,23 @@ export async function updatePreferredChannel(channel: 'email' | 'sms' | 'both') 
   if (error) throw new Error(error.message)
 }
 
+export async function updateSmsConsent(
+  enabled: boolean,
+  source: 'onboarding' | 'settings'
+): Promise<{ success: true } | { error: string }> {
+  const { user, supabase } = await requireClient()
+  const { error } = await supabase
+    .from('client_profiles')
+    .update({
+      sms_consent: enabled,
+      sms_consent_at: enabled ? new Date().toISOString() : null,
+      sms_consent_source: enabled ? source : null,
+    })
+    .eq('profile_id', user.id)
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
 export async function softDeleteAccount() {
   const { user, supabase } = await requireClient()
   const { error } = await supabase
