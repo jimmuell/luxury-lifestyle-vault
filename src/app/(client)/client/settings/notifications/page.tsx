@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NotificationPrefsForm } from '@/components/client/notification-prefs-form'
+import { SmsConsentCard } from '@/components/client/sms-consent-card'
 
 export default async function NotificationsSettingsPage() {
   const supabase = await createClient()
@@ -7,7 +8,7 @@ export default async function NotificationsSettingsPage() {
 
   const { data: cp } = await supabase
     .from('client_profiles')
-    .select('email_notifications, in_app_notification_prefs')
+    .select('email_notifications, in_app_notification_prefs, sms_consent')
     .eq('profile_id', user!.id)
     .single()
 
@@ -23,6 +24,7 @@ export default async function NotificationsSettingsPage() {
         Choose how you receive updates about your wardrobe and orders.
       </p>
       <NotificationPrefsForm emailPrefs={emailPrefs} inAppPrefs={inAppPrefs} />
+      <SmsConsentCard initialConsent={cp?.sms_consent ?? false} />
     </div>
   )
 }
