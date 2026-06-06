@@ -7,6 +7,8 @@ export type EmailTemplate =
   | 'payment_receipt'
   | 'payment_failed'
   | 'seasonal_rotation_reminder'
+  | 'welcome'
+  | 'provider_assignment'
 
 type EmailPreferenceKey = 'order_updates' | 'delivery_notices' | 'payment' | 'seasonal_reminders'
 
@@ -16,6 +18,8 @@ const TEMPLATE_PREFERENCE_MAP: Record<EmailTemplate, EmailPreferenceKey | null> 
   payment_receipt: null, // transactional — cannot be unsubscribed
   payment_failed: null,  // transactional
   seasonal_rotation_reminder: 'seasonal_reminders',
+  welcome: null,
+  provider_assignment: null,
 }
 
 export async function sendEmail({
