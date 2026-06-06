@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { updateProfile, completeOnboarding, updatePreferredContact } from '@/actions/profile'
+import { updateSmsConsent } from '@/actions/settings'
 import { createAddress } from '@/actions/addresses'
 import { createSetupIntent, activateAndComplete } from '@/actions/stripe'
 import { Button } from '@/components/ui/button'
@@ -153,6 +154,7 @@ export function OnboardingFlow({
   const [fullName, setFullName] = useState(initialFullName ?? '')
   const [phone, setPhone] = useState(initialPhone ?? '')
   const [contactMethod, setContactMethod] = useState('email')
+  const [smsConsent, setSmsConsent] = useState(false)
 
   // Step 1 — primary address
   const [primaryLabel, setPrimaryLabel] = useState('')
@@ -191,12 +193,14 @@ export function OnboardingFlow({
     formData.set('full_name', fullName)
     formData.set('phone', phone)
     startTransition(async () => {
-      const [profileResult, contactResult] = await Promise.all([
+      const [profileResult, contactResult, consentResult] = await Promise.all([
         updateProfile(formData),
         updatePreferredContact(contactMethod),
+        updateSmsConsent(smsConsent, 'onboarding'),
       ])
       if ('error' in profileResult) { toast.error(profileResult.error); return }
       if ('error' in contactResult) { toast.error(contactResult.error); return }
+      if ('error' in consentResult) { toast.error(consentResult.error); return }
       setStep(1)
     })
   }
@@ -313,6 +317,25 @@ export function OnboardingFlow({
               <Label htmlFor="phone">Phone number</Label>
               <Input id="phone" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 (414) 555-0100" />
             </div>
+            <div className="space-y-3 pt-1">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={smsConsent}
+                  onChange={e => setSmsConsent(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border border-border accent-foreground cursor-pointer flex-shrink-0"
+                />
+                <span className="text-sm">Send me order updates by text message</span>
+              </label>
+              <p className="text-xs text-muted-foreground leading-relaxed pl-7">
+                By checking this box, I agree to receive order and account text messages from Luxury Lifestyle
+                Vault at the phone number provided. Message frequency varies by account activity. Message and data
+                rates may apply. Reply STOP to opt out or HELP for help. See our{' '}
+                <a href="/terms" className="underline hover:text-foreground">Terms of Service</a>
+                {' '}and{' '}
+                <a href="/privacy" className="underline hover:text-foreground">Privacy Policy</a>.
+              </p>
+            </div>
             <div className="space-y-2">
               <p className="text-sm font-medium">Preferred contact method</p>
               <div className="flex gap-2">
@@ -331,7 +354,7 @@ export function OnboardingFlow({
             </div>
           </div>
 
-          <Button className="w-full" onClick={handleStep0} disabled={!fullName || pending}>
+          <Button className="w-full" onClick={handleStep0} disabled={!fullName || (smsConsent && !phone) || pending}>
             {pending ? 'Saving…' : 'Continue'}
           </Button>
         </div>
