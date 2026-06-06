@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { SiteFooter } from '@/components/shared/site-footer'
+import { LegalBackButton } from '@/components/legal/legal-back-button'
 
 export default function LegalLayout({ children }: { children: ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function LegalLayout({ children }: { children: ReactNode }) {
         </p>
       </header>
       <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12">
+        <LegalBackButton />
         {children}
       </main>
       <SiteFooter />

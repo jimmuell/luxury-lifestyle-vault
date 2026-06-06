@@ -331,9 +331,9 @@ export function OnboardingFlow({
                 By checking this box, I agree to receive order and account text messages from Luxury Lifestyle
                 Vault at the phone number provided. Message frequency varies by account activity. Message and data
                 rates may apply. Reply STOP to opt out or HELP for help. See our{' '}
-                <a href="/terms" className="underline hover:text-foreground">Terms of Service</a>
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Terms of Service</a>
                 {' '}and{' '}
-                <a href="/privacy" className="underline hover:text-foreground">Privacy Policy</a>.
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Privacy Policy</a>.
               </p>
             </div>
             <div className="space-y-2">
