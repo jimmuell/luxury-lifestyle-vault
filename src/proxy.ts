@@ -9,7 +9,7 @@ const ROLE_PREFIXES = {
   admin: '/admin',
 } as const
 
-const PUBLIC_PREFIXES = ['/auth', '/api/webhooks', '/api/inngest']
+const PUBLIC_PREFIXES = ['/auth', '/api/webhooks', '/api/inngest', '/terms', '/privacy']
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
