@@ -1,6 +1,7 @@
 import { inngest } from '@/lib/inngest/client'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/notifications'
+import { seasonalRotationReminderEmail } from '@/lib/resend/emails/seasonal-rotation-reminder'
 import { isWithinInterval, addDays, parseISO } from 'date-fns'
 
 export const seasonalRotationReminders = inngest.createFunction(
@@ -33,7 +34,7 @@ export const seasonalRotationReminders = inngest.createFunction(
 
     if (!corridors?.length) return { noCorridors: true }
 
-    // For each corridor, check if today is within the reminder window
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
     let totalSent = 0
 
     for (const corridor of corridors) {
@@ -58,7 +59,6 @@ export const seasonalRotationReminders = inngest.createFunction(
         const clientIds = activeSubs?.map(s => s.client_id) ?? []
         if (!clientIds.length) continue
 
-        // For each eligible client, check idempotency and send if not already sent
         for (const clientId of clientIds) {
           // Check if already sent this year for this corridor + type
           const { data: existing } = await db
@@ -78,6 +78,13 @@ export const seasonalRotationReminders = inngest.createFunction(
             .select('id', { count: 'exact', head: true })
             .eq('client_id', clientId)
 
+          // Resolve client profile for email
+          const { data: profile } = await db
+            .from('profiles')
+            .select('email, full_name')
+            .eq('id', clientId)
+            .single()
+
           const seasonLabel = reminderType === 'fall_transition' ? 'fall' : 'spring'
           const title = `Your ${seasonLabel} rotation window is opening`
           const snippet = `The ${corridor.display_name} corridor opens in ~${daysBefore} days.${itemCount ? ` You have ${itemCount} item${itemCount !== 1 ? 's' : ''} in the vault.` : ''}`
@@ -96,7 +103,30 @@ export const seasonalRotationReminders = inngest.createFunction(
             } as unknown as import('@/types/database').Json,
           })
 
-          // Record send for idempotency
+          // Send email (preference-gated via sendEmail → seasonal_reminders pref key)
+          if (profile?.email) {
+            const emailContent = seasonalRotationReminderEmail({
+              clientName: profile.full_name ?? profile.email,
+              daysUntilTransition: daysBefore,
+              season: seasonLabel,
+              itemCount: itemCount ?? 0,
+              corridorLabel: corridor.display_name,
+              appUrl,
+            })
+            await inngest.send({
+              name: 'email/send' as never,
+              data: {
+                recipientProfileId: clientId,
+                to: profile.email,
+                template: 'seasonal_rotation_reminder' as const,
+                subject: emailContent.subject,
+                html: emailContent.html,
+                text: emailContent.text,
+              },
+            })
+          }
+
+          // Record send for idempotency (covers both in-app + email)
           await db.from('reminder_sends').insert({
             client_id: clientId,
             corridor_id: corridor.id,
