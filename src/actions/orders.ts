@@ -510,7 +510,7 @@ export async function adminDispatchToProvider(data: {
         data: {
           recipientProfileId: clientProfile.id,
           to: clientProfile.email,
-          template: 'order-status-changed',
+          template: 'order_status_changed',
           subject: emailContent.subject,
           html: emailContent.html,
           text: emailContent.text,
