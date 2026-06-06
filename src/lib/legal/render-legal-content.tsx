@@ -137,12 +137,14 @@ export function LegalContent({ nodes }: LegalContentProps) {
         if (node.type === 'hr') {
           return <hr key={blockIdx} className="my-6 border-border" />
         }
-        // paragraph
-        return (
-          <p key={blockIdx} className="text-sm leading-relaxed text-foreground">
-            {renderInline(node.text)}
-          </p>
-        )
+        if (node.type === 'paragraph') {
+          return (
+            <p key={blockIdx} className="text-sm leading-relaxed text-foreground">
+              {renderInline(node.text)}
+            </p>
+          )
+        }
+        return null
       })}
     </div>
   )
