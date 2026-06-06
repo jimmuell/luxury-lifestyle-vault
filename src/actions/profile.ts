@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { inngest } from '@/lib/inngest/client'
+import { welcomeEmail } from '@/lib/resend/emails/welcome'
 
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient()
@@ -41,6 +42,22 @@ export async function completeOnboarding() {
   await inngest.send({
     name: 'profile/created' as never,
     data: { profileId: user.id, email: user.email!, fullName: profile?.full_name ?? null },
+  })
+
+  // Welcome email — transactional, fires once at onboarding completion
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const clientName = profile?.full_name ?? user.email!
+  const emailContent = welcomeEmail({ clientName, appUrl })
+  await inngest.send({
+    name: 'email/send' as never,
+    data: {
+      recipientProfileId: user.id,
+      to: user.email!,
+      template: 'welcome' as const,
+      subject: emailContent.subject,
+      html: emailContent.html,
+      text: emailContent.text,
+    },
   })
 
   revalidatePath('/client')
