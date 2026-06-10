@@ -41,13 +41,14 @@ export async function GET(
   // Log view/download for investors only (not admin previews)
   if (role === 'investor') {
     const admin = createAdminClient()
-    await admin.from('investor_document_views').insert({
+    const { error: auditErr } = await admin.from('investor_document_views').insert({
       profile_id: user.id,
       document_id: doc.id,
       view_type: isDownload ? 'download' : 'view',
     })
+    if (auditErr) console.error('[investor-docs audit]', auditErr.message)
   }
 
   const signedUrl = await getInvestorDocSignedUrl(doc.storage_path)
-  return NextResponse.redirect(signedUrl)
+  return NextResponse.redirect(signedUrl, 302)
 }
