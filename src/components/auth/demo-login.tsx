@@ -8,8 +8,11 @@ const DEMO_LOGIN_ENABLED = process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === 'true'
 export function DemoLogin() {
   const [clientPending, startClient] = useTransition()
   const [adminPending, startAdmin] = useTransition()
+  const [investorPending, startInvestor] = useTransition()
 
   if (!DEMO_LOGIN_ENABLED) return null
+
+  const anyPending = clientPending || adminPending || investorPending
 
   return (
     <div className="space-y-3">
@@ -24,20 +27,27 @@ export function DemoLogin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <button
           onClick={() => startClient(() => { signInAsDemo('client') })}
-          disabled={clientPending || adminPending}
+          disabled={anyPending}
           className="px-3 py-2 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors disabled:opacity-50"
         >
           {clientPending ? 'Signing in…' : '→ Demo client'}
         </button>
         <button
           onClick={() => startAdmin(() => { signInAsDemo('admin') })}
-          disabled={clientPending || adminPending}
+          disabled={anyPending}
           className="px-3 py-2 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors disabled:opacity-50"
         >
           {adminPending ? 'Signing in…' : '→ Demo admin'}
+        </button>
+        <button
+          onClick={() => startInvestor(() => { signInAsDemo('investor') })}
+          disabled={anyPending}
+          className="px-3 py-2 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors disabled:opacity-50"
+        >
+          {investorPending ? 'Signing in…' : '→ Demo investor'}
         </button>
       </div>
     </div>

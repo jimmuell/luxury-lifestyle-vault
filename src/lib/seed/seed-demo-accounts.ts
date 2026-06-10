@@ -1,9 +1,10 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { SeedResult } from './types'
 
-const DEMO_CLIENT_EMAIL = 'demo.client@llv.dev'
-const DEMO_ADMIN_EMAIL  = 'demo.admin@llv.dev'
-const DEMO_PASSWORD     = 'demo1234'
+const DEMO_CLIENT_EMAIL   = 'demo.client@llv.dev'
+const DEMO_ADMIN_EMAIL    = 'demo.admin@llv.dev'
+const DEMO_INVESTOR_EMAIL = 'demo.investor@llv.dev'
+const DEMO_PASSWORD       = 'demo1234'
 
 // 6 items spread across categories to give the demo dashboard substance
 const DEMO_ITEMS = [
@@ -239,6 +240,43 @@ export async function seedDemoAccounts(): Promise<SeedResult> {
     }
   } catch (err) {
     errors.push(`${DEMO_CLIENT_EMAIL}: ${err instanceof Error ? err.message : String(err)}`)
+  }
+
+  // ── Demo Investor Account ─────────────────────────────────────────────────
+
+  try {
+    const { data: existingInvestor } = await adminClient
+      .from('profiles')
+      .select('id')
+      .eq('email', DEMO_INVESTOR_EMAIL)
+      .maybeSingle()
+
+    if (existingInvestor) {
+      await adminClient.from('profiles')
+        .update({ role: 'investor', is_seed_data: true })
+        .eq('id', existingInvestor.id)
+      skipped++
+    } else {
+      const { data: investorAuth, error: investorAuthErr } = await adminClient.auth.admin.createUser({
+        email: DEMO_INVESTOR_EMAIL,
+        password: DEMO_PASSWORD,
+        email_confirm: true,
+        user_metadata: { role: 'investor', full_name: 'Demo Investor' },
+      })
+      if (investorAuthErr) throw new Error(investorAuthErr.message)
+      if (!investorAuth.user) throw new Error('No user returned')
+
+      await adminClient.from('profiles').update({
+        full_name: 'Demo Investor',
+        role: 'investor',
+        onboarding_complete: true,
+        is_seed_data: true,
+      }).eq('id', investorAuth.user.id)
+
+      seeded++
+    }
+  } catch (err) {
+    errors.push(`${DEMO_INVESTOR_EMAIL}: ${err instanceof Error ? err.message : String(err)}`)
   }
 
   return { seeded, skipped, errors }
