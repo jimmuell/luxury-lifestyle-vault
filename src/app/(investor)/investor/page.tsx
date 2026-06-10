@@ -11,12 +11,10 @@ function formatCompact(amount: number): string {
 }
 
 export default async function InvestorOverviewPage() {
-  // Calculate Year 1 total revenue
   const year1Total = YEAR1_REVENUE.reduce((sum, item) => sum + item.amount, 0)
   const year1Data = PROJECTION_3YR[0]
   const year3Data = PROJECTION_3YR[2]
 
-  // Fetch recently added documents
   const supabase = await createClient()
   const { data: recent } = await supabase
     .from('investor_documents')
@@ -85,7 +83,7 @@ export default async function InvestorOverviewPage() {
                   <p className="font-serif text-sm font-light">{doc.title}</p>
                   <p className="text-xs text-muted-foreground/60 uppercase tracking-wide mt-0.5">{doc.section}</p>
                 </div>
-                <Link href={`/investor/documents`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+                <Link href="/investor/documents" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
                   View
                 </Link>
               </div>

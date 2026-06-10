@@ -65,7 +65,7 @@ export default async function InvestorDeckPage() {
             <iframe
               src={`/api/investor/documents/${deckDoc.id}`}
               className="w-full h-full"
-              title={String(deckDoc.title).replace(/"/g, '&quot;')}
+              title={deckDoc.title}
             />
           </div>
 
