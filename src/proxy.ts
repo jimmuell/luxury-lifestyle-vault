@@ -10,7 +10,7 @@ const ROLE_PREFIXES = {
   investor: '/investor',
 } as const
 
-const PUBLIC_PREFIXES = ['/auth', '/api', '/terms', '/privacy']
+const PUBLIC_PREFIXES = ['/auth', '/api/webhooks', '/api/inngest', '/terms', '/privacy']
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -68,7 +68,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(prefix ?? '/auth/login', request.url))
   }
 
-  if (prefix && !pathname.startsWith(prefix)) {
+  // API routes handle their own role enforcement — skip prefix redirect for them
+  if (prefix && !pathname.startsWith(prefix) && !pathname.startsWith('/api/')) {
     return NextResponse.redirect(new URL(prefix, request.url))
   }
 
