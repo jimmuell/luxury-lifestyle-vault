@@ -7,6 +7,7 @@ const ROLE_PREFIXES = {
   client: '/client',
   provider: '/provider',
   admin: '/admin',
+  investor: '/investor',
 } as const
 
 const PUBLIC_PREFIXES = ['/auth', '/api/webhooks', '/api/inngest', '/terms', '/privacy']

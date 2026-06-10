@@ -1928,7 +1928,7 @@ export type Database = {
         | "leather_care"
       shipment_direction: "outbound" | "return"
       shipping_carrier: "ups" | "fedex" | "usps" | "dhl" | "other"
-      user_role: "client" | "provider" | "admin"
+      user_role: "client" | "provider" | "admin" | "investor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2141,7 +2141,7 @@ export const Constants = {
       ],
       shipment_direction: ["outbound", "return"],
       shipping_carrier: ["ups", "fedex", "usps", "dhl", "other"],
-      user_role: ["client", "provider", "admin"],
+      user_role: ["client", "provider", "admin", "investor"],
     },
   },
 } as const
