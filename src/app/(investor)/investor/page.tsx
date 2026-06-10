@@ -16,6 +16,19 @@ export default async function InvestorOverviewPage() {
   const year3Data = PROJECTION_3YR[2]
 
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user!.id)
+    .maybeSingle()
+
+  const fullName = profile?.full_name?.trim() ?? ''
+  const firstName = fullName
+    ? fullName.split(/\s+/)[0]
+    : (user?.email?.split('@')[0] ?? '')
+  const greeting = firstName ? `Welcome, ${firstName}.` : 'Welcome.'
+
   const { data: recent } = await supabase
     .from('investor_documents')
     .select('id, title, section, created_at')
@@ -39,7 +52,8 @@ export default async function InvestorOverviewPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-serif text-3xl font-light">Your Lifestyle, Wherever Life Takes You.</h1>
+        <p className="font-serif text-3xl font-light">{greeting}</p>
+        <p className="font-serif text-lg font-light text-muted-foreground mt-1">Your Lifestyle, Wherever Life Takes You.</p>
         <p className="mt-2 text-muted-foreground text-sm max-w-xl">
           Welcome to the Luxury Lifestyle Vault investor data room. Review our financials, explore the full document library, and view the pitch deck.
         </p>
