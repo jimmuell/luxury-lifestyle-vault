@@ -1,10 +1,9 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Eye, Download, FolderOpen } from 'lucide-react'
+import { FolderOpen } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getInvestorDocuments, type InvestorDocument } from '@/lib/queries/investor'
 import { PrintButton } from '@/components/investor/print-button'
-import { buttonVariants } from '@/components/ui/button'
+import { DocActions } from '@/components/investor/doc-actions'
 
 const SECTION_ORDER = [
   'concept', 'strategy', 'market', 'financials',
@@ -89,23 +88,8 @@ export default async function InvestorDocumentsPage() {
                     {doc.file_size_bytes ? ` · ${formatBytes(doc.file_size_bytes)}` : ''}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0 print:hidden">
-                  <Link
-                    href={`/api/investor/documents/${doc.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={buttonVariants({ variant: 'outline', size: 'sm' }) + ' gap-1.5'}
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    View
-                  </Link>
-                  <Link
-                    href={`/api/investor/documents/${doc.id}?download=1`}
-                    className={buttonVariants({ variant: 'outline', size: 'sm' }) + ' gap-1.5'}
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    Download
-                  </Link>
+                <div className="flex-shrink-0 print:hidden">
+                  <DocActions docId={doc.id} title={doc.title} />
                 </div>
               </div>
             ))}
