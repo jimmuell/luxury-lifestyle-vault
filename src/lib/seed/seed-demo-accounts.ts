@@ -253,7 +253,7 @@ export async function seedDemoAccounts(): Promise<SeedResult> {
 
     if (existingInvestor) {
       await adminClient.from('profiles')
-        .update({ role: 'investor', is_seed_data: true })
+        .update({ role: 'investor', nda_acknowledged: true, is_seed_data: true })
         .eq('id', existingInvestor.id)
       skipped++
     } else {
@@ -270,6 +270,7 @@ export async function seedDemoAccounts(): Promise<SeedResult> {
         full_name: 'Demo Investor',
         role: 'investor',
         onboarding_complete: true,
+        nda_acknowledged: true,
         is_seed_data: true,
       }).eq('id', investorAuth.user.id)
 

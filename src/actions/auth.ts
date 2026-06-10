@@ -69,7 +69,7 @@ export async function signInAsDemo(role: 'client' | 'admin' | 'investor') {
   if (error) return { error: error.message }
 
   revalidatePath('/', 'layout')
-  redirect('/')
+  return { success: true as const }
 }
 
 export async function sendMagicLink(formData: FormData) {
