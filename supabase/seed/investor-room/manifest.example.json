@@ -1,0 +1,26 @@
+{
+  "_comment": "Copy this file to manifest.json (git-ignored) and fill in your documents. Section keys: concept, strategy, market, financials, product, operations, launch, legal",
+  "documents": [
+    {
+      "file": "LLV_Executive_One-Pager.pdf",
+      "section": "concept",
+      "title": "Executive One-Pager",
+      "description": "The 60-second overview of Luxury Lifestyle Vault.",
+      "sort_order": 10
+    },
+    {
+      "file": "LLV_Market_Analysis.pdf",
+      "section": "market",
+      "title": "Market & Competitive Analysis",
+      "description": "Scottsdale luxury services market size, competitive landscape, and positioning.",
+      "sort_order": 10
+    },
+    {
+      "file": "LLV_Financial_Model.pdf",
+      "section": "financials",
+      "title": "3-Year Financial Model",
+      "description": "Revenue projections, unit economics, and path to profitability.",
+      "sort_order": 10
+    }
+  ]
+}
