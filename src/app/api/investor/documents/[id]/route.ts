@@ -22,7 +22,7 @@ export async function GET(
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   const role = profile?.role
   if (role !== 'investor' && role !== 'admin') {

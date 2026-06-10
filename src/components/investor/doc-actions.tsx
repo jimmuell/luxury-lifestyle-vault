@@ -10,17 +10,17 @@ interface DocActionsProps {
   title: string
 }
 
-export function DocActions({ docId }: DocActionsProps) {
+export function DocActions({ docId, title }: DocActionsProps) {
   const [viewLoading, setViewLoading] = useState(false)
   const [downloadLoading, setDownloadLoading] = useState(false)
 
   function handleView() {
     setViewLoading(true)
-    const timer = setTimeout(() => setViewLoading(false), 1500)
-    const onFocus = () => {
-      clearTimeout(timer)
+    const onFocus = () => { clearTimeout(timer); setViewLoading(false) }
+    const timer = setTimeout(() => {
+      window.removeEventListener('focus', onFocus)
       setViewLoading(false)
-    }
+    }, 1500)
     window.addEventListener('focus', onFocus, { once: true })
   }
 
@@ -28,7 +28,9 @@ export function DocActions({ docId }: DocActionsProps) {
     setDownloadLoading(true)
     const a = document.createElement('a')
     a.href = `/api/investor/documents/${docId}?download=1`
+    document.body.appendChild(a)
     a.click()
+    a.remove()
     setTimeout(() => setDownloadLoading(false), 2500)
   }
 
@@ -38,6 +40,7 @@ export function DocActions({ docId }: DocActionsProps) {
         href={`/investor/documents/${docId}/view`}
         target="_blank"
         rel="noopener noreferrer"
+        aria-label={`View ${title}`}
         onClick={handleView}
         className={cn(
           buttonVariants({ variant: 'outline', size: 'sm' }),
@@ -55,6 +58,7 @@ export function DocActions({ docId }: DocActionsProps) {
       <button
         onClick={handleDownload}
         disabled={downloadLoading}
+        aria-label={`Download ${title}`}
         className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
       >
         {downloadLoading ? (

@@ -16,7 +16,7 @@ export default async function InvestorDocViewPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: selfProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const { data: selfProfile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
   const role = selfProfile?.role
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
@@ -26,7 +26,7 @@ export default async function InvestorDocViewPage({
   // 3. Fetch the document
   const { data: doc } = await supabase
     .from('investor_documents')
-    .select('id, title, storage_path, file_size_bytes')
+    .select('id, title, storage_path')
     .eq('id', id)
     .eq('is_published', true)
     .maybeSingle()
