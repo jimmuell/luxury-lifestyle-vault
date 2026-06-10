@@ -1,9 +1,17 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { InviteInvestorForm } from '@/components/admin/invite-investor-form'
 import { format } from 'date-fns'
 import { ShieldCheck, ShieldOff, Eye } from 'lucide-react'
 
 export default async function AdminInvestorsPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
+  const { data: selfProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (selfProfile?.role !== 'admin') redirect('/')
+
   const admin = createAdminClient()
 
   // Fetch all investor profiles

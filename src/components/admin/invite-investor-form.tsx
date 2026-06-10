@@ -16,13 +16,17 @@ export function InviteInvestorForm() {
     const formData = new FormData(e.currentTarget)
     const form = e.currentTarget
     startTransition(async () => {
-      const result = await inviteInvestor(formData)
-      if (result.error) {
-        toast.error(result.error)
-      } else if (result.success) {
-        toast.success(`Investor account created for ${result.email}`)
-        setCredential({ email: result.email!, tempPassword: result.tempPassword! })
-        form.reset()
+      try {
+        const result = await inviteInvestor(formData)
+        if (result.error) {
+          toast.error(result.error)
+        } else if (result.success && result.email && result.tempPassword) {
+          toast.success(`Investor account created for ${result.email}`)
+          setCredential({ email: result.email, tempPassword: result.tempPassword })
+          form.reset()
+        }
+      } catch {
+        toast.error('An unexpected error occurred. Please try again.')
       }
     })
   }

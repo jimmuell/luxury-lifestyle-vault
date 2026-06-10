@@ -1,5 +1,6 @@
 'use server'
 
+import { randomBytes } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -25,12 +26,12 @@ export async function inviteInvestor(formData: FormData) {
   const admin = createAdminClient()
 
   // Create the auth user (email confirmed so they can log in immediately)
-  // Using createUser with a secure random temp password; return it to the admin
+  // Using createUser with a 192-bit temp password; return it to the admin
   // so they can relay it to the investor out-of-band.
-  const tempPassword = crypto.randomUUID().replace(/-/g, '').slice(0, 16)
+  const tempPassword = randomBytes(24).toString('base64url')
 
   const { data: authData, error: createErr } = await admin.auth.admin.createUser({
-    email,
+    email: email.toLowerCase(),
     password: tempPassword,
     email_confirm: true,
     user_metadata: { full_name: fullName, role: 'investor' },
@@ -46,7 +47,11 @@ export async function inviteInvestor(formData: FormData) {
     .update({ role: 'investor', full_name: fullName, nda_acknowledged: false })
     .eq('id', authData.user.id)
 
-  if (profileErr) return { error: `Created user but failed to set investor role: ${profileErr.message}` }
+  if (profileErr) {
+    // Roll back the auth user to avoid an orphaned account with the wrong role.
+    await admin.auth.admin.deleteUser(authData.user.id)
+    return { error: `Failed to set investor role; account creation rolled back: ${profileErr.message}` }
+  }
 
   revalidatePath('/admin/investors')
   return { success: true, email, tempPassword }
@@ -60,14 +65,15 @@ export async function promoteToInvestor(formData: FormData) {
 
   const admin = createAdminClient()
 
-  // Guard: never change an existing admin's role
+  // Guard: profile must exist; never change an existing admin's role
   const { data: existing } = await admin
     .from('profiles')
     .select('role')
     .eq('id', profileId)
     .single()
 
-  if (existing?.role === 'admin') {
+  if (!existing) return { error: 'Profile not found.' }
+  if (existing.role === 'admin') {
     return { error: 'Cannot change the role of an admin account.' }
   }
 
