@@ -6,12 +6,13 @@ import { INVESTOR_BUCKET, SIGNED_URL_TTL } from './constants'
 
 export async function getInvestorDocSignedUrl(
   storagePath: string,
-  expiresIn = SIGNED_URL_TTL
+  expiresIn = SIGNED_URL_TTL,
+  downloadName?: string
 ): Promise<string> {
   const sb = createAdminClient()
   const { data, error } = await sb.storage
     .from(INVESTOR_BUCKET)
-    .createSignedUrl(storagePath, expiresIn)
+    .createSignedUrl(storagePath, expiresIn, downloadName ? { download: downloadName } : undefined)
   if (error) throw new Error(`Failed to sign investor doc URL: ${error.message}`)
   return data.signedUrl
 }
