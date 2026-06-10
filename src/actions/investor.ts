@@ -36,7 +36,7 @@ export async function acknowledgeNda(formData: FormData) {
       user_agent: userAgent,
     })
 
-  if (insertErr && !insertErr.message.includes('unique')) {
+  if (insertErr && insertErr.code !== '23505') {
     return { error: 'Could not record your acknowledgment. Please try again.' }
   }
 

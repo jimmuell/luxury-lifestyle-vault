@@ -43,6 +43,7 @@ export function AcknowledgeForm() {
 
       <label className="flex items-start gap-3 cursor-pointer">
         <input
+          id="agreed"
           type="checkbox"
           name="agreed"
           checked={agreed}
