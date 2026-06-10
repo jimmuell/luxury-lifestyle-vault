@@ -4,8 +4,9 @@
 
 export const ACTIVE_BUCKET = 'item-photos' as const
 export const ARCHIVE_BUCKET = 'item-photos-archive' as const
+export const INVESTOR_BUCKET = 'investor-room' as const
 
-export type StorageBucket = typeof ACTIVE_BUCKET | typeof ARCHIVE_BUCKET
+export type StorageBucket = typeof ACTIVE_BUCKET | typeof ARCHIVE_BUCKET | typeof INVESTOR_BUCKET
 
 export const SIGNED_URL_TTL = 3600 // seconds — 1 hour
 
