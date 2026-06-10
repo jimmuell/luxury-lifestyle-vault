@@ -57,7 +57,7 @@ export async function proxy(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, onboarding_complete')
+    .select('role, onboarding_complete, nda_acknowledged')
     .eq('id', user.id)
     .single()
 
@@ -75,6 +75,11 @@ export async function proxy(request: NextRequest) {
   // Gate clients: must complete onboarding (which now includes subscription activation)
   if (role === 'client' && !profile?.onboarding_complete && !pathname.startsWith('/client/onboarding')) {
     return NextResponse.redirect(new URL('/client/onboarding', request.url))
+  }
+
+  // Gate investors: must acknowledge the NDA before entering the data room
+  if (role === 'investor' && !profile?.nda_acknowledged && !pathname.startsWith('/investor/acknowledge')) {
+    return NextResponse.redirect(new URL('/investor/acknowledge', request.url))
   }
 
   return response
