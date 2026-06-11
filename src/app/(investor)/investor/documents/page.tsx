@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { FolderOpen } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { tierRank } from '@/lib/investor/tiers'
 import { getInvestorDocuments, type InvestorDocument } from '@/lib/queries/investor'
 import { PrintButton } from '@/components/investor/print-button'
 import { DocActions } from '@/components/investor/doc-actions'
@@ -42,10 +43,8 @@ export default async function InvestorDocumentsPage() {
   const role = profileResult.data?.role
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
-  const TIER_RANK: Record<string, number> = { prospect: 1, investor: 2, board: 3 }
   const tier = profileResult.data?.investor_tier ?? 'prospect'
-  const tierRank = TIER_RANK[tier] ?? 1
-  if (role === 'investor' && tierRank < 2) redirect('/investor/presentations')
+  if (role === 'investor' && tierRank(tier) < 2) redirect('/investor/presentations')
 
   const docs = docsResult
 

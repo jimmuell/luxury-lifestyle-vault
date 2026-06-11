@@ -4,6 +4,7 @@ import { LogOut, UserCircle } from 'lucide-react'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { AuthWatcher } from '@/components/shared/auth-watcher'
 import { InvestorNav } from '@/components/investor/investor-nav'
+import type { InvestorTier } from '@/lib/investor/tiers'
 import { signOut } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 
@@ -20,7 +21,7 @@ export default async function InvestorLayout({ children }: { children: React.Rea
 
   if (profile?.role !== 'investor' && profile?.role !== 'admin') redirect('/')
 
-  const tier = (profile?.investor_tier ?? 'prospect') as 'prospect' | 'investor' | 'board'
+  const tier = (profile?.investor_tier ?? 'prospect') as InvestorTier
 
   const displayName = profile?.full_name?.trim() || user.email || ''
   const showEmail = displayName !== user.email

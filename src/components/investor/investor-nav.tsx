@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutGrid, FolderOpen, BarChart2, Presentation, Target, Mail } from 'lucide-react'
+import type { InvestorTier } from '@/lib/investor/tiers'
 
 const PROSPECT_NAV_ITEMS = [
   { href: '/investor',               label: 'Overview',      icon: LayoutGrid },
@@ -27,7 +28,7 @@ const BOARD_NAV_ITEMS = [
 ]
 
 interface InvestorNavProps {
-  tier: 'prospect' | 'investor' | 'board'
+  tier: InvestorTier
 }
 
 export function InvestorNav({ tier }: InvestorNavProps) {

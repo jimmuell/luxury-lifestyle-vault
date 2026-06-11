@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { Target } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { tierRank } from '@/lib/investor/tiers'
 import { InvestorPlaceholder } from '@/components/investor/investor-placeholder'
 
 export default async function InvestorTheAskPage() {
@@ -17,10 +18,8 @@ export default async function InvestorTheAskPage() {
   const role = profile?.role
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
-  const TIER_RANK: Record<string, number> = { prospect: 1, investor: 2, board: 3 }
   const tier = profile?.investor_tier ?? 'prospect'
-  const tierRank = TIER_RANK[tier] ?? 1
-  if (role === 'investor' && tierRank < 3) redirect('/investor/presentations')
+  if (role === 'investor' && tierRank(tier) < 3) redirect('/investor/presentations')
 
   return (
     <div className="space-y-6">

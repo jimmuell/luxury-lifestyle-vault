@@ -1,7 +1,9 @@
 -- 034_investor_tier_ladder.sql
 -- Expands the two-tier investor model (prospect / board) to an ordered
 -- three-tier ladder: prospect(1) < investor(2) < board(3).
--- Migration 033 is unchanged — this is purely additive.
+-- Migration 033 is unchanged. The RLS policy IS intentionally replaced:
+-- the old policy hard-coded two tiers and would not handle 'investor'.
+-- The new rank-based policy is the authoritative access-control for all tiers.
 
 -- ── 1. Widen CHECK on profiles.investor_tier ──────────────────────────────────
 
