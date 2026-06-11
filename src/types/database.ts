@@ -811,8 +811,10 @@ export type Database = {
       }
       investor_documents: {
         Row: {
+          audience: string
           created_at: string
           description: string | null
+          doc_type: string
           file_size_bytes: number | null
           file_type: string
           id: string
@@ -824,8 +826,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          audience?: string
           created_at?: string
           description?: string | null
+          doc_type?: string
           file_size_bytes?: number | null
           file_type?: string
           id?: string
@@ -837,8 +841,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          audience?: string
           created_at?: string
           description?: string | null
+          doc_type?: string
           file_size_bytes?: number | null
           file_type?: string
           id?: string
@@ -1586,6 +1592,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          investor_tier: string
           is_seed_data: boolean
           nda_acknowledged: boolean
           onboarding_complete: boolean
@@ -1600,6 +1607,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          investor_tier?: string
           is_seed_data?: boolean
           nda_acknowledged?: boolean
           onboarding_complete?: boolean
@@ -1614,6 +1622,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          investor_tier?: string
           is_seed_data?: boolean
           nda_acknowledged?: boolean
           onboarding_complete?: boolean
@@ -1971,6 +1980,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      get_my_tier: { Args: never; Returns: string }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
