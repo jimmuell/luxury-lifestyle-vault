@@ -42,8 +42,10 @@ export default async function InvestorDocumentsPage() {
   const role = profileResult.data?.role
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
+  const TIER_RANK: Record<string, number> = { prospect: 1, investor: 2, board: 3 }
   const tier = profileResult.data?.investor_tier ?? 'prospect'
-  if (role === 'investor' && tier !== 'board') redirect('/investor/presentations')
+  const tierRank = TIER_RANK[tier] ?? 1
+  if (role === 'investor' && tierRank < 2) redirect('/investor/presentations')
 
   const docs = docsResult
 

@@ -17,8 +17,10 @@ export default async function InvestorTheAskPage() {
   const role = profile?.role
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
+  const TIER_RANK: Record<string, number> = { prospect: 1, investor: 2, board: 3 }
   const tier = profile?.investor_tier ?? 'prospect'
-  if (role === 'investor' && tier !== 'board') redirect('/investor/presentations')
+  const tierRank = TIER_RANK[tier] ?? 1
+  if (role === 'investor' && tierRank < 3) redirect('/investor/presentations')
 
   return (
     <div className="space-y-6">

@@ -34,8 +34,10 @@ export default async function InvestorFinancialsPage() {
   const role = profile?.role
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
+  const TIER_RANK: Record<string, number> = { prospect: 1, investor: 2, board: 3 }
   const tier = profile?.investor_tier ?? 'prospect'
-  if (role === 'investor' && tier !== 'board') redirect('/investor/presentations')
+  const tierRank = TIER_RANK[tier] ?? 1
+  if (role === 'investor' && tierRank < 3) redirect('/investor/presentations')
 
   const totalRevenue = YEAR1_REVENUE.reduce((sum, r) => sum + r.amount, 0)
   const totalCosts = YEAR1_COSTS.reduce((sum, c) => sum + c.amount, 0)

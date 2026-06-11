@@ -21,7 +21,7 @@ export default async function InvestorOverviewPage() {
   if (!user) redirect('/auth/login')
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name')
+    .select('full_name, investor_tier')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -45,11 +45,14 @@ export default async function InvestorOverviewPage() {
     { label: 'Insured value (Yr 3)', value: formatCompact(year3Data.insuredValue) },
   ]
 
+  const TIER_RANK: Record<string, number> = { prospect: 1, investor: 2, board: 3 }
+  const userRank = TIER_RANK[profile?.investor_tier ?? 'prospect'] ?? 1
+
   const cards = [
-    { href: '/investor/documents',  label: 'Documents',  icon: FolderOpen,   description: 'Review the full data room library.' },
-    { href: '/investor/financials', label: 'Financials', icon: BarChart2,     description: 'Explore the 3-year financial model.' },
-    { href: '/investor/deck',       label: 'Pitch Deck', icon: Presentation,  description: 'View the investor presentation.' },
-  ]
+    { href: '/investor/presentations', label: 'Presentations', icon: Presentation, description: 'View investor presentations.',         minRank: 1 },
+    { href: '/investor/documents',     label: 'Documents',     icon: FolderOpen,   description: 'Review the full data room library.',  minRank: 2 },
+    { href: '/investor/financials',    label: 'Financials',    icon: BarChart2,    description: 'Explore the 3-year financial model.', minRank: 3 },
+  ].filter(c => userRank >= c.minRank)
 
   return (
     <div className="space-y-8">

@@ -5,6 +5,7 @@ const DEMO_CLIENT_EMAIL    = 'demo.client@llv.dev'
 const DEMO_ADMIN_EMAIL     = 'demo.admin@llv.dev'
 const DEMO_INVESTOR_EMAIL  = 'demo.investor@llv.dev'
 const DEMO_PROSPECT_EMAIL  = 'demo.prospect@llv.dev'
+const DEMO_BOARD_EMAIL     = 'demo.board@llv.dev'
 const DEMO_PASSWORD        = 'demo1234'
 
 // 6 items spread across categories to give the demo dashboard substance
@@ -258,7 +259,7 @@ export async function seedDemoAccounts(): Promise<SeedResult> {
 
     if (existingInvestor) {
       const { error: updateErr } = await adminClient.from('profiles')
-        .update({ role: 'investor', investor_tier: 'board', nda_acknowledged: true, is_seed_data: true })
+        .update({ role: 'investor', investor_tier: 'investor', nda_acknowledged: true, is_seed_data: true })
         .eq('id', existingInvestor.id)
       if (updateErr) errors.push(`${DEMO_INVESTOR_EMAIL} update: ${updateErr.message}`)
       else skipped++
@@ -275,7 +276,7 @@ export async function seedDemoAccounts(): Promise<SeedResult> {
       const { error: investorProfileErr } = await adminClient.from('profiles').update({
         full_name: 'Demo Investor',
         role: 'investor',
-        investor_tier: 'board',
+        investor_tier: 'investor',
         onboarding_complete: true,
         nda_acknowledged: true,
         is_seed_data: true,
@@ -327,6 +328,47 @@ export async function seedDemoAccounts(): Promise<SeedResult> {
     }
   } catch (err) {
     errors.push(`${DEMO_PROSPECT_EMAIL}: ${err instanceof Error ? err.message : String(err)}`)
+  }
+
+  // ── Demo Board Account ────────────────────────────────────────────────────
+
+  try {
+    const { data: existingBoard } = await adminClient
+      .from('profiles')
+      .select('id')
+      .eq('email', DEMO_BOARD_EMAIL)
+      .maybeSingle()
+
+    if (existingBoard) {
+      const { error: updateErr } = await adminClient.from('profiles')
+        .update({ role: 'investor', investor_tier: 'board', nda_acknowledged: true, is_seed_data: true })
+        .eq('id', existingBoard.id)
+      if (updateErr) errors.push(`${DEMO_BOARD_EMAIL} update: ${updateErr.message}`)
+      else skipped++
+    } else {
+      const { data: boardAuth, error: boardAuthErr } = await adminClient.auth.admin.createUser({
+        email: DEMO_BOARD_EMAIL,
+        password: DEMO_PASSWORD,
+        email_confirm: true,
+        user_metadata: { role: 'investor', full_name: 'Demo Board' },
+      })
+      if (boardAuthErr) throw new Error(boardAuthErr.message)
+      if (!boardAuth.user) throw new Error('No user returned')
+
+      const { error: boardProfileErr } = await adminClient.from('profiles').update({
+        full_name: 'Demo Board',
+        role: 'investor',
+        investor_tier: 'board',
+        onboarding_complete: true,
+        nda_acknowledged: true,
+        is_seed_data: true,
+      }).eq('id', boardAuth.user.id)
+      if (boardProfileErr) throw new Error(`profile update: ${boardProfileErr.message}`)
+
+      seeded++
+    }
+  } catch (err) {
+    errors.push(`${DEMO_BOARD_EMAIL}: ${err instanceof Error ? err.message : String(err)}`)
   }
 
   return { seeded, skipped, errors }

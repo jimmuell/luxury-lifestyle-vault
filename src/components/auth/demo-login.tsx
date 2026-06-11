@@ -12,12 +12,13 @@ export function DemoLogin() {
   const [clientPending, startClient] = useTransition()
   const [adminPending, startAdmin] = useTransition()
   const [investorPending, startInvestor] = useTransition()
+  const [boardPending, startBoard] = useTransition()
 
   if (!DEMO_LOGIN_ENABLED) return null
 
-  const anyPending = clientPending || adminPending || investorPending
+  const anyPending = clientPending || adminPending || investorPending || boardPending
 
-  function go(role: 'client' | 'admin' | 'investor', start: React.TransitionStartFunction) {
+  function go(role: 'client' | 'admin' | 'investor' | 'board', start: React.TransitionStartFunction) {
     setError(null)
     start(async () => {
       const r = await signInAsDemo(role)
@@ -40,7 +41,7 @@ export function DemoLogin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <button
           onClick={() => go('client', startClient)}
           disabled={anyPending}
@@ -61,6 +62,13 @@ export function DemoLogin() {
           className="px-3 py-2 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors disabled:opacity-50"
         >
           {investorPending ? 'Signing in…' : '→ Demo investor'}
+        </button>
+        <button
+          onClick={() => go('board', startBoard)}
+          disabled={anyPending}
+          className="px-3 py-2 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors disabled:opacity-50"
+        >
+          {boardPending ? 'Signing in…' : '→ Demo board'}
         </button>
       </div>
 

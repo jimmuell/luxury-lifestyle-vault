@@ -10,6 +10,13 @@ const PROSPECT_NAV_ITEMS = [
   { href: '/investor/contact',       label: 'Contact',       icon: Mail },
 ]
 
+const INVESTOR_NAV_ITEMS = [
+  { href: '/investor',               label: 'Overview',      icon: LayoutGrid },
+  { href: '/investor/presentations', label: 'Presentations', icon: Presentation },
+  { href: '/investor/documents',     label: 'Documents',     icon: FolderOpen },
+  { href: '/investor/contact',       label: 'Contact',       icon: Mail },
+]
+
 const BOARD_NAV_ITEMS = [
   { href: '/investor',               label: 'Overview',      icon: LayoutGrid },
   { href: '/investor/presentations', label: 'Presentations', icon: Presentation },
@@ -20,12 +27,15 @@ const BOARD_NAV_ITEMS = [
 ]
 
 interface InvestorNavProps {
-  tier: 'prospect' | 'board'
+  tier: 'prospect' | 'investor' | 'board'
 }
 
 export function InvestorNav({ tier }: InvestorNavProps) {
   const pathname = usePathname()
-  const navItems = tier === 'board' ? BOARD_NAV_ITEMS : PROSPECT_NAV_ITEMS
+  const navItems =
+    tier === 'board' ? BOARD_NAV_ITEMS :
+    tier === 'investor' ? INVESTOR_NAV_ITEMS :
+    PROSPECT_NAV_ITEMS
 
   return (
     <div className="space-y-1">

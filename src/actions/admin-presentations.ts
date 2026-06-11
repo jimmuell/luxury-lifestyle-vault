@@ -28,7 +28,7 @@ export async function uploadInvestorPresentation(formData: FormData) {
   if (!title) return { error: 'Title is required.' }
   if (!file) return { error: 'A PDF file is required.' }
   if (file.type !== 'application/pdf') return { error: 'File must be a PDF (application/pdf).' }
-  if (!['prospect', 'board'].includes(audience)) return { error: 'Audience must be prospect or board.' }
+  if (!['prospect', 'investor', 'board'].includes(audience)) return { error: 'Audience must be prospect, investor, or board.' }
 
   const MAX_PDF_BYTES = 50 * 1024 * 1024
   if (file.size > MAX_PDF_BYTES) return { error: 'File must be under 50 MB.' }
@@ -85,7 +85,7 @@ export async function updatePresentation(formData: FormData) {
   const isPublished = formData.get('is_published') === 'true'
 
   if (!id) return { error: 'Presentation ID is required.' }
-  if (!['prospect', 'board'].includes(audience)) return { error: 'Audience must be prospect or board.' }
+  if (!['prospect', 'investor', 'board'].includes(audience)) return { error: 'Audience must be prospect, investor, or board.' }
 
   const admin = createAdminClient()
 

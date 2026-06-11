@@ -57,6 +57,7 @@ export function UploadPresentationForm() {
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="prospect">Prospect</option>
+            <option value="investor">Investor</option>
             <option value="board">Board</option>
           </select>
         </div>
@@ -171,6 +172,7 @@ export function UpdatePresentationRow({ id, audience: audienceProp, isPublished:
         className="rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
       >
         <option value="prospect">Prospect</option>
+        <option value="investor">Investor</option>
         <option value="board">Board</option>
       </select>
       <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
