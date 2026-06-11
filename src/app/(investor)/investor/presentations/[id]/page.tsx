@@ -1,13 +1,11 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import { ChevronLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getInvestorDocSignedUrl } from '@/lib/storage/investor-docs'
 import { buttonVariants } from '@/components/ui/button'
-
-const DeckViewer = dynamic(() => import('@/components/investor/DeckViewer'), { ssr: false })
+import { DeckViewerClient } from '@/components/investor/DeckViewerClient'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -80,7 +78,7 @@ export default async function InvestorPresentationViewerPage({ params }: Props) 
 
       {/* DeckViewer — fills remaining height */}
       <div className="flex-1 min-h-0">
-        <DeckViewer
+        <DeckViewerClient
           signedUrl={signedUrl}
           title={doc.title}
           downloadUrl={downloadUrl}
