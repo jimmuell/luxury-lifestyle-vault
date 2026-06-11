@@ -31,20 +31,16 @@ export default function DeckViewer({ signedUrl, title, downloadUrl }: DeckViewer
   const [pageNumber, setPageNumber] = useState(1)
   const [numPages, setNumPages] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const slideContainerRef = useRef<HTMLDivElement>(null)
+  const viewerRef = useRef<HTMLDivElement>(null)
 
   // Stable keyboard handler — must not capture stale numPages
   const numPagesRef = useRef<number | null>(null)
-  const pageNumberRef = useRef(1)
 
   useEffect(() => {
     numPagesRef.current = numPages
   }, [numPages])
-
-  useEffect(() => {
-    pageNumberRef.current = pageNumber
-  }, [pageNumber])
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'ArrowLeft') {
@@ -72,9 +68,9 @@ export default function DeckViewer({ signedUrl, title, downloadUrl }: DeckViewer
   }, [])
 
   const handleFullscreen = () => {
-    if (!slideContainerRef.current) return
+    if (!viewerRef.current) return
     if (!document.fullscreenElement) {
-      slideContainerRef.current.requestFullscreen()
+      viewerRef.current.requestFullscreen()
     } else {
       document.exitFullscreen()
     }
@@ -84,7 +80,7 @@ export default function DeckViewer({ signedUrl, title, downloadUrl }: DeckViewer
   const goToNext = () => setPageNumber((prev) => (numPages ? Math.min(numPages, prev + 1) : prev))
 
   return (
-    <div className="flex flex-col gap-3 h-full" aria-label={title}>
+    <div ref={viewerRef} className="flex flex-col gap-3 h-full" aria-label={title}>
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-4 flex-shrink-0">
         <span className="font-serif text-base font-light truncate text-foreground">{title}</span>
@@ -114,32 +110,35 @@ export default function DeckViewer({ signedUrl, title, downloadUrl }: DeckViewer
       </div>
 
       {/* Slide area */}
-      <div
-        ref={slideContainerRef}
-        className="flex-1 flex flex-col items-center justify-center rounded-lg border border-border bg-card overflow-hidden min-h-0"
-      >
-        {loading && (
-          <div className="w-full aspect-video bg-muted animate-pulse rounded" />
-        )}
-        <Document
-          file={signedUrl}
-          onLoadSuccess={({ numPages: n }) => {
-            setNumPages(n)
-            setLoading(false)
-          }}
-          onLoadError={console.error}
-          loading={null}
-          className="flex items-center justify-center w-full h-full"
-        >
-          <Page
-            key={pageNumber}
-            pageNumber={pageNumber}
+      <div className="flex-1 flex flex-col items-center justify-center rounded-lg border border-border bg-card overflow-hidden min-h-0">
+        {loadError ? (
+          <div className="flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground" style={{ minHeight: '60vh' }}>
+            <p>Unable to load the presentation. Please try downloading it instead.</p>
+          </div>
+        ) : loading ? (
+          <div className="rounded-lg bg-muted animate-pulse" style={{ minHeight: '60vh' }} />
+        ) : null}
+        {!loadError && (
+          <Document
+            file={signedUrl}
+            onLoadSuccess={({ numPages: n }) => {
+              setNumPages(n)
+              setLoading(false)
+            }}
+            onLoadError={() => { setLoading(false); setLoadError(true) }}
             loading={null}
-            onRenderSuccess={() => setLoading(false)}
-            onRenderError={console.error}
-            className={loading ? 'invisible' : 'visible'}
-          />
-        </Document>
+            className="flex items-center justify-center w-full h-full"
+          >
+            <Page
+              key={pageNumber}
+              pageNumber={pageNumber}
+              loading={null}
+              onRenderSuccess={() => setLoading(false)}
+              onRenderError={console.error}
+              className={loading ? 'invisible' : 'visible'}
+            />
+          </Document>
+        )}
       </div>
 
       {/* Controls bar */}
