@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FolderOpen, BarChart2, Presentation } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
@@ -17,10 +18,11 @@ export default async function InvestorOverviewPage() {
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name')
-    .eq('id', user!.id)
+    .eq('id', user.id)
     .maybeSingle()
 
   const fullName = profile?.full_name?.trim() ?? ''
