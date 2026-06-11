@@ -5,17 +5,18 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { INVESTOR_BUCKET } from '@/lib/storage/constants'
 
-async function assertAdmin() {
+async function assertAdmin(): Promise<{ error: string } | { error?: never }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  if (!user) return { error: 'Unauthorized' }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') throw new Error('Forbidden')
-  return user
+  if (profile?.role !== 'admin') return { error: 'Forbidden' }
+  return {}
 }
 
 export async function uploadInvestorPresentation(formData: FormData) {
-  await assertAdmin()
+  const auth = await assertAdmin()
+  if (auth.error) return { error: auth.error }
 
   const title = (formData.get('title') as string | null)?.trim() ?? ''
   const description = (formData.get('description') as string | null)?.trim() || null
@@ -74,7 +75,8 @@ export async function uploadInvestorPresentation(formData: FormData) {
 }
 
 export async function updatePresentation(formData: FormData) {
-  await assertAdmin()
+  const auth = await assertAdmin()
+  if (auth.error) return { error: auth.error }
 
   const id = (formData.get('id') as string | null)?.trim() ?? ''
   const audience = (formData.get('audience') as string | null) ?? 'board'

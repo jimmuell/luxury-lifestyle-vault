@@ -134,7 +134,7 @@ export default function DeckViewer({ signedUrl, title, downloadUrl }: DeckViewer
               pageNumber={pageNumber}
               loading={null}
               onRenderSuccess={() => setLoading(false)}
-              onRenderError={console.error}
+              onRenderError={() => { setLoading(false); setLoadError(true) }}
               className={loading ? 'invisible' : 'visible'}
             />
           </Document>
