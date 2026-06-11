@@ -19,6 +19,7 @@ const SECTION_LABELS: Record<string, string> = {
   operations: 'Operations',
   launch:     'Launch Plan',
   legal:      'Legal & Risk',
+  deck:       'Pitch Deck',
 }
 
 function formatBytes(bytes: number | null): string {
@@ -32,6 +33,18 @@ export default async function InvestorDocumentsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, investor_tier')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const role = profile?.role
+  if (role !== 'investor' && role !== 'admin') redirect('/')
+
+  const tier = profile?.investor_tier ?? 'prospect'
+  if (role === 'investor' && tier !== 'board') redirect('/investor/presentations')
 
   const docs = await getInvestorDocuments()
 

@@ -14,11 +14,13 @@ export default async function InvestorLayout({ children }: { children: React.Rea
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, full_name')
+    .select('role, full_name, investor_tier')
     .eq('id', user.id)
     .single()
 
   if (profile?.role !== 'investor' && profile?.role !== 'admin') redirect('/')
+
+  const tier = profile?.investor_tier ?? 'prospect'
 
   const displayName = profile?.full_name?.trim() || user.email || ''
   const showEmail = displayName !== user.email
@@ -33,7 +35,7 @@ export default async function InvestorLayout({ children }: { children: React.Rea
             </p>
           </div>
           <nav className="flex-1">
-            <InvestorNav />
+            <InvestorNav tier={tier} />
           </nav>
           <div className="mt-auto pt-6 border-t border-border space-y-3">
             <div className="flex items-start gap-2 px-1">
