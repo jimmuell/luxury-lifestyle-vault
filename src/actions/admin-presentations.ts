@@ -29,6 +29,9 @@ export async function uploadInvestorPresentation(formData: FormData) {
   if (file.type !== 'application/pdf') return { error: 'File must be a PDF (application/pdf).' }
   if (!['prospect', 'board'].includes(audience)) return { error: 'Audience must be prospect or board.' }
 
+  const MAX_PDF_BYTES = 50 * 1024 * 1024
+  if (file.size > MAX_PDF_BYTES) return { error: 'File must be under 50 MB.' }
+
   const storagePath = `presentations/${crypto.randomUUID()}.pdf`
 
   const arrayBuffer = await file.arrayBuffer()
@@ -76,7 +79,7 @@ export async function updatePresentation(formData: FormData) {
   const id = (formData.get('id') as string | null)?.trim() ?? ''
   const audience = (formData.get('audience') as string | null) ?? 'board'
   // Checkbox: present with value 'true' when checked, absent when unchecked.
-  // We rely on is_published_sent sentinel to distinguish "unchecked" from "not submitted".
+  // formData.get('is_published') === 'true' correctly maps unchecked → false.
   const isPublished = formData.get('is_published') === 'true'
 
   if (!id) return { error: 'Presentation ID is required.' }
@@ -84,12 +87,15 @@ export async function updatePresentation(formData: FormData) {
 
   const admin = createAdminClient()
 
-  const { error } = await admin
+  const { data, error } = await admin
     .from('investor_documents')
     .update({ audience, is_published: isPublished })
     .eq('id', id)
+    .eq('doc_type', 'presentation')
+    .select('id')
+    .single()
 
-  if (error) return { error: error.message }
+  if (error || !data) return { error: error?.message ?? 'Presentation not found.' }
 
   revalidatePath('/admin/presentations')
   return { success: true }

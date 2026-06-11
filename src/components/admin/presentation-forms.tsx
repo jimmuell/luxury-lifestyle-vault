@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition, useRef } from 'react'
+import { useTransition, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { uploadInvestorPresentation, updatePresentation } from '@/actions/admin-presentations'
 
@@ -124,8 +124,25 @@ interface UpdatePresentationRowProps {
   isPublished: boolean
 }
 
-export function UpdatePresentationRow({ id, audience, isPublished }: UpdatePresentationRowProps) {
+export function UpdatePresentationRow({ id, audience: audienceProp, isPublished: isPublishedProp }: UpdatePresentationRowProps) {
   const [pending, startTransition] = useTransition()
+
+  // Controlled state — track the last-seen prop value alongside the local state so we
+  // can reset to the server-revalidated value when the parent re-renders with new props
+  // (canonical React "getDerivedStateFromProps" pattern for function components).
+  const [prevAudienceProp, setPrevAudienceProp] = useState(audienceProp)
+  const [prevIsPublishedProp, setPrevIsPublishedProp] = useState(isPublishedProp)
+  const [audience, setAudience] = useState(audienceProp)
+  const [isPublished, setIsPublished] = useState(isPublishedProp)
+
+  if (prevAudienceProp !== audienceProp) {
+    setPrevAudienceProp(audienceProp)
+    setAudience(audienceProp)
+  }
+  if (prevIsPublishedProp !== isPublishedProp) {
+    setPrevIsPublishedProp(isPublishedProp)
+    setIsPublished(isPublishedProp)
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -149,7 +166,8 @@ export function UpdatePresentationRow({ id, audience, isPublished }: UpdatePrese
       <input type="hidden" name="id" value={id} />
       <select
         name="audience"
-        defaultValue={audience}
+        value={audience}
+        onChange={e => setAudience(e.target.value)}
         className="rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
       >
         <option value="prospect">Prospect</option>
@@ -160,7 +178,8 @@ export function UpdatePresentationRow({ id, audience, isPublished }: UpdatePrese
           type="checkbox"
           name="is_published"
           value="true"
-          defaultChecked={isPublished}
+          checked={isPublished}
+          onChange={e => setIsPublished(e.target.checked)}
           className="rounded border-border"
         />
         Published
