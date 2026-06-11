@@ -3,8 +3,9 @@
 import { useState, useEffect, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Play, Trash2, RefreshCw, ChevronDown, ChevronUp, AlertTriangle, Images } from 'lucide-react'
+import { Play, Trash2, RefreshCw, ChevronDown, ChevronUp, AlertTriangle, Images, Database, Users } from 'lucide-react'
 import { runSeedScript, runAllSeeds, clearAllSeeds, getSeedStatus, previewTestAccountCleanup, clearAllTestAccounts, fetchNextSeedPhoto } from '@/actions/seed'
+import { backfillPresentationTiers, runDemoAccountsSeed } from '@/actions/seed-investor'
 import type { SeedResult } from '@/lib/seed/types'
 import type { AllSeedsResult } from '@/lib/seed/seed-all'
 import { SEED_MANIFEST } from '@/lib/seed/manifest'
@@ -74,6 +75,10 @@ export function SeedRunner() {
   const [photoProgress, setPhotoProgress] = useState<{
     uploaded: number; failed: number; remaining: number
   } | null>(null)
+
+  // Investor room card state
+  const [backfillResult, setBackfillResult] = useState<string | null>(null)
+  const [demoSeedResult, setDemoSeedResult] = useState<string | null>(null)
 
   async function refreshStatus() {
     try {
@@ -230,6 +235,55 @@ export function SeedRunner() {
       setPhotoProgress(null)
       await refreshStatus()
     }
+  }
+
+  function handleBackfillTiers() {
+    setActiveScript('backfill-tiers')
+    setBackfillResult(null)
+    startTransition(async () => {
+      try {
+        const result = await backfillPresentationTiers()
+        if ('error' in result) {
+          setBackfillResult(`Error: ${result.error}`)
+          addLog('Backfill Presentation Tiers', null, result.error)
+        } else {
+          const msg = `${result.updated} updated, ${result.skipped} skipped${result.errors.length > 0 ? `, ${result.errors.length} error(s)` : ''}`
+          setBackfillResult(msg)
+          addLog('Backfill Presentation Tiers', { seeded: result.updated, skipped: result.skipped, errors: result.errors }, null)
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        setBackfillResult(`Error: ${msg}`)
+        addLog('Backfill Presentation Tiers', null, msg)
+      } finally {
+        setActiveScript(null)
+      }
+    })
+  }
+
+  function handleDemoAccountsSeed() {
+    setActiveScript('demo-accounts')
+    setDemoSeedResult(null)
+    startTransition(async () => {
+      try {
+        const result = await runDemoAccountsSeed()
+        if ('error' in result) {
+          setDemoSeedResult(`Error: ${result.error}`)
+          addLog('Seed Demo Accounts', null, result.error)
+        } else {
+          const msg = `${result.seeded} seeded, ${result.skipped} skipped${result.errors.length > 0 ? `, ${result.errors.length} error(s)` : ''}`
+          setDemoSeedResult(msg)
+          addLog('Seed Demo Accounts', { seeded: result.seeded, skipped: result.skipped, errors: result.errors }, null)
+          await refreshStatus()
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        setDemoSeedResult(`Error: ${msg}`)
+        addLog('Seed Demo Accounts', null, msg)
+      } finally {
+        setActiveScript(null)
+      }
+    })
   }
 
   const isRunning = isPending || activeScript !== null
@@ -392,6 +446,80 @@ export function SeedRunner() {
             )}
             {photoFetchActive ? 'Fetching…' : 'Fetch Photos'}
           </Button>
+        </div>
+      </div>
+
+      {/* Investor Room tools */}
+      <div className="space-y-3">
+        <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">Investor Room</p>
+
+        {/* Backfill Presentation Tiers */}
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-medium">Backfill Presentation Tiers</p>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                Sets <code className="font-mono bg-muted px-1 rounded text-[10px]">doc_type</code> and{' '}
+                <code className="font-mono bg-muted px-1 rounded text-[10px]">audience</code> on existing{' '}
+                <code className="font-mono bg-muted px-1 rounded text-[10px]">investor_documents</code> rows by matching{' '}
+                <code className="font-mono bg-muted px-1 rounded text-[10px]">storage_path</code>. Idempotent — safe to re-run.
+              </p>
+              {backfillResult && (
+                <p className={cn('text-xs mt-2 font-medium', backfillResult.startsWith('Error') ? 'text-destructive' : 'text-muted-foreground')}>
+                  {backfillResult}
+                </p>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBackfillTiers}
+              disabled={isRunning}
+              className="flex-shrink-0 gap-1.5"
+            >
+              {activeScript === 'backfill-tiers' ? (
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Database className="h-3.5 w-3.5" />
+              )}
+              Run
+            </Button>
+          </div>
+        </div>
+
+        {/* Seed Demo Accounts */}
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-medium">Seed Demo Accounts</p>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                Creates or updates{' '}
+                <span className="font-mono text-[10px]">demo.investor@llv.dev</span> (board) and{' '}
+                <span className="font-mono text-[10px]">demo.prospect@llv.dev</span> (prospect) with{' '}
+                <code className="font-mono bg-muted px-1 rounded text-[10px]">nda_acknowledged = true</code>.
+                Idempotent.
+              </p>
+              {demoSeedResult && (
+                <p className={cn('text-xs mt-2 font-medium', demoSeedResult.startsWith('Error') ? 'text-destructive' : 'text-muted-foreground')}>
+                  {demoSeedResult}
+                </p>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDemoAccountsSeed}
+              disabled={isRunning}
+              className="flex-shrink-0 gap-1.5"
+            >
+              {activeScript === 'demo-accounts' ? (
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Users className="h-3.5 w-3.5" />
+              )}
+              Run
+            </Button>
+          </div>
         </div>
       </div>
 
