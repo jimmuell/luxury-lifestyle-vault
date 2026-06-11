@@ -48,13 +48,18 @@ export async function signOut() {
   redirect('/auth/login')
 }
 
-export async function signInAsDemo(role: 'client' | 'admin') {
+export async function signInAsDemo(role: 'client' | 'admin' | 'investor') {
   if (process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN !== 'true') {
     return { error: 'Demo login is not enabled in this environment.' }
   }
 
   const supabase = await createClient()
-  const email = role === 'admin' ? 'demo.admin@llv.dev' : 'demo.client@llv.dev'
+  const EMAIL_MAP = {
+    admin: 'demo.admin@llv.dev',
+    client: 'demo.client@llv.dev',
+    investor: 'demo.investor@llv.dev',
+  }
+  const email = EMAIL_MAP[role]
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -64,7 +69,7 @@ export async function signInAsDemo(role: 'client' | 'admin') {
   if (error) return { error: error.message }
 
   revalidatePath('/', 'layout')
-  redirect('/')
+  return { success: true as const }
 }
 
 export async function sendMagicLink(formData: FormData) {

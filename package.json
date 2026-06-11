@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "verify": "eslint && tsc --noEmit",
+    "seed:investor-docs": "npx tsx scripts/seed-investor-docs.ts",
     "postinstall": "patch-package"
   },
   "dependencies": {

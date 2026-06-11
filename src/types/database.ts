@@ -526,7 +526,7 @@ export type Database = {
           is_provider_message?: boolean
           is_seed_data?: boolean
           related_order_id?: string | null
-          status?: 'open' | 'in_progress' | 'resolved'
+          status?: string
           subject: string
           thread_id?: string | null
           updated_at?: string
@@ -541,7 +541,7 @@ export type Database = {
           is_provider_message?: boolean
           is_seed_data?: boolean
           related_order_id?: string | null
-          status?: 'open' | 'in_progress' | 'resolved'
+          status?: string
           subject?: string
           thread_id?: string | null
           updated_at?: string
@@ -769,6 +769,125 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      investor_document_views: {
+        Row: {
+          document_id: string
+          id: string
+          profile_id: string
+          view_type: string
+          viewed_at: string
+        }
+        Insert: {
+          document_id: string
+          id?: string
+          profile_id: string
+          view_type?: string
+          viewed_at?: string
+        }
+        Update: {
+          document_id?: string
+          id?: string
+          profile_id?: string
+          view_type?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_document_views_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "investor_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_document_views_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_size_bytes: number | null
+          file_type: string
+          id: string
+          is_published: boolean
+          section: string
+          sort_order: number
+          storage_path: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_size_bytes?: number | null
+          file_type?: string
+          id?: string
+          is_published?: boolean
+          section: string
+          sort_order?: number
+          storage_path: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_size_bytes?: number | null
+          file_type?: string
+          id?: string
+          is_published?: boolean
+          section?: string
+          sort_order?: number
+          storage_path?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      investor_nda_acknowledgments: {
+        Row: {
+          acknowledged_at: string
+          full_name: string
+          id: string
+          ip_address: string | null
+          nda_version: string
+          profile_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          acknowledged_at?: string
+          full_name: string
+          id?: string
+          ip_address?: string | null
+          nda_version?: string
+          profile_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          acknowledged_at?: string
+          full_name?: string
+          id?: string
+          ip_address?: string | null
+          nda_version?: string
+          profile_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_nda_acknowledgments_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       item_conditions: {
         Row: {
@@ -1468,6 +1587,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_seed_data: boolean
+          nda_acknowledged: boolean
           onboarding_complete: boolean
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
@@ -1481,6 +1601,7 @@ export type Database = {
           full_name?: string | null
           id: string
           is_seed_data?: boolean
+          nda_acknowledged?: boolean
           onboarding_complete?: boolean
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
@@ -1494,6 +1615,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_seed_data?: boolean
+          nda_acknowledged?: boolean
           onboarding_complete?: boolean
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
@@ -1928,7 +2050,7 @@ export type Database = {
         | "leather_care"
       shipment_direction: "outbound" | "return"
       shipping_carrier: "ups" | "fedex" | "usps" | "dhl" | "other"
-      user_role: "client" | "provider" | "admin"
+      user_role: "client" | "provider" | "admin" | "investor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2141,7 +2263,7 @@ export const Constants = {
       ],
       shipment_direction: ["outbound", "return"],
       shipping_carrier: ["ups", "fedex", "usps", "dhl", "other"],
-      user_role: ["client", "provider", "admin"],
+      user_role: ["client", "provider", "admin", "investor"],
     },
   },
 } as const

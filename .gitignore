@@ -49,3 +49,9 @@ next-env.d.ts
 .junie/
 .kiro/
 skills-lock.json
+
+# Investor data room — confidential PDFs must not be committed
+supabase/seed/investor-room/*.pdf
+supabase/seed/investor-room/*.docx
+supabase/seed/investor-room/*.xlsx
+supabase/seed/investor-room/manifest.json

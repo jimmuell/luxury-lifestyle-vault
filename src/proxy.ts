@@ -7,6 +7,7 @@ const ROLE_PREFIXES = {
   client: '/client',
   provider: '/provider',
   admin: '/admin',
+  investor: '/investor',
 } as const
 
 const PUBLIC_PREFIXES = ['/auth', '/api/webhooks', '/api/inngest', '/terms', '/privacy']
@@ -56,7 +57,7 @@ export async function proxy(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, onboarding_complete')
+    .select('role, onboarding_complete, nda_acknowledged')
     .eq('id', user.id)
     .single()
 
@@ -67,13 +68,19 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(prefix ?? '/auth/login', request.url))
   }
 
-  if (prefix && !pathname.startsWith(prefix)) {
+  // API routes handle their own role enforcement — skip prefix redirect for them
+  if (prefix && !pathname.startsWith(prefix) && !pathname.startsWith('/api/')) {
     return NextResponse.redirect(new URL(prefix, request.url))
   }
 
   // Gate clients: must complete onboarding (which now includes subscription activation)
   if (role === 'client' && !profile?.onboarding_complete && !pathname.startsWith('/client/onboarding')) {
     return NextResponse.redirect(new URL('/client/onboarding', request.url))
+  }
+
+  // Gate investors: must acknowledge the NDA before entering the data room
+  if (role === 'investor' && !profile?.nda_acknowledged && !pathname.startsWith('/investor/acknowledge')) {
+    return NextResponse.redirect(new URL('/investor/acknowledge', request.url))
   }
 
   return response

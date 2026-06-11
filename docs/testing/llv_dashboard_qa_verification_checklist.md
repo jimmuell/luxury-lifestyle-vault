@@ -82,11 +82,15 @@ Trigger emails by walking an order through its lifecycle in the app (confirm →
 ## 4. In-app — Admin return processing (T12.1 steps 4–6)
 This one is in the app, not a dashboard — it's the half of the return flow the test run didn't exercise (client initiation already verified).
 
-- [ ] As **admin**, find an order in `return_initiated` status (initiate one as a client first if needed).
-- [ ] **Mark return received** (now behind the custom confirm dialog, bug #33).
-- [ ] Order transitions to `return_received`.
-- [ ] The returned **items re-enter storage** automatically — verify their `item_location` updates to the correct WI/AZ storage location.
-- **Expected:** status advances, items show back in storage at the right corridor end, audit log records the transition.
+**✅ VERIFIED by Cowork via browser QA on 2026-06-07** (deployment, admin demo login). Test order: Seasonal Rotation #19E3D0AC (James Thornton, AZ→WI, 4 items: LLV-000623/626/627/628).
+
+- [x] As **admin**, found order #19E3D0AC in `return_initiated` status.
+- [x] **Mark return received** — the **custom confirm dialog (bug #33 fix) fired**: "Mark return received? Item locations will be reset to intake." (No native `window.confirm`.) Confirmed.
+- [x] Order transitioned to **Return Received**; status-history entry written: *"Return received — items back at vault." (Jun 7, 2026 · 2:15 PM).*
+- [x] Returned items updated automatically — both spot-checked items (LLV-000627 "Delivered"→, LLV-000623 "Delivered"→) now have **`item_location = Intake Pending`**.
+- **Actual result:** PASS on status transition + audit + automatic item-location update.
+
+> ⚠️ **Finding — expectation mismatch (product decision, not necessarily a bug):** the checklist originally expected returned items to land in **"In Storage — WI/AZ."** Actual behavior routes them to **"Intake Pending"** (the confirm dialog literally says "Item locations will be reset to intake"). Routing returns through intake (inspect/condition-log before shelving as Stored) is arguably the *more correct* operational flow — but **Jim should confirm the intended end-state**: (a) keep "Intake Pending" (recommended — returns get inspected first), or (b) change the return handler to set "In Storage — \<corridor end\>". If (b), it becomes a small Code prompt. *Also minor:* `item_status` stays "Delivered" while `item_location` becomes "Intake Pending" (the two fields are decoupled by design) — confirm that's acceptable.
 
 ---
 
@@ -101,6 +105,6 @@ This one is in the app, not a dashboard — it's the half of the return flow the
 | 2 | Resend emails (all events) | ☐ | |
 | 3.1 | Inngest per-request billing run | ☐ | |
 | 3.2 | Inngest seasonal reminder schedule | ☐ | |
-| 4 | Admin return processing | ☐ | |
+| 4 | Admin return processing | ✅ | PASS (Cowork, 2026-06-07, order #19E3D0AC). Status→Return Received, audit written, items→`Intake Pending` automatically. Custom confirm dialog (bug #33) confirmed. ⚠️ Items go to **Intake Pending**, not "In Storage" — confirm intended end-state (see §4 finding). |
 
 **If anything fails:** describe it here, and Cowork will turn it into a Code prompt (logged Bug Fix Cycle #36+). Once all nine pass, the Sections 2–13 QA is fully closed and the platform is verified end-to-end — clear to shift to founding-member recruitment.

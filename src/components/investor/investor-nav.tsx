@@ -1,0 +1,40 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
+import Link from 'next/link'
+import { LayoutGrid, FolderOpen, BarChart2, Presentation, Target, Mail } from 'lucide-react'
+
+const NAV_ITEMS = [
+  { href: '/investor',            label: 'Overview',    icon: LayoutGrid },
+  { href: '/investor/documents',  label: 'Documents',   icon: FolderOpen },
+  { href: '/investor/financials', label: 'Financials',  icon: BarChart2 },
+  { href: '/investor/deck',       label: 'Pitch Deck',  icon: Presentation },
+  { href: '/investor/the-ask',    label: 'The Ask',     icon: Target },
+  { href: '/investor/contact',    label: 'Contact',     icon: Mail },
+]
+
+export function InvestorNav() {
+  const pathname = usePathname()
+
+  return (
+    <div className="space-y-1">
+      {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        const isActive = pathname === href || (href !== '/investor' && pathname.startsWith(href))
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+              isActive
+                ? 'text-foreground bg-muted'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+            }`}
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
