@@ -1,7 +1,7 @@
 import type Stripe from 'stripe'
 import { inngest } from '@/lib/inngest/client'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { stripe } from '@/lib/stripe/server'
+import { getStripe } from '@/lib/stripe/server'
 import { createNotification } from '@/lib/notifications'
 import { withSentryCapture } from '@/lib/inngest/with-sentry'
 
@@ -84,18 +84,18 @@ export const billOnDemandOrder = inngest.createFunction(
       }
 
       for (const params of invoiceItemParams) {
-        await stripe.invoiceItems.create(params)
+        await getStripe().invoiceItems.create(params)
       }
 
-      const invoice = await stripe.invoices.create({
+      const invoice = await getStripe().invoices.create({
         customer: clientProfile.stripe_customer_id,
         auto_advance: true,
         metadata: { order_id: orderId },
         ...(discountPct > 0 ? { discounts: [{ coupon: `founding_member_${discountPct}pct` }] } : {}),
       })
 
-      const finalized = await stripe.invoices.finalizeInvoice(invoice.id)
-      await stripe.invoices.pay(finalized.id)
+      const finalized = await getStripe().invoices.finalizeInvoice(invoice.id)
+      await getStripe().invoices.pay(finalized.id)
 
       await adminClient.from('orders').update({
         stripe_invoice_id: invoice.id,

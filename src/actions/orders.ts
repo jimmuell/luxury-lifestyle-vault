@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { stripe } from '@/lib/stripe/server'
+import { getStripe } from '@/lib/stripe/server'
 import { revalidatePath } from 'next/cache'
 import { ORDER_STATUS_TRANSITIONS, CLIENT_CANCELLABLE_STATUSES } from '@/types/app'
 import type { OrderStatus } from '@/types/app'
@@ -612,7 +612,7 @@ export async function adminRefundOrder(orderId: string) {
   if (order.refunded_at) throw new Error('Order already refunded')
   if (!order.paid_at) throw new Error('Order not yet paid')
 
-  const invoiceRaw = await stripe.invoices.retrieve(order.stripe_invoice_id, {
+  const invoiceRaw = await getStripe().invoices.retrieve(order.stripe_invoice_id, {
     expand: ['payment_intent'],
   })
   const invoice = invoiceRaw as unknown as {
@@ -626,7 +626,7 @@ export async function adminRefundOrder(orderId: string) {
 
   if (!paymentIntentId) throw new Error('No payment intent on invoice')
 
-  await stripe.refunds.create({ payment_intent: paymentIntentId })
+  await getStripe().refunds.create({ payment_intent: paymentIntentId })
 
   await adminClient.from('orders').update({
     refunded_at: new Date().toISOString(),

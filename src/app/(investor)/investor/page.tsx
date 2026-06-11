@@ -1,8 +1,10 @@
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FolderOpen, BarChart2, Presentation } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
 import { PROJECTION_3YR, YEAR1_REVENUE } from '@/lib/investor/financials'
+import { tierRank } from '@/lib/investor/tiers'
 
 function formatCompact(amount: number): string {
   if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`
@@ -17,10 +19,11 @@ export default async function InvestorOverviewPage() {
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name')
-    .eq('id', user!.id)
+    .select('full_name, investor_tier')
+    .eq('id', user.id)
     .maybeSingle()
 
   const fullName = profile?.full_name?.trim() ?? ''
@@ -43,11 +46,13 @@ export default async function InvestorOverviewPage() {
     { label: 'Insured value (Yr 3)', value: formatCompact(year3Data.insuredValue) },
   ]
 
+  const userRank = tierRank(profile?.investor_tier ?? 'prospect')
+
   const cards = [
-    { href: '/investor/documents',  label: 'Documents',  icon: FolderOpen,   description: 'Review the full data room library.' },
-    { href: '/investor/financials', label: 'Financials', icon: BarChart2,     description: 'Explore the 3-year financial model.' },
-    { href: '/investor/deck',       label: 'Pitch Deck', icon: Presentation,  description: 'View the investor presentation.' },
-  ]
+    { href: '/investor/presentations', label: 'Presentations', icon: Presentation, description: 'View investor presentations.',         minRank: 1 },
+    { href: '/investor/documents',     label: 'Documents',     icon: FolderOpen,   description: 'Review the full data room library.',  minRank: 2 },
+    { href: '/investor/financials',    label: 'Financials',    icon: BarChart2,    description: 'Explore the 3-year financial model.', minRank: 3 },
+  ].filter(c => userRank >= c.minRank)
 
   return (
     <div className="space-y-8">
@@ -55,7 +60,11 @@ export default async function InvestorOverviewPage() {
         <p className="font-serif text-3xl font-light">{greeting}</p>
         <p className="font-serif text-lg font-light text-muted-foreground mt-1">Your Lifestyle, Wherever Life Takes You.</p>
         <p className="mt-2 text-muted-foreground text-sm max-w-xl">
-          Welcome to the Luxury Lifestyle Vault investor data room. Review our financials, explore the full document library, and view the pitch deck.
+          {userRank >= 3
+            ? 'Welcome to the LLV investor data room. Review our financials, explore the full document library, and view investor presentations.'
+            : userRank >= 2
+            ? 'Welcome to the LLV investor data room. Explore the full document library and view investor presentations.'
+            : 'Welcome to the LLV Investor Room. View the pitch deck and learn about our vision for Luxury Lifestyle Vault.'}
         </p>
       </div>
 

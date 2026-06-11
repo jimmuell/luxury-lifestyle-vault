@@ -3,22 +3,44 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutGrid, FolderOpen, BarChart2, Presentation, Target, Mail } from 'lucide-react'
+import type { InvestorTier } from '@/lib/investor/tiers'
 
-const NAV_ITEMS = [
-  { href: '/investor',            label: 'Overview',    icon: LayoutGrid },
-  { href: '/investor/documents',  label: 'Documents',   icon: FolderOpen },
-  { href: '/investor/financials', label: 'Financials',  icon: BarChart2 },
-  { href: '/investor/deck',       label: 'Pitch Deck',  icon: Presentation },
-  { href: '/investor/the-ask',    label: 'The Ask',     icon: Target },
-  { href: '/investor/contact',    label: 'Contact',     icon: Mail },
+const PROSPECT_NAV_ITEMS = [
+  { href: '/investor',               label: 'Overview',      icon: LayoutGrid },
+  { href: '/investor/presentations', label: 'Presentations', icon: Presentation },
+  { href: '/investor/contact',       label: 'Contact',       icon: Mail },
 ]
 
-export function InvestorNav() {
+const INVESTOR_NAV_ITEMS = [
+  { href: '/investor',               label: 'Overview',      icon: LayoutGrid },
+  { href: '/investor/presentations', label: 'Presentations', icon: Presentation },
+  { href: '/investor/documents',     label: 'Documents',     icon: FolderOpen },
+  { href: '/investor/contact',       label: 'Contact',       icon: Mail },
+]
+
+const BOARD_NAV_ITEMS = [
+  { href: '/investor',               label: 'Overview',      icon: LayoutGrid },
+  { href: '/investor/presentations', label: 'Presentations', icon: Presentation },
+  { href: '/investor/documents',     label: 'Documents',     icon: FolderOpen },
+  { href: '/investor/financials',    label: 'Financials',    icon: BarChart2 },
+  { href: '/investor/the-ask',       label: 'The Ask',       icon: Target },
+  { href: '/investor/contact',       label: 'Contact',       icon: Mail },
+]
+
+interface InvestorNavProps {
+  tier: InvestorTier
+}
+
+export function InvestorNav({ tier }: InvestorNavProps) {
   const pathname = usePathname()
+  const navItems =
+    tier === 'board' ? BOARD_NAV_ITEMS :
+    tier === 'investor' ? INVESTOR_NAV_ITEMS :
+    PROSPECT_NAV_ITEMS
 
   return (
     <div className="space-y-1">
-      {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+      {navItems.map(({ href, label, icon: Icon }) => {
         const isActive = pathname === href || (href !== '/investor' && pathname.startsWith(href))
         return (
           <Link

@@ -1,10 +1,12 @@
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe/server'
+import { getStripe } from '@/lib/stripe/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { handleSubscriptionEvent } from '@/lib/stripe/webhooks/handle-subscription'
 import { handleInvoiceEvent } from '@/lib/stripe/webhooks/handle-invoice'
 import { handleSetupIntentSucceeded } from '@/lib/stripe/webhooks/handle-setup-intent'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
   const body = await req.text()
@@ -18,7 +20,7 @@ export async function POST(req: Request) {
 
   let event
   try {
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
+    event = getStripe().webhooks.constructEvent(body, sig, webhookSecret)
   } catch {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }

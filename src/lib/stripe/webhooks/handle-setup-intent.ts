@@ -1,6 +1,6 @@
 import type Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { stripe } from '@/lib/stripe/server'
+import { getStripe } from '@/lib/stripe/server'
 
 export async function handleSetupIntentSucceeded(event: Stripe.Event) {
   const setupIntent = event.data.object as Stripe.SetupIntent
@@ -17,7 +17,7 @@ export async function handleSetupIntentSucceeded(event: Stripe.Event) {
     : setupIntent.payment_method.id
 
   // Set this as the default payment method on the Stripe customer
-  await stripe.customers.update(customerId, {
+  await getStripe().customers.update(customerId, {
     invoice_settings: { default_payment_method: paymentMethodId },
   })
 

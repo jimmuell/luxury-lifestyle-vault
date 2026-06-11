@@ -29,7 +29,7 @@ export const SEED_MANIFEST: SeedScript[] = [
   {
     id: 'demo-accounts',
     name: 'Demo Accounts',
-    description: 'Quick-login demo accounts: demo.admin@llv.dev + demo.client@llv.dev + demo.investor@llv.dev (password: demo1234). Demo client is fully onboarded with 6 wardrobe items and 1 completed order. Demo investor has role=investor, onboarding_complete=true.',
+    description: 'Quick-login demo accounts: demo.admin@llv.dev + demo.client@llv.dev + demo.investor@llv.dev + demo.prospect@llv.dev (password: demo1234). Demo client is fully onboarded with 6 wardrobe items and 1 completed order. Demo investor has role=investor, investor_tier=board. Demo prospect has role=investor, investor_tier=prospect.',
     script: seedDemoAccounts,
   },
   {

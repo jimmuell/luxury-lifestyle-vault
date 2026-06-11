@@ -3,7 +3,7 @@
 import type Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { stripe } from '@/lib/stripe/server'
+import { getStripe } from '@/lib/stripe/server'
 import { inngest } from '@/lib/inngest/client'
 import { welcomeEmail } from '@/lib/resend/emails/welcome'
 
@@ -34,7 +34,7 @@ export async function createSetupIntent() {
       .eq('id', user.id)
       .single()
 
-    const customer = await stripe.customers.create(
+    const customer = await getStripe().customers.create(
       {
         email: user.email!,
         name: profile?.full_name ?? undefined,
@@ -57,7 +57,7 @@ export async function createSetupIntent() {
     stripeCustomerId = customer.id
   }
 
-  const setupIntent = await stripe.setupIntents.create({
+  const setupIntent = await getStripe().setupIntents.create({
     customer: stripeCustomerId,
     metadata: { profile_id: user.id },
     automatic_payment_methods: { enabled: true },
@@ -100,10 +100,10 @@ export async function createSubscription(tierId: string) {
   if (founding_member && founding_member_discount_pct > 0) {
     const couponSlug = `founding_member_${founding_member_discount_pct}pct`
     try {
-      await stripe.coupons.retrieve(couponSlug)
+      await getStripe().coupons.retrieve(couponSlug)
       couponId = couponSlug
     } catch {
-      const coupon = await stripe.coupons.create({
+      const coupon = await getStripe().coupons.create({
         id: couponSlug,
         percent_off: founding_member_discount_pct,
         duration: 'repeating',
@@ -116,7 +116,7 @@ export async function createSubscription(tierId: string) {
 
   // Fetch the default PM set during the SetupIntent flow so we can charge
   // immediately without requiring client-side PaymentIntent confirmation.
-  const customerData = await stripe.customers.retrieve(stripe_customer_id)
+  const customerData = await getStripe().customers.retrieve(stripe_customer_id)
   const defaultPaymentMethodId: string | null =
     typeof customerData === 'object' && !customerData.deleted
       ? (customerData.invoice_settings?.default_payment_method as string | null) ?? null
@@ -126,7 +126,7 @@ export async function createSubscription(tierId: string) {
     throw new Error('No payment method on file — please complete payment setup before subscribing')
   }
 
-  const subscription = asStripe<Stripe.Subscription>(await stripe.subscriptions.create({
+  const subscription = asStripe<Stripe.Subscription>(await getStripe().subscriptions.create({
     customer: stripe_customer_id,
     items: [{ price: stripe_price_id_current }],
     ...(couponId ? { discounts: [{ coupon: couponId }] } : {}),
@@ -167,7 +167,7 @@ export async function cancelSubscription(subscriptionId: string) {
 
   if (!sub) throw new Error('Subscription not found')
 
-  await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true })
+  await getStripe().subscriptions.update(subscriptionId, { cancel_at_period_end: true })
 
   await supabase
     .from('client_subscriptions')
@@ -247,9 +247,9 @@ export async function adminSetSubscription(clientId: string, tierId: string) {
   let couponId: string | undefined
   if (founding_member && founding_member_discount_pct > 0) {
     const couponSlug = `founding_member_${founding_member_discount_pct}pct`
-    try { await stripe.coupons.retrieve(couponSlug); couponId = couponSlug }
+    try { await getStripe().coupons.retrieve(couponSlug); couponId = couponSlug }
     catch {
-      const coupon = await stripe.coupons.create({
+      const coupon = await getStripe().coupons.create({
         id: couponSlug, percent_off: founding_member_discount_pct,
         duration: 'repeating', duration_in_months: 12,
         name: 'Founding Member — 20% off for 12 months',
@@ -258,13 +258,13 @@ export async function adminSetSubscription(clientId: string, tierId: string) {
     }
   }
 
-  const adminCustomerData = await stripe.customers.retrieve(stripe_customer_id)
+  const adminCustomerData = await getStripe().customers.retrieve(stripe_customer_id)
   const adminDefaultPmId: string | null =
     typeof adminCustomerData === 'object' && !adminCustomerData.deleted
       ? (adminCustomerData.invoice_settings?.default_payment_method as string | null) ?? null
       : null
 
-  const subscription = asStripe<Stripe.Subscription>(await stripe.subscriptions.create({
+  const subscription = asStripe<Stripe.Subscription>(await getStripe().subscriptions.create({
     customer: stripe_customer_id,
     items: [{ price: stripe_price_id_current }],
     ...(couponId ? { discounts: [{ coupon: couponId }] } : {}),
@@ -298,11 +298,11 @@ export async function adminChangeTier(subscriptionId: string, newTierId: string)
 
   if (!tier?.stripe_price_id_current) throw new Error('New tier not synced to Stripe')
 
-  const stripeSubscription = asStripe<Stripe.Subscription>(await stripe.subscriptions.retrieve(subscriptionId))
+  const stripeSubscription = asStripe<Stripe.Subscription>(await getStripe().subscriptions.retrieve(subscriptionId))
   const itemId = stripeSubscription.items.data[0]?.id
   if (!itemId) throw new Error('No subscription item found')
 
-  await stripe.subscriptions.update(subscriptionId, {
+  await getStripe().subscriptions.update(subscriptionId, {
     items: [{ id: itemId, price: tier.stripe_price_id_current }],
     proration_behavior: 'create_prorations',
   })
@@ -319,7 +319,7 @@ export async function adminCancelSubscription(subscriptionId: string, immediatel
   const { adminClient } = await requireAdmin()
 
   if (immediately) {
-    await stripe.subscriptions.cancel(subscriptionId)
+    await getStripe().subscriptions.cancel(subscriptionId)
     await adminClient.from('client_subscriptions').update({
       status: 'canceled',
       canceled_at: new Date().toISOString(),
@@ -335,7 +335,7 @@ export async function adminCancelSubscription(subscriptionId: string, immediatel
       await adminClient.from('client_profiles').update({ subscription_active: false }).eq('profile_id', sub.client_id)
     }
   } else {
-    await stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true })
+    await getStripe().subscriptions.update(subscriptionId, { cancel_at_period_end: true })
     await adminClient.from('client_subscriptions').update({ cancel_at_period_end: true }).eq('stripe_subscription_id', subscriptionId)
   }
 

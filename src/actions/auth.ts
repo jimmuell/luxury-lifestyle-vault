@@ -48,7 +48,7 @@ export async function signOut() {
   redirect('/auth/login')
 }
 
-export async function signInAsDemo(role: 'client' | 'admin' | 'investor') {
+export async function signInAsDemo(role: 'client' | 'admin' | 'prospect' | 'investor' | 'board') {
   if (process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN !== 'true') {
     return { error: 'Demo login is not enabled in this environment.' }
   }
@@ -57,7 +57,9 @@ export async function signInAsDemo(role: 'client' | 'admin' | 'investor') {
   const EMAIL_MAP = {
     admin: 'demo.admin@llv.dev',
     client: 'demo.client@llv.dev',
+    prospect: 'demo.prospect@llv.dev',
     investor: 'demo.investor@llv.dev',
+    board: 'demo.board@llv.dev',
   }
   const email = EMAIL_MAP[role]
 

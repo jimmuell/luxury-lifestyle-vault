@@ -1,5 +1,5 @@
 import { inngest } from '@/lib/inngest/client'
-import { stripe } from '@/lib/stripe/server'
+import { getStripe } from '@/lib/stripe/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { withSentryCapture } from '@/lib/inngest/with-sentry'
 
@@ -28,7 +28,7 @@ export const createStripeCustomer = inngest.createFunction(
       if (existingCustomerId) return { customerId: existingCustomerId, skipped: true }
 
       const customerId = await step.run('create-stripe-customer', async () => {
-        const customer = await stripe.customers.create(
+        const customer = await getStripe().customers.create(
           { email, name: fullName ?? undefined, metadata: { profile_id: profileId } },
           { idempotencyKey: `profile_${profileId}` }
         )

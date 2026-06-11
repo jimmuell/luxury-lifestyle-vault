@@ -46,6 +46,8 @@ interface ManifestEntry {
   title: string
   description?: string
   sort_order?: number
+  doc_type?: string
+  audience?: string
 }
 
 interface Manifest {
@@ -117,6 +119,8 @@ async function main() {
           file_size_bytes: fileSizeBytes,
           sort_order: entry.sort_order ?? 0,
           is_published: true,
+          doc_type: entry.doc_type ?? 'document',
+          audience: entry.audience ?? 'board',
         },
         { onConflict: 'storage_path' }
       )

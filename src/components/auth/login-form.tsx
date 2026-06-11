@@ -23,7 +23,9 @@ const QUICK_ACCOUNTS: QuickAccount[] = [
     ? [
         { label: 'Demo — Admin',                   email: 'demo.admin@llv.dev',    password: 'demo1234' },
         { label: 'Demo — Client (fully onboarded)', email: 'demo.client@llv.dev',   password: 'demo1234' },
-        { label: 'Demo — Investor',                 email: 'demo.investor@llv.dev', password: 'demo1234' },
+        { label: 'Demo — Investor (mid-tier)',       email: 'demo.investor@llv.dev', password: 'demo1234' },
+        { label: 'Demo — Board member',             email: 'demo.board@llv.dev',    password: 'demo1234' },
+        { label: 'Demo — Prospect',                 email: 'demo.prospect@llv.dev', password: 'demo1234' },
       ]
     : []),
   ...(DEV_ADMIN_EMAIL

@@ -1,3 +1,6 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { tierRank } from '@/lib/investor/tiers'
 import {
   FINANCIALS_META,
   PILOT_ASSUMPTIONS,
@@ -18,7 +21,23 @@ function formatCompact(amount: number): string {
   return `$${amount}`
 }
 
-export default function InvestorFinancialsPage() {
+export default async function InvestorFinancialsPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, investor_tier')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const role = profile?.role
+  if (role !== 'investor' && role !== 'admin') redirect('/')
+
+  const tier = profile?.investor_tier ?? 'prospect'
+  if (role === 'investor' && tierRank(tier) < 3) redirect('/investor/presentations')
+
   const totalRevenue = YEAR1_REVENUE.reduce((sum, r) => sum + r.amount, 0)
   const totalCosts = YEAR1_COSTS.reduce((sum, c) => sum + c.amount, 0)
   const maxProjectionRevenue = Math.max(...PROJECTION_3YR.map(p => p.revenue))

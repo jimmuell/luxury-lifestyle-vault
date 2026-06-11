@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { FolderOpen } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { tierRank } from '@/lib/investor/tiers'
 import { getInvestorDocuments, type InvestorDocument } from '@/lib/queries/investor'
 import { PrintButton } from '@/components/investor/print-button'
 import { DocActions } from '@/components/investor/doc-actions'
@@ -19,6 +20,7 @@ const SECTION_LABELS: Record<string, string> = {
   operations: 'Operations',
   launch:     'Launch Plan',
   legal:      'Legal & Risk',
+  deck:       'Pitch Deck',
 }
 
 function formatBytes(bytes: number | null): string {
@@ -33,7 +35,18 @@ export default async function InvestorDocumentsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const docs = await getInvestorDocuments()
+  const [profileResult, docsResult] = await Promise.all([
+    supabase.from('profiles').select('role, investor_tier').eq('id', user.id).maybeSingle(),
+    getInvestorDocuments(),
+  ])
+
+  const role = profileResult.data?.role
+  if (role !== 'investor' && role !== 'admin') redirect('/')
+
+  const tier = profileResult.data?.investor_tier ?? 'prospect'
+  if (role === 'investor' && tierRank(tier) < 2) redirect('/investor/presentations')
+
+  const docs = docsResult
 
   // Group docs by section
   const grouped: Record<string, InvestorDocument[]> = {}
