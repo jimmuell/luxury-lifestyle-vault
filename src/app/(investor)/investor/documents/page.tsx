@@ -34,19 +34,18 @@ export default async function InvestorDocumentsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, investor_tier')
-    .eq('id', user.id)
-    .maybeSingle()
+  const [profileResult, docsResult] = await Promise.all([
+    supabase.from('profiles').select('role, investor_tier').eq('id', user.id).maybeSingle(),
+    getInvestorDocuments(),
+  ])
 
-  const role = profile?.role
+  const role = profileResult.data?.role
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
-  const tier = profile?.investor_tier ?? 'prospect'
+  const tier = profileResult.data?.investor_tier ?? 'prospect'
   if (role === 'investor' && tier !== 'board') redirect('/investor/presentations')
 
-  const docs = await getInvestorDocuments()
+  const docs = docsResult
 
   // Group docs by section
   const grouped: Record<string, InvestorDocument[]> = {}

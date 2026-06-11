@@ -25,23 +25,22 @@ export default async function InvestorPresentationViewerPage({ params }: Props) 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
+  const [profileResult, docResult] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+    supabase
+      .from('investor_documents')
+      .select('id, title, storage_path')
+      .eq('id', id)
+      .eq('doc_type', 'presentation')
+      .eq('is_published', true)
+      .maybeSingle(),
+  ])
 
-  const role = profile?.role
+  const role = profileResult.data?.role
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
-  // 2. Fetch the document (include storage_path)
-  const { data: doc } = await supabase
-    .from('investor_documents')
-    .select('id, title, storage_path')
-    .eq('id', id)
-    .eq('doc_type', 'presentation')
-    .eq('is_published', true)
-    .maybeSingle()
+  // 2. Confirm document exists
+  const doc = docResult.data
 
   if (!doc) redirect('/investor/presentations')
 

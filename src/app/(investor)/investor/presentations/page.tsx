@@ -9,23 +9,20 @@ export default async function InvestorPresentationsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
+  const [profileResult, presentationsResult] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+    supabase
+      .from('investor_documents')
+      .select('id, title, description')
+      .eq('doc_type', 'presentation')
+      .eq('is_published', true)
+      .order('sort_order'),
+  ])
 
-  const role = profile?.role
+  const role = profileResult.data?.role
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
-  const { data: presentations } = await supabase
-    .from('investor_documents')
-    .select('id, title, description')
-    .eq('doc_type', 'presentation')
-    .eq('is_published', true)
-    .order('sort_order')
-
-  const docs = presentations ?? []
+  const docs = presentationsResult.data ?? []
 
   return (
     <div className="space-y-6">
