@@ -29,8 +29,19 @@ jobs:
       - name: Production build
         run: npm run build
         env:
+          # NEXT_PUBLIC_* values are embedded at build time — use real secrets.
+          # Add these as GitHub repo secrets: Settings → Secrets → Actions.
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+
+          # Server-only secrets are never read at module load (lazy init).
+          # Placeholders are sufficient to get past Next.js static analysis;
+          # actual values are only needed at runtime on Vercel.
+          STRIPE_SECRET_KEY: sk_test_ci_placeholder
+          STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
+          SUPABASE_SERVICE_ROLE_KEY: placeholder_service_role_key
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          RESEND_API_KEY: re_ci_placeholder
+          INNGEST_SIGNING_KEY: signkey-test-placeholder
+          INNGEST_EVENT_KEY: test-placeholder

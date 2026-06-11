@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { stripe } from '@/lib/stripe/server'
+import { getStripe } from '@/lib/stripe/server'
 
 type TierPricingFields = {
   monthly_price_cents?: number | null
@@ -58,7 +58,7 @@ export async function syncTierToStripe(tierId: string) {
   // Create or update Stripe Product
   let productId = tier.stripe_product_id
   if (!productId) {
-    const product = await stripe.products.create({
+    const product = await getStripe().products.create({
       name: tier.name,
       description: tier.description ?? undefined,
       metadata: { tier_id: tierId },
@@ -69,7 +69,7 @@ export async function syncTierToStripe(tierId: string) {
       .update({ stripe_product_id: productId })
       .eq('id', tierId)
   } else {
-    await stripe.products.update(productId, {
+    await getStripe().products.update(productId, {
       name: tier.name,
       description: tier.description ?? undefined,
     })
@@ -79,7 +79,7 @@ export async function syncTierToStripe(tierId: string) {
   const priceAmountCents = tier.monthly_price_cents ?? 0
   if (priceAmountCents === 0) return { productId, skipped: true }
 
-  const price = await stripe.prices.create({
+  const price = await getStripe().prices.create({
     product: productId,
     currency: 'usd',
     unit_amount: priceAmountCents,
@@ -163,7 +163,7 @@ export async function updateTierConfig(tierId: string, config: TierConfigFields)
       .single()
 
     if (tier?.stripe_product_id && tier.tier_type === 'subscription') {
-      await stripe.products.update(tier.stripe_product_id, {
+      await getStripe().products.update(tier.stripe_product_id, {
         name: config.name,
         description: config.description ?? undefined,
       })

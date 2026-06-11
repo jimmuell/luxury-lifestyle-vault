@@ -29,7 +29,7 @@ export default async function AdminTiersPage() {
           <Caption as="p" className="text-muted-foreground mb-1">Settings</Caption>
           <H1>Service Tiers</H1>
         </div>
-        {isTestMode && (
+        {isTestMode() && (
           <div className="text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-md px-3 py-1.5">
             Stripe test mode active
           </div>
