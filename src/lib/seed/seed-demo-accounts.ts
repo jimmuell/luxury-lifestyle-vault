@@ -1,10 +1,11 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { SeedResult } from './types'
 
-const DEMO_CLIENT_EMAIL   = 'demo.client@llv.dev'
-const DEMO_ADMIN_EMAIL    = 'demo.admin@llv.dev'
-const DEMO_INVESTOR_EMAIL = 'demo.investor@llv.dev'
-const DEMO_PASSWORD       = 'demo1234'
+const DEMO_CLIENT_EMAIL    = 'demo.client@llv.dev'
+const DEMO_ADMIN_EMAIL     = 'demo.admin@llv.dev'
+const DEMO_INVESTOR_EMAIL  = 'demo.investor@llv.dev'
+const DEMO_PROSPECT_EMAIL  = 'demo.prospect@llv.dev'
+const DEMO_PASSWORD        = 'demo1234'
 
 // 6 items spread across categories to give the demo dashboard substance
 const DEMO_ITEMS = [
@@ -253,7 +254,7 @@ export async function seedDemoAccounts(): Promise<SeedResult> {
 
     if (existingInvestor) {
       await adminClient.from('profiles')
-        .update({ role: 'investor', nda_acknowledged: true, is_seed_data: true })
+        .update({ role: 'investor', investor_tier: 'board', nda_acknowledged: true, is_seed_data: true })
         .eq('id', existingInvestor.id)
       skipped++
     } else {
@@ -269,6 +270,7 @@ export async function seedDemoAccounts(): Promise<SeedResult> {
       await adminClient.from('profiles').update({
         full_name: 'Demo Investor',
         role: 'investor',
+        investor_tier: 'board',
         onboarding_complete: true,
         nda_acknowledged: true,
         is_seed_data: true,
@@ -278,6 +280,45 @@ export async function seedDemoAccounts(): Promise<SeedResult> {
     }
   } catch (err) {
     errors.push(`${DEMO_INVESTOR_EMAIL}: ${err instanceof Error ? err.message : String(err)}`)
+  }
+
+  // ── Demo Prospect Account ─────────────────────────────────────────────────
+
+  try {
+    const { data: existingProspect } = await adminClient
+      .from('profiles')
+      .select('id')
+      .eq('email', DEMO_PROSPECT_EMAIL)
+      .maybeSingle()
+
+    if (existingProspect) {
+      await adminClient.from('profiles')
+        .update({ role: 'investor', investor_tier: 'prospect', nda_acknowledged: true, is_seed_data: true })
+        .eq('id', existingProspect.id)
+      skipped++
+    } else {
+      const { data: prospectAuth, error: prospectAuthErr } = await adminClient.auth.admin.createUser({
+        email: DEMO_PROSPECT_EMAIL,
+        password: DEMO_PASSWORD,
+        email_confirm: true,
+        user_metadata: { role: 'investor', full_name: 'Demo Prospect' },
+      })
+      if (prospectAuthErr) throw new Error(prospectAuthErr.message)
+      if (!prospectAuth.user) throw new Error('No user returned')
+
+      await adminClient.from('profiles').update({
+        full_name: 'Demo Prospect',
+        role: 'investor',
+        investor_tier: 'prospect',
+        onboarding_complete: true,
+        nda_acknowledged: true,
+        is_seed_data: true,
+      }).eq('id', prospectAuth.user.id)
+
+      seeded++
+    }
+  } catch (err) {
+    errors.push(`${DEMO_PROSPECT_EMAIL}: ${err instanceof Error ? err.message : String(err)}`)
   }
 
   return { seeded, skipped, errors }
