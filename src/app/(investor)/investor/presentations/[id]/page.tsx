@@ -25,6 +25,7 @@ export default async function InvestorPresentationViewerPage({ params }: Props) 
     .from('investor_documents')
     .select('id, title')
     .eq('id', id)
+    .eq('doc_type', 'presentation')
     .eq('is_published', true)
     .maybeSingle()
 

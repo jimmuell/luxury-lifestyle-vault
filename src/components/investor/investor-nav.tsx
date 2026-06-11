@@ -20,7 +20,7 @@ const BOARD_NAV_ITEMS = [
 ]
 
 interface InvestorNavProps {
-  tier: string
+  tier: 'prospect' | 'board'
 }
 
 export function InvestorNav({ tier }: InvestorNavProps) {

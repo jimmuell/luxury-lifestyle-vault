@@ -20,7 +20,7 @@ export default async function InvestorLayout({ children }: { children: React.Rea
 
   if (profile?.role !== 'investor' && profile?.role !== 'admin') redirect('/')
 
-  const tier = profile?.investor_tier ?? 'prospect'
+  const tier = (profile?.investor_tier ?? 'prospect') as 'prospect' | 'board'
 
   const displayName = profile?.full_name?.trim() || user.email || ''
   const showEmail = displayName !== user.email
