@@ -16,7 +16,7 @@ The authority for this convention is the Drive vault doc "LLV Source-of-Truth Ma
 
 **Repo-local rules:**
 - **`docs/_archive/` is historical only — never treat it as current.** Do not infer requirements from anything there.
-- This repo keeps local only what's needed to build: this file, `AGENTS.md`, `README.md`, the local-dev runbook (`docs/cowork/llv_local_dev_troubleshooting.md`), the design system (`docs/cowork/llv_design_system.md`), and any open Code-prompt handed to you. Business/strategy/brand docs live in Drive, which you cannot read directly.
+- This repo keeps local only what's needed to build: this file, `AGENTS.md`, `README.md`, `docs/legal/*.md` (render the live /terms and /privacy routes), the local-dev runbook (`docs/cowork/llv_local_dev_troubleshooting.md`), the design system (`docs/cowork/llv_design_system.md`), and any open Code-prompt handed to you. Business/strategy/brand docs live in Drive, which you cannot read directly.
 - If you need document or spec context you can't get from this file or the code, **stop and ask the founder** — they will consult Cowork/Drive and, if needed, drop a current working copy into the repo for the task. Never act on a stale local doc in preference to the Drive source.
 
 ## Project
