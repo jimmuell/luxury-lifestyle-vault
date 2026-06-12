@@ -137,7 +137,7 @@ export default async function InvestorOverviewPage() {
 
       {/* CTA section */}
       {ctas.length > 0 && (
-        <CtaSection ctas={ctas} profileId={user.id} />
+        <CtaSection ctas={ctas} />
       )}
 
       {/* Recently added section */}

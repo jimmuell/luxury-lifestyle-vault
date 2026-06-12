@@ -11,7 +11,6 @@ type InvestorCta = Database['public']['Tables']['investor_ctas']['Row']
 
 interface CtaSectionProps {
   ctas: InvestorCta[]
-  profileId: string
 }
 
 function UrlCta({ cta }: { cta: InvestorCta }) {
