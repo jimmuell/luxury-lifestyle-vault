@@ -2,12 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Document authority & single source of truth
+## Document source of truth
 
-The canonical source for all project, business, strategy, and brand documents is the Google Drive **"Luxury Lifestyle Vault"** library: https://drive.google.com/drive/folders/10-HtTcGZDQpj9AvXKvJzlzYXhRF1Pu9S
+LLV docs live in three systems. Before creating or trusting a document, know which is canonical:
 
-- **`docs/_archive/` is historical only — never treat it as current.** Older archived docs must not override the Drive single source. Do not infer requirements from anything under `docs/_archive/`.
-- This repo intentionally keeps local only what's needed to build: this file, `AGENTS.md`, `README.md`, the local-dev runbook (`docs/cowork/llv_local_dev_troubleshooting.md`), the design system (`docs/cowork/llv_design_system.md`), the active test plan (`docs/testing/`), and any open Code-prompt handed to you. Business/strategy/brand docs live in Drive, which you cannot read directly.
+- **Drive vault** ("Luxury Lifestyle Vault") — business/strategy/brand/investor/operations/legal docs. Governed by the Master Document Standard. Not in this repo.
+- **Notion** ("LLV Launch — Project Tracker") — launch task status + operational runbooks (e.g., Founder Dashboard Verifications). The single task board — do NOT keep parallel task lists or status docs in this repo.
+- **This repo** — source code; developer docs under `docs/`; and `docs/legal/*.md`, which render the live /terms and /privacy pages (canonical here).
+
+**One-canonical-copy rule:** when the same content exists in more than one system, exactly one copy is canonical and every other copy carries a banner at the top naming the canonical location. A repo doc that duplicates canonical Drive/Notion content gets a `> **⚠️ SUPERSEDED — …**` banner pointing to the canonical home (and may be renamed `*.SUPERSEDED.md`). Never silently maintain a second live copy.
+
+The authority for this convention is the Drive vault doc "LLV Source-of-Truth Map" (00 CoWork / 01 Master Document Spec).
+
+**Repo-local rules:**
+- **`docs/_archive/` is historical only — never treat it as current.** Do not infer requirements from anything there.
+- This repo keeps local only what's needed to build: this file, `AGENTS.md`, `README.md`, the local-dev runbook (`docs/cowork/llv_local_dev_troubleshooting.md`), the design system (`docs/cowork/llv_design_system.md`), and any open Code-prompt handed to you. Business/strategy/brand docs live in Drive, which you cannot read directly.
 - If you need document or spec context you can't get from this file or the code, **stop and ask the founder** — they will consult Cowork/Drive and, if needed, drop a current working copy into the repo for the task. Never act on a stale local doc in preference to the Drive source.
 
 ## Project
