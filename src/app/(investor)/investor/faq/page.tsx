@@ -9,7 +9,7 @@ export default async function InvestorFaqPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, investor_tier')
+    .select('role')
     .eq('id', user.id)
     .maybeSingle()
 

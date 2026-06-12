@@ -45,14 +45,6 @@ create policy "investor_faq_admin"
 
 -- ── 4. updated_at trigger ─────────────────────────────────────────────────────
 
-create or replace function public.investor_faq_set_updated_at()
-returns trigger language plpgsql as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$;
-
 create trigger investor_faq_updated_at
   before update on public.investor_faq
-  for each row execute function public.investor_faq_set_updated_at();
+  for each row execute function public.handle_updated_at();

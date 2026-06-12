@@ -3,6 +3,7 @@
 import { useTransition, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Trash2 } from 'lucide-react'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { createFaqEntry, updateFaqEntry, toggleFaqPublished, deleteFaqEntry } from '@/actions/admin-faq'
 
 // ── Create Form ────────────────────────────────────────────────────────────────
@@ -136,6 +137,7 @@ export function FaqRowActions({
 }: FaqRowActionsProps) {
   const [editing, setEditing] = useState(false)
   const [pending, startTransition] = useTransition()
+  const confirm = useConfirm()
 
   // Controlled state that resets when server revalidates (prop changes)
   const [prevAudienceProp, setPrevAudienceProp] = useState(audienceProp)
@@ -168,7 +170,14 @@ export function FaqRowActions({
     })
   }
 
-  function handleDelete() {
+  async function handleDelete() {
+    const confirmed = await confirm({
+      title: 'Delete FAQ entry?',
+      body: 'This will permanently remove the question and answer. This action cannot be undone.',
+      confirmLabel: 'Delete',
+      tone: 'destructive',
+    })
+    if (!confirmed) return
     startTransition(async () => {
       try {
         const result = await deleteFaqEntry(id)
