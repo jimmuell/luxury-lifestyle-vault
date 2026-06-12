@@ -200,6 +200,16 @@ export function CtaRowActions({
     })
   }
 
+  function openEditor() {
+    setActionType(actionTypeProp)
+    setEditing(true)
+  }
+
+  function closeEditor() {
+    setActionType(actionTypeProp)
+    setEditing(false)
+  }
+
   function handleEditSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
@@ -210,7 +220,7 @@ export function CtaRowActions({
           toast.error(result.error)
         } else {
           toast.success('CTA saved.')
-          setEditing(false)
+          closeEditor()
         }
       } catch {
         toast.error('An unexpected error occurred.')
@@ -272,7 +282,7 @@ export function CtaRowActions({
           </button>
           <button
             type="button"
-            onClick={() => setEditing(false)}
+            onClick={closeEditor}
             className="rounded border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted transition-colors"
           >
             Cancel
@@ -286,7 +296,7 @@ export function CtaRowActions({
     <div className="flex flex-wrap items-center gap-2">
       <button
         type="button"
-        onClick={() => setEditing(true)}
+        onClick={openEditor}
         className="rounded border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted transition-colors"
       >
         Edit

@@ -154,6 +154,18 @@ export function FaqRowActions({
     setIsPublished(isPublishedProp)
   }
 
+  function openEditor() {
+    setAudience(audienceProp)
+    setIsPublished(isPublishedProp)
+    setEditing(true)
+  }
+
+  function closeEditor() {
+    setAudience(audienceProp)
+    setIsPublished(isPublishedProp)
+    setEditing(false)
+  }
+
   function handleTogglePublish() {
     startTransition(async () => {
       try {
@@ -268,7 +280,7 @@ export function FaqRowActions({
           </button>
           <button
             type="button"
-            onClick={() => setEditing(false)}
+            onClick={closeEditor}
             className="rounded border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted transition-colors"
           >
             Cancel
@@ -282,7 +294,7 @@ export function FaqRowActions({
     <div className="flex flex-wrap items-center gap-2">
       <button
         type="button"
-        onClick={() => setEditing(true)}
+        onClick={openEditor}
         className="rounded border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted transition-colors"
       >
         Edit

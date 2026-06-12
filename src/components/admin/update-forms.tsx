@@ -24,6 +24,7 @@ export function CreateUpdateForm() {
         } else {
           toast.success('Update created.')
           formRef.current?.reset()
+          setPublishNow(false)
         }
       } catch {
         toast.error('An unexpected error occurred. Please try again.')
@@ -154,6 +155,18 @@ export function UpdateRowActions({
     setIsPublished(isPublishedProp)
   }
 
+  function openEditor() {
+    setAudience(audienceProp)
+    setIsPublished(isPublishedProp)
+    setEditing(true)
+  }
+
+  function closeEditor() {
+    setAudience(audienceProp)
+    setIsPublished(isPublishedProp)
+    setEditing(false)
+  }
+
   function handleTogglePublish() {
     const nextPublished = !isPublished
     startTransition(async () => {
@@ -264,7 +277,7 @@ export function UpdateRowActions({
           </button>
           <button
             type="button"
-            onClick={() => setEditing(false)}
+            onClick={closeEditor}
             className="rounded border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted transition-colors"
           >
             Cancel
@@ -278,7 +291,7 @@ export function UpdateRowActions({
     <div className="flex flex-wrap items-center gap-2">
       <button
         type="button"
-        onClick={() => setEditing(true)}
+        onClick={openEditor}
         className="rounded border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted transition-colors"
       >
         Edit
