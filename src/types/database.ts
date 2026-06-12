@@ -857,6 +857,39 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_faq: {
+        Row: {
+          id: string
+          question: string
+          answer: string
+          sort_order: number
+          audience: string
+          is_published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          question: string
+          answer: string
+          sort_order?: number
+          audience?: string
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          question?: string
+          answer?: string
+          sort_order?: number
+          audience?: string
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       investor_nda_acknowledgments: {
         Row: {
           acknowledged_at: string

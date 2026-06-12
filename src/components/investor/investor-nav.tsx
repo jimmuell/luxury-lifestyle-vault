@@ -2,12 +2,13 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutGrid, FolderOpen, BarChart2, Presentation, Target, Mail } from 'lucide-react'
+import { LayoutGrid, FolderOpen, BarChart2, Presentation, Target, Mail, HelpCircle } from 'lucide-react'
 import type { InvestorTier } from '@/lib/investor/tiers'
 
 const PROSPECT_NAV_ITEMS = [
   { href: '/investor',               label: 'Overview',      icon: LayoutGrid },
   { href: '/investor/presentations', label: 'Presentations', icon: Presentation },
+  { href: '/investor/faq',           label: 'FAQ',           icon: HelpCircle },
   { href: '/investor/contact',       label: 'Contact',       icon: Mail },
 ]
 
@@ -15,6 +16,7 @@ const INVESTOR_NAV_ITEMS = [
   { href: '/investor',               label: 'Overview',      icon: LayoutGrid },
   { href: '/investor/presentations', label: 'Presentations', icon: Presentation },
   { href: '/investor/documents',     label: 'Documents',     icon: FolderOpen },
+  { href: '/investor/faq',           label: 'FAQ',           icon: HelpCircle },
   { href: '/investor/contact',       label: 'Contact',       icon: Mail },
 ]
 
@@ -24,6 +26,7 @@ const BOARD_NAV_ITEMS = [
   { href: '/investor/documents',     label: 'Documents',     icon: FolderOpen },
   { href: '/investor/financials',    label: 'Financials',    icon: BarChart2 },
   { href: '/investor/the-ask',       label: 'The Ask',       icon: Target },
+  { href: '/investor/faq',           label: 'FAQ',           icon: HelpCircle },
   { href: '/investor/contact',       label: 'Contact',       icon: Mail },
 ]
 
