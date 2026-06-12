@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS public.investor_notification_sends (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   profile_id  uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   document_id uuid NOT NULL REFERENCES public.investor_documents(id) ON DELETE CASCADE,
-  sent_at     timestamptz NOT NULL DEFAULT now()
+  sent_at     timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (profile_id, document_id)
 );
 
 -- 3. RLS -----------------------------------------------------------------------

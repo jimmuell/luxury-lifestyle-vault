@@ -43,8 +43,17 @@ export const notifyInvestorDocument = inngest.createFunction(
         // Tier check: investor's tier must be >= document audience tier
         if (tierRank(profile.investor_tier) < requiredRank) continue
 
-        const token = generateUnsubscribeToken(profile.id)
-        const unsubscribeUrl = `${appUrl}/investor/unsubscribe?id=${profile.id}&token=${token}`
+        // Deduplication guard: skip if already sent for this (profile, document) pair
+        const { count } = await db
+          .from('investor_notification_sends')
+          .select('id', { count: 'exact', head: true })
+          .eq('profile_id', profile.id)
+          .eq('document_id', documentId)
+
+        if ((count ?? 0) > 0) continue // already sent; idempotent on retry
+
+        const token = generateUnsubscribeToken(profile.id, documentId)
+        const unsubscribeUrl = `${appUrl}/unsubscribe?id=${profile.id}&docId=${documentId}&token=${token}`
 
         const emailContent = investorDocumentPublishedEmail({
           investorName: profile.full_name ?? profile.email,

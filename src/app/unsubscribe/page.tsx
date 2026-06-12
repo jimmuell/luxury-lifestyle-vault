@@ -2,15 +2,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyUnsubscribeToken } from '@/lib/investor/unsubscribe'
 
 interface Props {
-  searchParams: Promise<{ id?: string; token?: string }>
+  searchParams: Promise<{ id?: string; docId?: string; token?: string }>
 }
 
 export default async function UnsubscribePage({ searchParams }: Props) {
-  const { id: profileId, token } = await searchParams
+  const { id: profileId, docId: documentId, token } = await searchParams
 
   let success = false
 
-  if (profileId && token && verifyUnsubscribeToken(profileId, token)) {
+  if (profileId && documentId && token && verifyUnsubscribeToken(profileId, documentId, token)) {
     const admin = createAdminClient()
     await admin
       .from('profiles')

@@ -50,7 +50,7 @@ export async function uploadInvestorPresentation(formData: FormData) {
 
   if (uploadError) return { error: `Storage upload failed: ${uploadError.message}` }
 
-  const { error: insertError } = await admin
+  const { data: insertedDoc, error: insertError } = await admin
     .from('investor_documents')
     .insert({
       title,
@@ -64,26 +64,21 @@ export async function uploadInvestorPresentation(formData: FormData) {
       is_published: true,
       section: 'presentations',
     })
-
-  if (insertError) {
-    // Clean up the uploaded file if the DB insert fails
-    await admin.storage.from(INVESTOR_BUCKET).remove([storagePath])
-    return { error: `Database insert failed: ${insertError.message}` }
-  }
-
-  // Fetch the newly inserted document so we can get its id for notifications
-  const { data: inserted } = await admin
-    .from('investor_documents')
     .select('id')
-    .eq('storage_path', storagePath)
     .single()
 
+  if (insertError || !insertedDoc) {
+    // Clean up the uploaded file if the DB insert fails
+    await admin.storage.from(INVESTOR_BUCKET).remove([storagePath])
+    return { error: insertError ? `Database insert failed: ${insertError.message}` : 'Failed to save document record.' }
+  }
+
   const notify = formData.get('notify') === 'true'
-  if (notify && inserted?.id) {
+  if (notify && insertedDoc.id) {
     await inngest.send({
       name: 'investor/document.published' as never,
       data: {
-        documentId: inserted.id,
+        documentId: insertedDoc.id,
         documentTitle: title,
         documentAudience: audience,
         docType: 'presentation',
