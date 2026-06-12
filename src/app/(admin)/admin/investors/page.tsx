@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { InviteInvestorForm } from '@/components/admin/invite-investor-form'
+import { buttonVariants } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { ShieldCheck, ShieldOff, Eye } from 'lucide-react'
 
@@ -75,6 +77,7 @@ export default async function AdminInvestorsPage() {
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden lg:table-cell">Views</th>
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden xl:table-cell">Last activity</th>
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden xl:table-cell">Invited</th>
+                <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden sm:table-cell"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border bg-card">
@@ -108,6 +111,14 @@ export default async function AdminInvestorsPage() {
                   </td>
                   <td className="px-5 py-4 text-muted-foreground text-xs hidden xl:table-cell">
                     {format(new Date(investor.created_at), 'MMM d, yyyy')}
+                  </td>
+                  <td className="px-5 py-4 hidden sm:table-cell">
+                    <Link
+                      href={`/admin/investors/${investor.id}`}
+                      className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                    >
+                      View
+                    </Link>
                   </td>
                 </tr>
               ))}
