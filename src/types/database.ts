@@ -911,6 +911,39 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_updates: {
+        Row: {
+          id: string
+          title: string
+          body: string
+          audience: string
+          is_published: boolean
+          sent_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          body: string
+          audience?: string
+          is_published?: boolean
+          sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          body?: string
+          audience?: string
+          is_published?: boolean
+          sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       investor_config: {
         Row: {
           id: string

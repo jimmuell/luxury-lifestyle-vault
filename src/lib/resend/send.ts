@@ -10,6 +10,7 @@ export type EmailTemplate =
   | 'welcome'
   | 'provider_assignment'
   | 'investor_document_published'
+  | 'investor_update_published'
 
 type EmailPreferenceKey = 'order_updates' | 'delivery_notices' | 'payment' | 'seasonal_reminders'
 
@@ -22,6 +23,7 @@ const TEMPLATE_PREFERENCE_MAP: Record<EmailTemplate, EmailPreferenceKey | null> 
   welcome: null,
   provider_assignment: null,
   investor_document_published: null, // opt-in gated via investor_notifications_opt_in on profiles
+  investor_update_published: null,   // opt-in gated via investor_notifications_opt_in on profiles
 }
 
 export async function sendEmail({
