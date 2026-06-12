@@ -35,9 +35,10 @@ const BOARD_NAV_ITEMS = [
 
 interface InvestorNavProps {
   tier: InvestorTier
+  onNavigate?: () => void
 }
 
-export function InvestorNav({ tier }: InvestorNavProps) {
+export function InvestorNav({ tier, onNavigate }: InvestorNavProps) {
   const pathname = usePathname()
   const navItems =
     tier === 'board' ? BOARD_NAV_ITEMS :
@@ -52,6 +53,7 @@ export function InvestorNav({ tier }: InvestorNavProps) {
           <Link
             key={href}
             href={href}
+            onClick={onNavigate}
             className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
               isActive
                 ? 'text-foreground bg-muted'

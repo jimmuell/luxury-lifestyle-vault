@@ -4,6 +4,7 @@ import { LogOut, UserCircle } from 'lucide-react'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { AuthWatcher } from '@/components/shared/auth-watcher'
 import { InvestorNav } from '@/components/investor/investor-nav'
+import { InvestorMobileNav } from '@/components/investor/investor-mobile-nav'
 import type { InvestorTier } from '@/lib/investor/tiers'
 import { signOut } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
@@ -27,7 +28,19 @@ export default async function InvestorLayout({ children }: { children: React.Rea
   const showEmail = displayName !== user.email
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+      {/* Mobile top bar — visible only below md breakpoint */}
+      <div className="md:hidden flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-border bg-sidebar">
+        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+          LLV Investor Room
+        </p>
+        <InvestorMobileNav
+          tier={tier}
+          displayName={displayName}
+          email={user.email ?? ''}
+          showEmail={showEmail}
+        />
+      </div>
       <aside className="hidden md:flex w-56 flex-col border-r border-border bg-sidebar flex-shrink-0">
         <div className="flex flex-col h-full py-6 px-4">
           <div className="mb-8 px-3">
