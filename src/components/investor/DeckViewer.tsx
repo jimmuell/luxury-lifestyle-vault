@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { buttonVariants } from '@/components/ui/button'
 import {
@@ -25,15 +25,33 @@ interface DeckViewerProps {
   title: string
   /** Signed URL with download=true for the Download button */
   downloadUrl: string
+  /** Viewer's email address — stamped on the watermark overlay */
+  viewerEmail: string
 }
 
-export default function DeckViewer({ signedUrl, title, downloadUrl }: DeckViewerProps) {
+export default function DeckViewer({ signedUrl, title, downloadUrl, viewerEmail }: DeckViewerProps) {
   const [pageNumber, setPageNumber] = useState(1)
   const [numPages, setNumPages] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const viewerRef = useRef<HTMLDivElement>(null)
+
+  // Compute watermark text once per viewer identity — stable per session.
+  // useMemo (not useEffect+setState) avoids the cascading-render lint rule.
+  // viewerEmail is passed from the server and never changes after mount,
+  // so this effectively runs once and captures the mount timestamp.
+  const watermarkText = useMemo(() => {
+    const now = new Date()
+    const formatted = now.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    })
+    return `${viewerEmail} · ${formatted} · Confidential — LLV`
+  }, [viewerEmail])
 
   // Stable keyboard handler — must not capture stale numPages
   const numPagesRef = useRef<number | null>(null)
@@ -110,7 +128,26 @@ export default function DeckViewer({ signedUrl, title, downloadUrl }: DeckViewer
       </div>
 
       {/* Slide area */}
-      <div className="flex-1 flex flex-col items-center justify-center rounded-lg border border-border bg-card overflow-hidden min-h-0">
+      <div className="relative flex-1 flex flex-col items-center justify-center rounded-lg border border-border bg-card overflow-hidden min-h-0">
+        {/* Watermark overlay — covers the slide area, pointer-events none so controls remain usable */}
+        {watermarkText && (
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 10,
+              pointerEvents: 'none',
+              userSelect: 'none',
+              overflow: 'hidden',
+              backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(
+                `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200'><text x='50%' y='50%' text-anchor='middle' dominant-baseline='middle' font-family='serif' font-size='13' fill='#4a4a4a' opacity='0.13' transform='rotate(-35, 200, 100)'>${watermarkText}</text></svg>`
+              )}")`,
+              backgroundRepeat: 'repeat',
+              backgroundSize: '400px 200px',
+            }}
+          />
+        )}
         {loadError ? (
           <div className="flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground" style={{ minHeight: '60vh' }}>
             <p>Unable to load the presentation. Please try downloading it instead.</p>

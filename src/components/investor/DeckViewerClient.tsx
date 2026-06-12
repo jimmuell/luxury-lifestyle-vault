@@ -8,6 +8,7 @@ interface Props {
   signedUrl: string
   title: string
   downloadUrl: string
+  viewerEmail: string
 }
 
 export function DeckViewerClient(props: Props) {
