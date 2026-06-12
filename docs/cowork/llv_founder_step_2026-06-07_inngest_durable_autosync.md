@@ -1,4 +1,9 @@
-> ⚠️ **SUPERSEDED (2026-06-07).** The `INNGEST_SERVE_ORIGIN` approach below does **not** work on our free Vercel tier — it can't override the integration's reach to the protected `*.vercel.app` URL (tested 4×). Decision was **Option B: keep deployment protection ON + manual resync.** See the current runbook: **`docs/cowork/llv_inngest_manual_sync_runbook.md`**. This file is kept only as a record of what was tried.
+> **⚠️ SUPERSEDED (2026-06-07) — do not use as the live version.**
+>
+> The `INNGEST_SERVE_ORIGIN` approach below was tested and does **not** work on the free Vercel tier (tested 4×; cannot override the integration's reach to the protected `*.vercel.app` URL).
+> Decision: **Option B — manual Resync** (keep Deployment Protection ON).
+> Single source of truth: **Inngest Manual Sync Runbook** — repo copy `docs/cowork/llv_inngest_manual_sync_runbook.md`, canonical in Drive **00 CoWork**.
+> This file is kept as a record of what was tried.
 
 ---
 
