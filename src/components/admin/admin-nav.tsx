@@ -7,7 +7,7 @@ import { Collapsible } from '@base-ui/react/collapsible'
 import {
   LayoutGrid, Users, Package, Building2, MessageSquare,
   ShoppingBag, Settings, Route, CreditCard, BarChart2,
-  ScrollText, BookOpen, Mail, FlaskConical, ChevronDown, LineChart, Presentation, HelpCircle, SlidersHorizontal, Newspaper,
+  ScrollText, BookOpen, Mail, FlaskConical, ChevronDown, LineChart, Presentation, HelpCircle, SlidersHorizontal, Newspaper, MousePointerClick,
 } from 'lucide-react'
 
 const NAV_GROUPS = [
@@ -33,6 +33,7 @@ const NAV_GROUPS = [
       { href: '/admin/faq', label: 'FAQ', icon: HelpCircle },
       { href: '/admin/updates', label: 'Updates', icon: Newspaper },
       { href: '/admin/investor-config', label: 'Welcome Panel', icon: SlidersHorizontal },
+      { href: '/admin/ctas', label: 'CTAs', icon: MousePointerClick },
     ],
   },
   {

@@ -944,6 +944,18 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_cta_interactions: {
+        Row: { id: string; profile_id: string; cta_id: string; interacted_at: string }
+        Insert: { id?: string; profile_id: string; cta_id: string; interacted_at?: string }
+        Update: { id?: string; profile_id?: string; cta_id?: string; interacted_at?: string }
+        Relationships: []
+      }
+      investor_ctas: {
+        Row: { id: string; label: string; action_type: string; action_value: string; is_active: boolean; sort_order: number; created_at: string; updated_at: string }
+        Insert: { id?: string; label: string; action_type: string; action_value?: string; is_active?: boolean; sort_order?: number; created_at?: string; updated_at?: string }
+        Update: { id?: string; label?: string; action_type?: string; action_value?: string; is_active?: boolean; sort_order?: number; created_at?: string; updated_at?: string }
+        Relationships: []
+      }
       investor_config: {
         Row: {
           id: string

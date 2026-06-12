@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { PROJECTION_3YR, YEAR1_REVENUE } from '@/lib/investor/financials'
 import { tierRank } from '@/lib/investor/tiers'
 import { DEFAULT_WELCOME_HEADING, DEFAULT_WELCOME_BODY } from '@/lib/investor/config'
+import { CtaSection } from '@/components/investor/cta-section'
 
 function formatCompact(amount: number): string {
   if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`
@@ -23,7 +24,7 @@ export default async function InvestorOverviewPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const [profileResult, recentResult, configResult] = await Promise.all([
+  const [profileResult, recentResult, configResult, ctaResult] = await Promise.all([
     supabase
       .from('profiles')
       .select('full_name, investor_tier')
@@ -40,12 +41,18 @@ export default async function InvestorOverviewPage() {
       .select('welcome_heading, welcome_body')
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from('investor_ctas')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true }),
   ])
 
   const profile = profileResult.data
   const recent = recentResult.data
   const welcomeHeading = configResult.data?.welcome_heading ?? DEFAULT_WELCOME_HEADING
   const welcomeBody = configResult.data?.welcome_body ?? DEFAULT_WELCOME_BODY
+  const ctas = ctaResult.data ?? []
 
   const fullName = profile?.full_name?.trim() ?? ''
   const firstName = fullName
@@ -127,6 +134,11 @@ export default async function InvestorOverviewPage() {
           </Link>
         ))}
       </div>
+
+      {/* CTA section */}
+      {ctas.length > 0 && (
+        <CtaSection ctas={ctas} profileId={user.id} />
+      )}
 
       {/* Recently added section */}
       {recent && recent.length > 0 && (
