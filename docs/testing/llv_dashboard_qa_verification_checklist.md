@@ -1,3 +1,9 @@
+> **⚠️ SUPERSEDED — 2026-06-12. Do not use as the live checklist.**
+>
+> Single source of truth: the Notion tracker row **"Founder dashboard verifications — Stripe / Resend / Inngest"** in *LLV Launch — Project Tracker* → https://app.notion.com/p/375225a113658189b7efe81a8b0e2390
+>
+> Status as of 2026-06-12: Resend (§2) ✅ and admin return-processing (§4) ✅ verified. **Remaining = the 5 Stripe checks (§1) + Inngest §3.1 / §3.2.** The full step-by-step runbook now lives in that Notion row.
+
 # LLV — Dashboard QA Verification Checklist
 **Date:** June 1, 2026
 **Owner:** Jim (founder — these run in your logged-in sandbox dashboards)
