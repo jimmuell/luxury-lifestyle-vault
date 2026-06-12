@@ -1,10 +1,15 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { FolderOpen, BarChart2, Presentation } from 'lucide-react'
+import { FolderOpen, BarChart2, Presentation, ArrowRight } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { PROJECTION_3YR, YEAR1_REVENUE } from '@/lib/investor/financials'
 import { tierRank } from '@/lib/investor/tiers'
+
+const DEFAULT_WELCOME_HEADING = 'Welcome to the LLV Investor Room'
+const DEFAULT_WELCOME_BODY =
+  "Luxury Lifestyle Vault is a concierge wardrobe management platform for affluent clients — we handle storage, seasonal rotation, cleaning coordination, and on-demand delivery of luxury wardrobes. We're building toward an October 2026 soft launch in the Scottsdale market."
 
 function formatCompact(amount: number): string {
   if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`
@@ -20,24 +25,36 @@ export default async function InvestorOverviewPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, investor_tier')
-    .eq('id', user.id)
-    .maybeSingle()
+
+  const [profileResult, recentResult, configResult] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('full_name, investor_tier')
+      .eq('id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('investor_documents')
+      .select('id, title, section, created_at')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .limit(3),
+    createAdminClient()
+      .from('investor_config')
+      .select('welcome_heading, welcome_body')
+      .limit(1)
+      .maybeSingle(),
+  ])
+
+  const profile = profileResult.data
+  const recent = recentResult.data
+  const welcomeHeading = configResult.data?.welcome_heading || DEFAULT_WELCOME_HEADING
+  const welcomeBody = configResult.data?.welcome_body || DEFAULT_WELCOME_BODY
 
   const fullName = profile?.full_name?.trim() ?? ''
   const firstName = fullName
     ? fullName.split(/\s+/)[0]
     : (user?.email?.split('@')[0] ?? '')
   const greeting = firstName ? `Welcome, ${firstName}.` : 'Welcome.'
-
-  const { data: recent } = await supabase
-    .from('investor_documents')
-    .select('id, title, section, created_at')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false })
-    .limit(3)
 
   const kpis = [
     { label: 'Year 1 revenue', value: formatCompact(year1Total) },
@@ -54,6 +71,13 @@ export default async function InvestorOverviewPage() {
     { href: '/investor/financials',    label: 'Financials',    icon: BarChart2,    description: 'Explore the 3-year financial model.', minRank: 3 },
   ].filter(c => userRank >= c.minRank)
 
+  const startHere =
+    userRank >= 3
+      ? { label: 'Review Financials & The Ask', href: '/investor/financials' }
+      : userRank >= 2
+      ? { label: 'Explore the data room', href: '/investor/documents' }
+      : { label: 'View the pitch deck', href: '/investor/presentations' }
+
   return (
     <div className="space-y-8">
       <div>
@@ -66,6 +90,19 @@ export default async function InvestorOverviewPage() {
             ? 'Welcome to the LLV investor data room. Explore the full document library and view investor presentations.'
             : 'Welcome to the LLV Investor Room. View the pitch deck and learn about our vision for Luxury Lifestyle Vault.'}
         </p>
+      </div>
+
+      {/* Welcome / orientation panel */}
+      <div className="rounded-lg border border-border bg-card px-6 py-5 space-y-3">
+        <h2 className="font-serif text-xl font-light">{welcomeHeading}</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">{welcomeBody}</p>
+        <Link
+          href={startHere.href}
+          className="inline-flex items-center gap-1.5 text-sm font-medium hover:text-muted-foreground transition-colors"
+        >
+          Start here <ArrowRight className="h-4 w-4" />
+          <span className="ml-0.5">{startHere.label}</span>
+        </Link>
       </div>
 
       {/* KPI strip */}

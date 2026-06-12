@@ -890,6 +890,27 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_config: {
+        Row: {
+          id: string
+          welcome_heading: string
+          welcome_body: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          welcome_heading?: string
+          welcome_body?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          welcome_heading?: string
+          welcome_body?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       investor_nda_acknowledgments: {
         Row: {
           acknowledged_at: string
