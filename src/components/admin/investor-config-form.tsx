@@ -3,6 +3,7 @@
 import { useTransition } from 'react'
 import { toast } from 'sonner'
 import { updateWelcomeConfig } from '@/actions/admin-investor-config'
+import { DEFAULT_WELCOME_HEADING, DEFAULT_WELCOME_BODY } from '@/lib/investor/config'
 
 interface InvestorConfigFormProps {
   welcomeHeading: string
@@ -49,7 +50,7 @@ export function InvestorConfigForm({ welcomeHeading, welcomeBody }: InvestorConf
             type="text"
             required
             defaultValue={welcomeHeading}
-            placeholder="Welcome to the LLV Investor Room"
+            placeholder={DEFAULT_WELCOME_HEADING}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -64,7 +65,7 @@ export function InvestorConfigForm({ welcomeHeading, welcomeBody }: InvestorConf
             rows={5}
             required
             defaultValue={welcomeBody}
-            placeholder="Luxury Lifestyle Vault is a concierge wardrobe management platform…"
+            placeholder={DEFAULT_WELCOME_BODY}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring resize-y"
           />
         </div>

@@ -6,10 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PROJECTION_3YR, YEAR1_REVENUE } from '@/lib/investor/financials'
 import { tierRank } from '@/lib/investor/tiers'
-
-const DEFAULT_WELCOME_HEADING = 'Welcome to the LLV Investor Room'
-const DEFAULT_WELCOME_BODY =
-  "Luxury Lifestyle Vault is a concierge wardrobe management platform for affluent clients — we handle storage, seasonal rotation, cleaning coordination, and on-demand delivery of luxury wardrobes. We're building toward an October 2026 soft launch in the Scottsdale market."
+import { DEFAULT_WELCOME_HEADING, DEFAULT_WELCOME_BODY } from '@/lib/investor/config'
 
 function formatCompact(amount: number): string {
   if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`
@@ -47,8 +44,8 @@ export default async function InvestorOverviewPage() {
 
   const profile = profileResult.data
   const recent = recentResult.data
-  const welcomeHeading = configResult.data?.welcome_heading || DEFAULT_WELCOME_HEADING
-  const welcomeBody = configResult.data?.welcome_body || DEFAULT_WELCOME_BODY
+  const welcomeHeading = configResult.data?.welcome_heading ?? DEFAULT_WELCOME_HEADING
+  const welcomeBody = configResult.data?.welcome_body ?? DEFAULT_WELCOME_BODY
 
   const fullName = profile?.full_name?.trim() ?? ''
   const firstName = fullName
@@ -100,8 +97,7 @@ export default async function InvestorOverviewPage() {
           href={startHere.href}
           className="inline-flex items-center gap-1.5 text-sm font-medium hover:text-muted-foreground transition-colors"
         >
-          Start here <ArrowRight className="h-4 w-4" />
-          <span className="ml-0.5">{startHere.label}</span>
+          Start here: {startHere.label} <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
 
