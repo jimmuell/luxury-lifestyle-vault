@@ -46,10 +46,14 @@ export async function createUpdate(formData: FormData) {
   if (error || !data) return { error: `Failed to create update: ${error?.message ?? 'Unknown error'}` }
 
   if (isPublished && notifyInvestors) {
-    await inngest.send({
-      name: 'investor/update.published' as never,
-      data: { updateId: data.id, updateTitle: title, audience },
-    })
+    try {
+      await inngest.send({
+        name: 'investor/update.published' as never,
+        data: { updateId: data.id, updateTitle: title, audience },
+      })
+    } catch (err) {
+      console.error('[admin-updates] failed to enqueue notification:', err)
+    }
   }
 
   revalidatePath('/admin/updates')
@@ -104,10 +108,14 @@ export async function toggleUpdatePublished(id: string, isPublished: boolean, no
   if (error || !data) return { error: error?.message ?? 'Update not found.' }
 
   if (isPublished && notify) {
-    await inngest.send({
-      name: 'investor/update.published' as never,
-      data: { updateId: id, updateTitle: data.title, audience: data.audience },
-    })
+    try {
+      await inngest.send({
+        name: 'investor/update.published' as never,
+        data: { updateId: id, updateTitle: data.title, audience: data.audience },
+      })
+    } catch (err) {
+      console.error('[admin-updates] failed to enqueue notification:', err)
+    }
   }
 
   revalidatePath('/admin/updates')

@@ -75,15 +75,19 @@ export async function uploadInvestorPresentation(formData: FormData) {
 
   const notify = formData.get('notify') === 'true'
   if (notify && insertedDoc.id) {
-    await inngest.send({
-      name: 'investor/document.published' as never,
-      data: {
-        documentId: insertedDoc.id,
-        documentTitle: title,
-        documentAudience: audience,
-        docType: 'presentation',
-      },
-    })
+    try {
+      await inngest.send({
+        name: 'investor/document.published' as never,
+        data: {
+          documentId: insertedDoc.id,
+          documentTitle: title,
+          documentAudience: audience,
+          docType: 'presentation',
+        },
+      })
+    } catch (err) {
+      console.error('[admin-presentations] failed to enqueue notification:', err)
+    }
   }
 
   revalidatePath('/admin/presentations')
@@ -117,15 +121,19 @@ export async function updatePresentation(formData: FormData) {
 
   const notify = formData.get('notify') === 'true'
   if (notify && isPublished) {
-    await inngest.send({
-      name: 'investor/document.published' as never,
-      data: {
-        documentId: data.id,
-        documentTitle: data.title,
-        documentAudience: audience,
-        docType: 'presentation',
-      },
-    })
+    try {
+      await inngest.send({
+        name: 'investor/document.published' as never,
+        data: {
+          documentId: data.id,
+          documentTitle: data.title,
+          documentAudience: audience,
+          docType: 'presentation',
+        },
+      })
+    } catch (err) {
+      console.error('[admin-presentations] failed to enqueue notification:', err)
+    }
   }
 
   revalidatePath('/admin/presentations')

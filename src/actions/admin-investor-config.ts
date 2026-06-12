@@ -29,12 +29,13 @@ export async function updateWelcomeConfig(formData: FormData) {
 
   const admin = createAdminClient()
 
-  // Fetch the single config row id
-  const { data: existing } = await admin
+  const { data: existing, error: fetchError } = await admin
     .from('investor_config')
     .select('id')
     .limit(1)
     .maybeSingle()
+
+  if (fetchError) return { error: `Failed to read config: ${fetchError.message}` }
 
   if (existing) {
     const { error } = await admin
@@ -44,7 +45,6 @@ export async function updateWelcomeConfig(formData: FormData) {
 
     if (error) return { error: `Failed to update config: ${error.message}` }
   } else {
-    // Fallback: insert if somehow empty (shouldn't happen after migration)
     const { error } = await admin
       .from('investor_config')
       .insert({ welcome_heading: welcomeHeading, welcome_body: welcomeBody })
