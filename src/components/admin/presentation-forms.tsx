@@ -103,7 +103,7 @@ export function UploadPresentationForm() {
           />
         </div>
 
-        <div className="sm:col-span-2">
+        <div className="sm:col-span-2 flex flex-wrap items-center gap-4">
           <button
             type="submit"
             disabled={pending}
@@ -111,6 +111,15 @@ export function UploadPresentationForm() {
           >
             {pending ? 'Uploading…' : 'Upload Presentation'}
           </button>
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+            <input
+              type="checkbox"
+              name="notify"
+              value="true"
+              className="rounded border-border"
+            />
+            Notify investors on publish
+          </label>
         </div>
       </form>
     </div>
@@ -135,6 +144,7 @@ export function UpdatePresentationRow({ id, audience: audienceProp, isPublished:
   const [prevIsPublishedProp, setPrevIsPublishedProp] = useState(isPublishedProp)
   const [audience, setAudience] = useState(audienceProp)
   const [isPublished, setIsPublished] = useState(isPublishedProp)
+  const [notify, setNotify] = useState(false)
 
   if (prevAudienceProp !== audienceProp) {
     setPrevAudienceProp(audienceProp)
@@ -155,6 +165,7 @@ export function UpdatePresentationRow({ id, audience: audienceProp, isPublished:
           toast.error(result.error)
         } else {
           toast.success('Presentation updated.')
+          setNotify(false)
         }
       } catch {
         toast.error('An unexpected error occurred. Please try again.')
@@ -185,6 +196,17 @@ export function UpdatePresentationRow({ id, audience: audienceProp, isPublished:
           className="rounded border-border"
         />
         Published
+      </label>
+      <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+        <input
+          type="checkbox"
+          name="notify"
+          value="true"
+          checked={notify}
+          onChange={e => setNotify(e.target.checked)}
+          className="rounded border-border"
+        />
+        Notify investors
       </label>
       <button
         type="submit"

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { INVESTOR_BUCKET } from '@/lib/storage/constants'
+import { inngest } from '@/lib/inngest/client'
 
 async function assertAdmin(): Promise<{ error: string } | { error?: never }> {
   const supabase = await createClient()
@@ -70,6 +71,26 @@ export async function uploadInvestorPresentation(formData: FormData) {
     return { error: `Database insert failed: ${insertError.message}` }
   }
 
+  // Fetch the newly inserted document so we can get its id for notifications
+  const { data: inserted } = await admin
+    .from('investor_documents')
+    .select('id')
+    .eq('storage_path', storagePath)
+    .single()
+
+  const notify = formData.get('notify') === 'true'
+  if (notify && inserted?.id) {
+    await inngest.send({
+      name: 'investor/document.published' as never,
+      data: {
+        documentId: inserted.id,
+        documentTitle: title,
+        documentAudience: audience,
+        docType: 'presentation',
+      },
+    })
+  }
+
   revalidatePath('/admin/presentations')
   return { success: true }
 }
@@ -94,10 +115,23 @@ export async function updatePresentation(formData: FormData) {
     .update({ audience, is_published: isPublished })
     .eq('id', id)
     .eq('doc_type', 'presentation')
-    .select('id')
+    .select('id, title')
     .single()
 
   if (error || !data) return { error: error?.message ?? 'Presentation not found.' }
+
+  const notify = formData.get('notify') === 'true'
+  if (notify && isPublished) {
+    await inngest.send({
+      name: 'investor/document.published' as never,
+      data: {
+        documentId: data.id,
+        documentTitle: data.title,
+        documentAudience: audience,
+        docType: 'presentation',
+      },
+    })
+  }
 
   revalidatePath('/admin/presentations')
   return { success: true }

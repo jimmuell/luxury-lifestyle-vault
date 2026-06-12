@@ -809,6 +809,27 @@ export type Database = {
           },
         ]
       }
+      investor_notification_sends: {
+        Row: {
+          document_id: string
+          id: string
+          profile_id: string
+          sent_at: string
+        }
+        Insert: {
+          document_id: string
+          id?: string
+          profile_id: string
+          sent_at?: string
+        }
+        Update: {
+          document_id?: string
+          id?: string
+          profile_id?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
       investor_documents: {
         Row: {
           audience: string
@@ -1646,6 +1667,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          investor_notifications_opt_in: boolean
           investor_tier: string
           is_seed_data: boolean
           nda_acknowledged: boolean
@@ -1661,6 +1683,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          investor_notifications_opt_in?: boolean
           investor_tier?: string
           is_seed_data?: boolean
           nda_acknowledged?: boolean
@@ -1676,6 +1699,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          investor_notifications_opt_in?: boolean
           investor_tier?: string
           is_seed_data?: boolean
           nda_acknowledged?: boolean

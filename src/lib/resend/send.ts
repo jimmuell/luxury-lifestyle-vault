@@ -9,6 +9,7 @@ export type EmailTemplate =
   | 'seasonal_rotation_reminder'
   | 'welcome'
   | 'provider_assignment'
+  | 'investor_document_published'
 
 type EmailPreferenceKey = 'order_updates' | 'delivery_notices' | 'payment' | 'seasonal_reminders'
 
@@ -20,6 +21,7 @@ const TEMPLATE_PREFERENCE_MAP: Record<EmailTemplate, EmailPreferenceKey | null> 
   seasonal_rotation_reminder: 'seasonal_reminders',
   welcome: null,
   provider_assignment: null,
+  investor_document_published: null, // opt-in gated via investor_notifications_opt_in on profiles
 }
 
 export async function sendEmail({

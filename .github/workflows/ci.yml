@@ -47,3 +47,4 @@ jobs:
           RESEND_API_KEY: re_ci_placeholder
           INNGEST_SIGNING_KEY: signkey-test-placeholder
           INNGEST_EVENT_KEY: test-placeholder
+          UNSUBSCRIBE_SECRET: ci_placeholder_unsubscribe

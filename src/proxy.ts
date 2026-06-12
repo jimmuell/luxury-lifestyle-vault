@@ -10,7 +10,7 @@ const ROLE_PREFIXES = {
   investor: '/investor',
 } as const
 
-const PUBLIC_PREFIXES = ['/auth', '/api/webhooks', '/api/inngest', '/terms', '/privacy']
+const PUBLIC_PREFIXES = ['/auth', '/api/webhooks', '/api/inngest', '/terms', '/privacy', '/investor/unsubscribe']
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
