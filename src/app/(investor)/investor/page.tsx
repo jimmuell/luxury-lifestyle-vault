@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { FolderOpen, BarChart2, Presentation, ArrowRight } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { PROJECTION_3YR, YEAR1_REVENUE } from '@/lib/investor/financials'
 import { tierRank } from '@/lib/investor/tiers'
 import { DEFAULT_WELCOME_HEADING, DEFAULT_WELCOME_BODY } from '@/lib/investor/config'
@@ -36,7 +35,7 @@ export default async function InvestorOverviewPage() {
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(3),
-    createAdminClient()
+    supabase
       .from('investor_config')
       .select('welcome_heading, welcome_body')
       .limit(1)

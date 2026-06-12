@@ -34,6 +34,7 @@ export const notifyInvestorDocument = inngest.createFunction(
         .select('id, email, full_name, investor_tier, investor_notifications_opt_in')
         .eq('role', 'investor')
         .eq('investor_notifications_opt_in', true)
+        .is('deleted_at', null)
 
       if (profilesError) throw new Error(`Failed to fetch investor profiles: ${profilesError.message}`)
 

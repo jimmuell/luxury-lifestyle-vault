@@ -26,13 +26,16 @@ export const notifyInvestorUpdate = inngest.createFunction(
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://luxurylifestylevault.com'
 
       // Idempotency: check if notifications were already sent
-      const { data: update } = await db
+      const { data: update, error: updateError } = await db
         .from('investor_updates')
         .select('sent_at')
         .eq('id', updateId)
         .single()
 
-      if (!update) return { error: 'Update not found' }
+      if (updateError) {
+        if (updateError.code === 'PGRST116') return { error: 'Update not found' }
+        throw new Error(`Failed to fetch update: ${updateError.message}`)
+      }
       if (update.sent_at) return { skipped: 'Already notified', sentAt: update.sent_at }
 
       const requiredRank = tierRank(audience)
