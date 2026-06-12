@@ -26,6 +26,7 @@ function UrlCta({ cta }: { cta: InvestorCta }) {
   })()
 
   function handleClick() {
+    if (safeHref === '#') return
     startTransition(async () => {
       await logCtaInteraction(cta.id)
     })

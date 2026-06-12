@@ -948,7 +948,22 @@ export type Database = {
         Row: { id: string; profile_id: string; cta_id: string; interacted_at: string }
         Insert: { id?: string; profile_id: string; cta_id: string; interacted_at?: string }
         Update: { id?: string; profile_id?: string; cta_id?: string; interacted_at?: string }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "investor_cta_interactions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_cta_interactions_cta_id_fkey"
+            columns: ["cta_id"]
+            isOneToOne: false
+            referencedRelation: "investor_ctas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       investor_ctas: {
         Row: { id: string; label: string; action_type: string; action_value: string; is_active: boolean; sort_order: number; created_at: string; updated_at: string }

@@ -19,12 +19,13 @@ export default async function InvestorUpdatesPage() {
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
   // RLS automatically filters updates to those the user's tier can see.
-  const { data: updates } = await supabase
+  const { data: updates, error: updatesError } = await supabase
     .from('investor_updates')
     .select('id, title, body, audience, created_at')
     .eq('is_published', true)
     .order('created_at', { ascending: false })
 
+  if (updatesError) throw new Error(`Failed to load updates: ${updatesError.message}`)
   const items = updates ?? []
 
   return (

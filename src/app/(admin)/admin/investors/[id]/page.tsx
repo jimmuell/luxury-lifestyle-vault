@@ -64,7 +64,7 @@ export default async function AdminInvestorDetailPage({
   const totalDownloads = views.filter(v => v.view_type === 'download').length
   const lastSeen = views.length > 0 ? views[0].viewed_at : null
   const uniqueDays = new Set(views.map(v => v.viewed_at.slice(0, 10)))
-  const returnVisits = uniqueDays.size
+  const returnVisits = Math.max(uniqueDays.size - 1, 0)
 
   type DocRow = {
     documentId: string
@@ -140,7 +140,7 @@ export default async function AdminInvestorDetailPage({
           <div className="rounded-lg border border-border px-4 py-4 bg-card">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Return visits</p>
             <p className="font-serif text-2xl font-light mt-1">
-              {returnVisits} {returnVisits === 1 ? 'day' : 'days'}
+              {returnVisits} {returnVisits === 1 ? 'return' : 'returns'}
             </p>
           </div>
         </div>

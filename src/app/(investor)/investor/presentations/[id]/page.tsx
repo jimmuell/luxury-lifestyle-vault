@@ -82,7 +82,7 @@ export default async function InvestorPresentationViewerPage({ params }: Props) 
           signedUrl={signedUrl}
           title={doc.title}
           downloadUrl={downloadUrl}
-          viewerEmail={user.email ?? ''}
+          viewerEmail={user.email ?? user.id}
         />
       </div>
     </div>

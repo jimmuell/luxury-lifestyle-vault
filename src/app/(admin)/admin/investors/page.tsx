@@ -36,7 +36,7 @@ export default async function AdminInvestorsPage() {
     investorIds.length > 0
       ? admin
           .from('investor_document_views')
-          .select('profile_id, viewed_at')
+          .select('profile_id, view_type, viewed_at')
           .in('profile_id', investorIds)
           .order('viewed_at', { ascending: false })
       : Promise.resolve({ data: [] }),
@@ -50,8 +50,8 @@ export default async function AdminInvestorsPage() {
 
   const viewCounts: Record<string, number> = {}
   const lastActivity: Record<string, string> = {}
-  for (const row of (viewResult.data ?? []) as { profile_id: string; viewed_at: string }[]) {
-    viewCounts[row.profile_id] = (viewCounts[row.profile_id] ?? 0) + 1
+  for (const row of (viewResult.data ?? []) as { profile_id: string; view_type: string; viewed_at: string }[]) {
+    if (row.view_type === 'view') viewCounts[row.profile_id] = (viewCounts[row.profile_id] ?? 0) + 1
     if (!lastActivity[row.profile_id]) lastActivity[row.profile_id] = row.viewed_at
   }
 
@@ -77,7 +77,7 @@ export default async function AdminInvestorsPage() {
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden lg:table-cell">Views</th>
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden xl:table-cell">Last activity</th>
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden xl:table-cell">Invited</th>
-                <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden sm:table-cell"></th>
+                <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border bg-card">
@@ -112,7 +112,7 @@ export default async function AdminInvestorsPage() {
                   <td className="px-5 py-4 text-muted-foreground text-xs hidden xl:table-cell">
                     {format(new Date(investor.created_at), 'MMM d, yyyy')}
                   </td>
-                  <td className="px-5 py-4 hidden sm:table-cell">
+                  <td className="px-5 py-4">
                     <Link
                       href={`/admin/investors/${investor.id}`}
                       className={buttonVariants({ variant: 'ghost', size: 'sm' })}

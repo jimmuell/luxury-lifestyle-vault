@@ -18,12 +18,13 @@ export default async function InvestorFaqPage() {
 
   // RLS automatically filters entries to those the user's tier can see.
   // Admin uses createClient() here — the admin policy also covers selects.
-  const { data: entries } = await supabase
+  const { data: entries, error: faqError } = await supabase
     .from('investor_faq')
     .select('id, question, answer, audience, sort_order')
     .eq('is_published', true)
     .order('sort_order', { ascending: true })
 
+  if (faqError) throw new Error(`Failed to load FAQ: ${faqError.message}`)
   const faqs = entries ?? []
 
   return (

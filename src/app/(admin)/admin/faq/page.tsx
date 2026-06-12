@@ -13,11 +13,13 @@ export default async function AdminFaqPage() {
 
   const admin = createAdminClient()
 
-  const { data: entries } = await admin
+  const { data: entries, error: faqError } = await admin
     .from('investor_faq')
     .select('id, question, answer, audience, sort_order, is_published, updated_at')
     .order('audience', { ascending: true })
     .order('sort_order', { ascending: true })
+
+  if (faqError) throw new Error(`Failed to load FAQ entries: ${faqError.message}`)
 
   return (
     <div className="space-y-6">
