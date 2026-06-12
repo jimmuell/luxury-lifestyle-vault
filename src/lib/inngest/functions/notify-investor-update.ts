@@ -25,6 +25,16 @@ export const notifyInvestorUpdate = inngest.createFunction(
       const db = createAdminClient()
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://luxurylifestylevault.com'
 
+      // Idempotency: check if notifications were already sent
+      const { data: update } = await db
+        .from('investor_updates')
+        .select('sent_at')
+        .eq('id', updateId)
+        .single()
+
+      if (!update) return { error: 'Update not found' }
+      if (update.sent_at) return { skipped: 'Already notified', sentAt: update.sent_at }
+
       const requiredRank = tierRank(audience)
 
       // Query all investors with notifications opted in
@@ -69,6 +79,14 @@ export const notifyInvestorUpdate = inngest.createFunction(
         // to investor_documents.id and investor_updates are not documents.
 
         totalSent++
+      }
+
+      // Record the notification timestamp
+      if (totalSent > 0) {
+        await db
+          .from('investor_updates')
+          .update({ sent_at: new Date().toISOString() })
+          .eq('id', updateId)
       }
 
       return { totalSent }

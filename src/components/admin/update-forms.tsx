@@ -10,6 +10,7 @@ import { createUpdate, updateUpdate, toggleUpdatePublished, deleteUpdate } from 
 
 export function CreateUpdateForm() {
   const [pending, startTransition] = useTransition()
+  const [publishNow, setPublishNow] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -84,16 +85,19 @@ export function CreateUpdateForm() {
               type="checkbox"
               name="is_published"
               value="true"
+              checked={publishNow}
+              onChange={e => setPublishNow(e.target.checked)}
               className="rounded border-border"
             />
             Publish immediately
           </label>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+          <label className={`flex items-center gap-2 text-sm cursor-pointer ${publishNow ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
             <input
               type="checkbox"
               name="notify"
               value="true"
-              className="rounded border-border"
+              disabled={!publishNow}
+              className="rounded border-border disabled:opacity-50"
             />
             Notify investors
           </label>
