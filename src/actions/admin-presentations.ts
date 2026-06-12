@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { INVESTOR_BUCKET } from '@/lib/storage/constants'
+import { inngest } from '@/lib/inngest/client'
 
 async function assertAdmin(): Promise<{ error: string } | { error?: never }> {
   const supabase = await createClient()
@@ -49,7 +50,7 @@ export async function uploadInvestorPresentation(formData: FormData) {
 
   if (uploadError) return { error: `Storage upload failed: ${uploadError.message}` }
 
-  const { error: insertError } = await admin
+  const { data: insertedDoc, error: insertError } = await admin
     .from('investor_documents')
     .insert({
       title,
@@ -63,11 +64,30 @@ export async function uploadInvestorPresentation(formData: FormData) {
       is_published: true,
       section: 'presentations',
     })
+    .select('id')
+    .single()
 
-  if (insertError) {
+  if (insertError || !insertedDoc) {
     // Clean up the uploaded file if the DB insert fails
     await admin.storage.from(INVESTOR_BUCKET).remove([storagePath])
-    return { error: `Database insert failed: ${insertError.message}` }
+    return { error: insertError ? `Database insert failed: ${insertError.message}` : 'Failed to save document record.' }
+  }
+
+  const notify = formData.get('notify') === 'true'
+  if (notify && insertedDoc.id) {
+    try {
+      await inngest.send({
+        name: 'investor/document.published' as never,
+        data: {
+          documentId: insertedDoc.id,
+          documentTitle: title,
+          documentAudience: audience,
+          docType: 'presentation',
+        },
+      })
+    } catch (err) {
+      console.error('[admin-presentations] failed to enqueue notification:', err)
+    }
   }
 
   revalidatePath('/admin/presentations')
@@ -94,10 +114,27 @@ export async function updatePresentation(formData: FormData) {
     .update({ audience, is_published: isPublished })
     .eq('id', id)
     .eq('doc_type', 'presentation')
-    .select('id')
+    .select('id, title')
     .single()
 
   if (error || !data) return { error: error?.message ?? 'Presentation not found.' }
+
+  const notify = formData.get('notify') === 'true'
+  if (notify && isPublished) {
+    try {
+      await inngest.send({
+        name: 'investor/document.published' as never,
+        data: {
+          documentId: data.id,
+          documentTitle: data.title,
+          documentAudience: audience,
+          docType: 'presentation',
+        },
+      })
+    } catch (err) {
+      console.error('[admin-presentations] failed to enqueue notification:', err)
+    }
+  }
 
   revalidatePath('/admin/presentations')
   return { success: true }

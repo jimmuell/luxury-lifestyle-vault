@@ -809,6 +809,27 @@ export type Database = {
           },
         ]
       }
+      investor_notification_sends: {
+        Row: {
+          document_id: string
+          id: string
+          profile_id: string
+          sent_at: string
+        }
+        Insert: {
+          document_id: string
+          id?: string
+          profile_id: string
+          sent_at?: string
+        }
+        Update: {
+          document_id?: string
+          id?: string
+          profile_id?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
       investor_documents: {
         Row: {
           audience: string
@@ -853,6 +874,120 @@ export type Database = {
           sort_order?: number
           storage_path?: string
           title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      investor_faq: {
+        Row: {
+          id: string
+          question: string
+          answer: string
+          sort_order: number
+          audience: string
+          is_published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          question: string
+          answer: string
+          sort_order?: number
+          audience?: string
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          question?: string
+          answer?: string
+          sort_order?: number
+          audience?: string
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      investor_updates: {
+        Row: {
+          id: string
+          title: string
+          body: string
+          audience: string
+          is_published: boolean
+          sent_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          body: string
+          audience?: string
+          is_published?: boolean
+          sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          body?: string
+          audience?: string
+          is_published?: boolean
+          sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      investor_cta_interactions: {
+        Row: { id: string; profile_id: string; cta_id: string; interacted_at: string }
+        Insert: { id?: string; profile_id: string; cta_id: string; interacted_at?: string }
+        Update: { id?: string; profile_id?: string; cta_id?: string; interacted_at?: string }
+        Relationships: [
+          {
+            foreignKeyName: "investor_cta_interactions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_cta_interactions_cta_id_fkey"
+            columns: ["cta_id"]
+            isOneToOne: false
+            referencedRelation: "investor_ctas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_ctas: {
+        Row: { id: string; label: string; action_type: string; action_value: string; is_active: boolean; sort_order: number; created_at: string; updated_at: string }
+        Insert: { id?: string; label: string; action_type: string; action_value?: string; is_active?: boolean; sort_order?: number; created_at?: string; updated_at?: string }
+        Update: { id?: string; label?: string; action_type?: string; action_value?: string; is_active?: boolean; sort_order?: number; created_at?: string; updated_at?: string }
+        Relationships: []
+      }
+      investor_config: {
+        Row: {
+          id: string
+          welcome_heading: string
+          welcome_body: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          welcome_heading?: string
+          welcome_body?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          welcome_heading?: string
+          welcome_body?: string
           updated_at?: string
         }
         Relationships: []
@@ -1592,6 +1727,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          investor_notifications_opt_in: boolean
           investor_tier: string
           is_seed_data: boolean
           nda_acknowledged: boolean
@@ -1607,6 +1743,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          investor_notifications_opt_in?: boolean
           investor_tier?: string
           is_seed_data?: boolean
           nda_acknowledged?: boolean
@@ -1622,6 +1759,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          investor_notifications_opt_in?: boolean
           investor_tier?: string
           is_seed_data?: boolean
           nda_acknowledged?: boolean
