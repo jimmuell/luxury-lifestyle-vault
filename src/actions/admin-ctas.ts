@@ -41,6 +41,19 @@ export async function createCta(formData: FormData): Promise<{ error: string } |
   if (actionType !== 'log' && !actionValue) {
     return { error: 'Action value is required for url and email types.' }
   }
+  if (actionType === 'url') {
+    try {
+      const u = new URL(actionValue)
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') {
+        return { error: 'URL must use http or https scheme.' }
+      }
+    } catch {
+      return { error: 'Invalid URL.' }
+    }
+  }
+  if (actionType === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(actionValue)) {
+    return { error: 'Invalid email address.' }
+  }
 
   const admin = createAdminClient()
   const { error } = await admin
@@ -77,6 +90,19 @@ export async function updateCta(formData: FormData): Promise<{ error: string } |
   }
   if (actionType !== 'log' && !actionValue) {
     return { error: 'Action value is required for url and email types.' }
+  }
+  if (actionType === 'url') {
+    try {
+      const u = new URL(actionValue)
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') {
+        return { error: 'URL must use http or https scheme.' }
+      }
+    } catch {
+      return { error: 'Invalid URL.' }
+    }
+  }
+  if (actionType === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(actionValue)) {
+    return { error: 'Invalid email address.' }
   }
 
   const admin = createAdminClient()

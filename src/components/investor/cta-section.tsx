@@ -16,6 +16,15 @@ interface CtaSectionProps {
 function UrlCta({ cta }: { cta: InvestorCta }) {
   const [, startTransition] = useTransition()
 
+  const safeHref = (() => {
+    try {
+      const u = new URL(cta.action_value)
+      return u.protocol === 'https:' || u.protocol === 'http:' ? cta.action_value : '#'
+    } catch {
+      return '#'
+    }
+  })()
+
   function handleClick() {
     startTransition(async () => {
       await logCtaInteraction(cta.id)
@@ -24,7 +33,7 @@ function UrlCta({ cta }: { cta: InvestorCta }) {
 
   return (
     <a
-      href={cta.action_value}
+      href={safeHref}
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
