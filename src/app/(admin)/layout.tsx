@@ -25,25 +25,23 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <aside className="hidden md:flex w-56 flex-col border-r border-border bg-sidebar flex-shrink-0">
-        <div className="flex flex-col h-full py-6 px-4">
-          <div className="mb-8 px-3">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
-              LLV Admin
-            </p>
-          </div>
-          <nav className="flex-1">
-            <AdminNav />
-          </nav>
-          <div className="mt-auto pt-6 border-t border-border flex items-center gap-1 px-1">
-            <ThemeToggle />
-            <form action={signOut} className="flex-1">
-              <Button variant="ghost" size="sm" type="submit" className="w-full justify-start gap-2 text-muted-foreground">
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </Button>
-            </form>
-          </div>
+      <aside className="hidden md:flex md:flex-col h-full w-56 flex-shrink-0 border-r border-border bg-sidebar">
+        <div className="shrink-0 border-b border-border px-4 py-4">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+            LLV Admin
+          </p>
+        </div>
+        <nav className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+          <AdminNav />
+        </nav>
+        <div className="shrink-0 border-t border-border px-4 py-4 flex items-center gap-1">
+          <ThemeToggle />
+          <form action={signOut} className="flex-1">
+            <Button variant="ghost" size="sm" type="submit" className="w-full justify-start gap-2 text-muted-foreground">
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </Button>
+          </form>
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto bg-background">
