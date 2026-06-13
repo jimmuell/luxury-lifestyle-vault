@@ -125,3 +125,11 @@
   aside { display: none !important; }
   .print\:hidden { display: none !important; }
 }
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;   /* legacy Edge */
+  scrollbar-width: none;      /* Firefox */
+  &::-webkit-scrollbar {
+    display: none;            /* Chrome/Safari */
+  }
+}
