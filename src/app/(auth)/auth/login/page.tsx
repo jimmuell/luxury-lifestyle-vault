@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { LoginForm } from '@/components/auth/login-form'
-import { DemoLogin } from '@/components/auth/demo-login'
 import { SiteFooter } from '@/components/shared/site-footer'
 
 export default function LoginPage() {
@@ -24,7 +23,6 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          <DemoLogin />
         </div>
       </div>
       <SiteFooter />
