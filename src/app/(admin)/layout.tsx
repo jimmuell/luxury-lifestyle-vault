@@ -4,6 +4,7 @@ import { LogOut } from 'lucide-react'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { AuthWatcher } from '@/components/shared/auth-watcher'
 import { AdminNav } from '@/components/admin/admin-nav'
+import { AdminNavScroller } from '@/components/admin/admin-nav-scroller'
 import { signOut } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 
@@ -31,9 +32,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             LLV Admin
           </p>
         </div>
-        <nav className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+        <AdminNavScroller className="px-4 py-3">
           <AdminNav />
-        </nav>
+        </AdminNavScroller>
         <div className="shrink-0 border-t border-border px-4 py-4 flex items-center gap-1">
           <ThemeToggle />
           <form action={signOut} className="flex-1">
