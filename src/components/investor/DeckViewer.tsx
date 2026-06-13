@@ -88,9 +88,9 @@ export default function DeckViewer({ signedUrl, title, downloadUrl, viewerEmail 
   const handleFullscreen = () => {
     if (!viewerRef.current) return
     if (!document.fullscreenElement) {
-      viewerRef.current.requestFullscreen()
+      viewerRef.current.requestFullscreen().catch(() => {})
     } else {
-      document.exitFullscreen()
+      document.exitFullscreen().catch(() => {})
     }
   }
 
