@@ -28,10 +28,15 @@ const NAV_GROUPS = [
     items: [
       { href: '/admin/clients', label: 'Clients', icon: Users },
       { href: '/admin/providers', label: 'Providers', icon: Building2 },
+    ],
+  },
+  {
+    label: 'Investor',
+    items: [
       { href: '/admin/investors', label: 'Investors', icon: LineChart },
       { href: '/admin/presentations', label: 'Presentations', icon: Presentation },
-      { href: '/admin/faq', label: 'FAQ', icon: HelpCircle },
       { href: '/admin/updates', label: 'Updates', icon: Newspaper },
+      { href: '/admin/faq', label: 'FAQ', icon: HelpCircle },
       { href: '/admin/investor-config', label: 'Welcome Panel', icon: SlidersHorizontal },
       { href: '/admin/ctas', label: 'CTAs', icon: MousePointerClick },
     ],
