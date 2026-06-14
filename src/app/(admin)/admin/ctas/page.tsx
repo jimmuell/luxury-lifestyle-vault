@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CreateCtaForm, CtaRowActions } from '@/components/admin/cta-forms'
+import { AdminLoadError } from '@/components/admin/load-error'
 
 export default async function AdminCtasPage() {
   const supabase = await createClient()
@@ -12,7 +13,7 @@ export default async function AdminCtasPage() {
 
   const admin = createAdminClient()
 
-  const { data: ctas } = await admin
+  const { data: ctas, error: ctasError } = await admin
     .from('investor_ctas')
     .select('id, label, action_type, action_value, sort_order, is_active, created_at')
     .order('sort_order', { ascending: true })
@@ -30,7 +31,9 @@ export default async function AdminCtasPage() {
       <CreateCtaForm />
 
       <div className="rounded-lg border border-border overflow-hidden">
-        {(ctas ?? []).length > 0 ? (
+        {ctasError ? (
+          <AdminLoadError area="investor CTAs" message={ctasError.message} />
+        ) : (ctas ?? []).length > 0 ? (
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b border-border">
               <tr>

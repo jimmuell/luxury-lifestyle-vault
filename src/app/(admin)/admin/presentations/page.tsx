@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { format } from 'date-fns'
 import { UploadPresentationForm, UpdatePresentationRow } from '@/components/admin/presentation-forms'
+import { AdminLoadError } from '@/components/admin/load-error'
 
 export default async function AdminPresentationsPage() {
   const supabase = await createClient()
@@ -13,7 +14,7 @@ export default async function AdminPresentationsPage() {
 
   const admin = createAdminClient()
 
-  const { data: presentations } = await admin
+  const { data: presentations, error: presentationsError } = await admin
     .from('investor_documents')
     .select('id, title, description, audience, is_published, sort_order, updated_at')
     .eq('doc_type', 'presentation')
@@ -31,7 +32,9 @@ export default async function AdminPresentationsPage() {
       <UploadPresentationForm />
 
       <div className="rounded-lg border border-border overflow-hidden">
-        {(presentations ?? []).length > 0 ? (
+        {presentationsError ? (
+          <AdminLoadError area="presentations" message={presentationsError.message} />
+        ) : (presentations ?? []).length > 0 ? (
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b border-border">
               <tr>

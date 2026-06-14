@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { format } from 'date-fns'
 import { CreateFaqForm, FaqRowActions } from '@/components/admin/faq-forms'
+import { AdminLoadError } from '@/components/admin/load-error'
 
 export default async function AdminFaqPage() {
   const supabase = await createClient()
@@ -19,8 +20,6 @@ export default async function AdminFaqPage() {
     .order('audience', { ascending: true })
     .order('sort_order', { ascending: true })
 
-  if (faqError) throw new Error(`Failed to load FAQ entries: ${faqError.message}`)
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -33,7 +32,9 @@ export default async function AdminFaqPage() {
       <CreateFaqForm />
 
       <div className="rounded-lg border border-border overflow-hidden">
-        {(entries ?? []).length > 0 ? (
+        {faqError ? (
+          <AdminLoadError area="FAQ entries" message={faqError.message} />
+        ) : (entries ?? []).length > 0 ? (
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b border-border">
               <tr>
@@ -86,6 +87,7 @@ export default async function AdminFaqPage() {
           </div>
         )}
       </div>
+
     </div>
   )
 }

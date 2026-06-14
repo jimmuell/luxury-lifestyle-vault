@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { InviteInvestorForm } from '@/components/admin/invite-investor-form'
+import { AdminLoadError } from '@/components/admin/load-error'
 import { buttonVariants } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { ShieldCheck, ShieldOff, Eye } from 'lucide-react'
@@ -17,7 +18,7 @@ export default async function AdminInvestorsPage() {
   const admin = createAdminClient()
 
   // Fetch all investor profiles
-  const { data: investors } = await admin
+  const { data: investors, error: investorsError } = await admin
     .from('profiles')
     .select('id, full_name, email, nda_acknowledged, created_at')
     .eq('role', 'investor')
@@ -67,7 +68,9 @@ export default async function AdminInvestorsPage() {
       <InviteInvestorForm />
 
       <div className="rounded-lg border border-border overflow-hidden">
-        {(investors ?? []).length > 0 ? (
+        {investorsError ? (
+          <AdminLoadError area="investors" message={investorsError.message} />
+        ) : (investors ?? []).length > 0 ? (
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b border-border">
               <tr>
