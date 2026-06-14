@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { format } from 'date-fns'
 import { CreateUpdateForm, UpdateRowActions } from '@/components/admin/update-forms'
+import { AdminLoadError } from '@/components/admin/load-error'
 
 export default async function AdminUpdatesPage() {
   const supabase = await createClient()
@@ -13,7 +14,7 @@ export default async function AdminUpdatesPage() {
 
   const admin = createAdminClient()
 
-  const { data: updates } = await admin
+  const { data: updates, error: updatesError } = await admin
     .from('investor_updates')
     .select('id, title, body, audience, is_published, sent_at, created_at, updated_at')
     .order('created_at', { ascending: false })
@@ -30,7 +31,9 @@ export default async function AdminUpdatesPage() {
       <CreateUpdateForm />
 
       <div className="rounded-lg border border-border overflow-hidden">
-        {(updates ?? []).length > 0 ? (
+        {updatesError ? (
+          <AdminLoadError area="investor updates" message={updatesError.message} />
+        ) : (updates ?? []).length > 0 ? (
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b border-border">
               <tr>
