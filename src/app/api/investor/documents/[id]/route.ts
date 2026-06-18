@@ -49,8 +49,11 @@ export async function GET(
     return new NextResponse('Not Found', { status: 404 })
   }
 
-  // TODO: audit logging — investor_document_views references investor_documents;
-  // will wire to documents table after Phase 5 retires the old table.
+  await supabase.from('investor_document_views').insert({
+    document_id: doc.id,
+    profile_id: user.id,
+    view_type: 'download',
+  })
 
   const filename = `${slugify(doc.title)}.pdf`
   const signedUrl = await getInvestorDocSignedUrl(doc.pdf_path, undefined, filename)

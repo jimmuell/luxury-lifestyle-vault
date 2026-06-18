@@ -950,7 +950,7 @@ export type Database = {
             foreignKeyName: "investor_document_views_document_id_fkey"
             columns: ["document_id"]
             isOneToOne: false
-            referencedRelation: "investor_documents"
+            referencedRelation: "documents"
             referencedColumns: ["id"]
           },
           {

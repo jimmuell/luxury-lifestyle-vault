@@ -30,8 +30,11 @@ export default async function InvestorDocViewPage({
 
   if (!doc || !doc.pdf_path) notFound()
 
-  // TODO: audit logging — investor_document_views references investor_documents;
-  // will wire to documents table after Phase 5 retires the old table.
+  await supabase.from('investor_document_views').insert({
+    document_id: doc.id,
+    profile_id: user.id,
+    view_type: 'view',
+  })
 
   const signedUrl = await getInvestorDocSignedUrl(doc.pdf_path)
 
