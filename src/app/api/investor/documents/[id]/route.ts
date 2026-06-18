@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getInvestorDocSignedUrl } from '@/lib/storage/investor-docs'
 
 function slugify(text: string): string {
@@ -34,34 +33,26 @@ export async function GET(
   const url = new URL(request.url)
   const isDownload = url.searchParams.get('download') === '1'
 
-  // Without ?download=1, redirect to the in-app viewer page
   if (!isDownload) {
     return NextResponse.redirect(new URL(`/investor/documents/${id}/view`, request.url), 302)
   }
 
-  // Fetch the document — RLS enforces published + investor visibility for investor role
+  // RLS enforces published + tier visibility for investor role
   const { data: doc, error: docErr } = await supabase
-    .from('investor_documents')
-    .select('id, storage_path, title')
+    .from('documents')
+    .select('id, pdf_path, title')
     .eq('id', id)
+    .eq('status', 'published')
     .single()
 
-  if (docErr || !doc) {
+  if (docErr || !doc || !doc.pdf_path) {
     return new NextResponse('Not Found', { status: 404 })
   }
 
-  // Log download for investors only (not admin previews)
-  if (role === 'investor') {
-    const admin = createAdminClient()
-    const { error: auditErr } = await admin.from('investor_document_views').insert({
-      profile_id: user.id,
-      document_id: doc.id,
-      view_type: 'download',
-    })
-    if (auditErr) console.error('[investor-docs audit]', auditErr.message)
-  }
+  // TODO: audit logging — investor_document_views references investor_documents;
+  // will wire to documents table after Phase 5 retires the old table.
 
   const filename = `${slugify(doc.title)}.pdf`
-  const signedUrl = await getInvestorDocSignedUrl(doc.storage_path, undefined, filename)
+  const signedUrl = await getInvestorDocSignedUrl(doc.pdf_path, undefined, filename)
   return NextResponse.redirect(signedUrl, 302)
 }

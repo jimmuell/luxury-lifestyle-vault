@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { tierRank } from '@/lib/investor/tiers'
-import { getInvestorDocuments } from '@/lib/queries/investor'
+import { getPublishedDocuments } from '@/lib/queries/documents'
 import { PrintButton } from '@/components/investor/print-button'
 import { FilterableDocList } from '@/components/investor/filterable-doc-list'
 
@@ -12,7 +12,7 @@ export default async function InvestorDocumentsPage() {
 
   const [profileResult, docs] = await Promise.all([
     supabase.from('profiles').select('role, investor_tier').eq('id', user.id).maybeSingle(),
-    getInvestorDocuments(),
+    getPublishedDocuments(),
   ])
 
   const role = profileResult.data?.role
