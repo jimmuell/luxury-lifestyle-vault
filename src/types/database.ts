@@ -570,6 +570,36 @@ export type Database = {
           },
         ]
       }
+      categories: {
+        Row: {
+          id: string
+          key: string
+          label: string
+          sort_order: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          label: string
+          sort_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          label?: string
+          sort_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       corridors: {
         Row: {
           active: boolean
@@ -672,6 +702,96 @@ export type Database = {
           recipient?: string
           subject?: string
           text?: string | null
+        }
+        Relationships: []
+      }
+      document_versions: {
+        Row: {
+          id: string
+          document_id: string
+          version_no: number
+          body_markdown: string | null
+          title: string | null
+          category_id: string | null
+          audience: string | null
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          document_id: string
+          version_no: number
+          body_markdown?: string | null
+          title?: string | null
+          category_id?: string | null
+          audience?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          document_id?: string
+          version_no?: number
+          body_markdown?: string | null
+          title?: string | null
+          category_id?: string | null
+          audience?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          id: string
+          title: string
+          category_id: string
+          audience: string
+          doc_type: string
+          body_markdown: string | null
+          source_kind: string
+          status: string
+          sort_order: number
+          current_version: number
+          pdf_path: string | null
+          pdf_generated_at: string | null
+          published_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          category_id: string
+          audience?: string
+          doc_type?: string
+          body_markdown?: string | null
+          source_kind?: string
+          status?: string
+          sort_order?: number
+          current_version?: number
+          pdf_path?: string | null
+          pdf_generated_at?: string | null
+          published_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          category_id?: string
+          audience?: string
+          doc_type?: string
+          body_markdown?: string | null
+          source_kind?: string
+          status?: string
+          sort_order?: number
+          current_version?: number
+          pdf_path?: string | null
+          pdf_generated_at?: string | null
+          published_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }
