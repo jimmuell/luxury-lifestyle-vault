@@ -1,3 +1,5 @@
+import { PDF_FOOTER_TEMPLATE, PDF_HEADER_TEMPLATE, PDF_MARGIN } from './house-style'
+
 export interface PdfRenderer {
   generate(html: string): Promise<Buffer>
 }
@@ -20,7 +22,15 @@ export class ChromiumRenderer implements PdfRenderer {
     try {
       const page = await browser.newPage()
       await page.setContent(html, { waitUntil: 'load' })
-      const pdf = await page.pdf({ format: 'Letter', printBackground: true })
+      await page.evaluateHandle('document.fonts.ready')
+      const pdf = await page.pdf({
+        format: 'Letter',
+        printBackground: true,
+        displayHeaderFooter: true,
+        headerTemplate: PDF_HEADER_TEMPLATE,
+        footerTemplate: PDF_FOOTER_TEMPLATE,
+        margin: PDF_MARGIN,
+      })
       return Buffer.from(pdf)
     } finally {
       await browser.close()
@@ -36,8 +46,11 @@ export class GotenbergRenderer implements PdfRenderer {
   }
 
   async generate(html: string): Promise<Buffer> {
+    const footerHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${PDF_FOOTER_TEMPLATE}</body></html>`
     const form = new FormData()
     form.append('files', new Blob([html], { type: 'text/html' }), 'index.html')
+    form.append('files', new Blob([footerHtml], { type: 'text/html' }), 'footer.html')
+    form.append('marginBottom', '0.6')
 
     const res = await fetch(`${this.url}/forms/chromium/convert/html`, {
       method: 'POST',

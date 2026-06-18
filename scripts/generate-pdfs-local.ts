@@ -1,26 +1,26 @@
 /**
- * One-off script: generate PDFs for all published markdown docs missing a
- * pdf_path.  Uses a local Chrome installation via puppeteer-core — does NOT
- * require Inngest or a deployed backend.
+ * Generate PDFs for published markdown docs using a local Chrome installation.
+ * Does NOT require Inngest or a deployed backend.
  *
- * Run:
+ * Run (missing PDFs only):
  *   env $(grep -v '^#' .env | xargs) \
  *     CHROMIUM_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
  *     npx tsx scripts/generate-pdfs-local.ts
  *
- * Set CHROMIUM_EXECUTABLE_PATH to your Chrome/Chromium executable if it
- * differs from the macOS default above.
+ * Force-regenerate all published markdown docs (e.g. after template changes):
+ *   ... npx tsx scripts/generate-pdfs-local.ts --force
  */
 
 import { createClient } from '@supabase/supabase-js'
 import puppeteer from 'puppeteer-core'
 import { marked } from 'marked'
-import { buildPdfHtml } from '../src/lib/docs/house-style.js'
+import { buildPdfHtml, PDF_FOOTER_TEMPLATE, PDF_HEADER_TEMPLATE, PDF_MARGIN } from '../src/lib/docs/house-style.js'
 
 const SUPABASE_URL     = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const CHROME_PATH      = process.env.CHROMIUM_EXECUTABLE_PATH
   ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+const FORCE            = process.argv.includes('--force')
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
@@ -34,21 +34,26 @@ const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 marked.setOptions({ gfm: true, breaks: false })
 
 async function main() {
-  const { data: docs, error } = await db
+  let query = db
     .from('documents')
     .select('id, title, body_markdown')
     .eq('status', 'published')
     .eq('source_kind', 'markdown')
-    .is('pdf_path', null)
+
+  if (!FORCE) {
+    query = query.is('pdf_path', null) as typeof query
+  }
+
+  const { data: docs, error } = await query
 
   if (error) throw new Error(`Failed to query documents: ${error.message}`)
   if (!docs || docs.length === 0) {
-    console.log('No markdown docs missing PDFs — nothing to do.')
+    console.log('No docs to process — use --force to regenerate existing PDFs.')
     return
   }
 
   console.log(`Launching Chrome from: ${CHROME_PATH}`)
-  console.log(`Generating PDFs for ${docs.length} docs…\n`)
+  console.log(`${FORCE ? 'Force-regenerating' : 'Generating'} PDFs for ${docs.length} docs…\n`)
 
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
@@ -71,7 +76,15 @@ async function main() {
 
         const page = await browser.newPage()
         await page.setContent(html, { waitUntil: 'load' })
-        const pdfBytes = await page.pdf({ format: 'Letter', printBackground: true })
+        await page.evaluateHandle('document.fonts.ready')
+        const pdfBytes = await page.pdf({
+          format: 'Letter',
+          printBackground: true,
+          displayHeaderFooter: true,
+          headerTemplate: PDF_HEADER_TEMPLATE,
+          footerTemplate: PDF_FOOTER_TEMPLATE,
+          margin: PDF_MARGIN,
+        })
         await page.close()
 
         const pdfBuffer   = Buffer.from(pdfBytes)

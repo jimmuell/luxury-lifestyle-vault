@@ -1,3 +1,5 @@
+import { FONT_FACE_CSS } from './font-data'
+
 /**
  * LLV house stylesheet — shared by the admin live preview (Phase 2) and the
  * Puppeteer PDF renderer (Phase 3).  CSS is scoped to `.llv-doc` so it can be
@@ -12,8 +14,8 @@
  *
  * Fonts: Cormorant Garamond (serif, headings) + Inter (sans, body).
  * Both are loaded by the root layout via next/font, so they are available in
- * the admin preview.  For Phase 3 (PDF), the Puppeteer template must embed the
- * Google Fonts import (see comment in generatePdfHtml).
+ * the admin preview.  For PDF rendering, FONT_FACE_CSS (from font-data.ts)
+ * embeds base64-inlined WOFF2s so headless Chromium never needs a network fetch.
  */
 
 export const HOUSE_CSS = `
@@ -50,11 +52,12 @@ export const HOUSE_CSS = `
   font-weight: 500;
 }
 .llv-doc-masthead .tagline {
-  font-size: 8pt;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+  font-size: 9.5pt;
+  font-style: italic;
+  letter-spacing: 0.04em;
   color: #6B6B6B;
-  margin-top: 3px;
+  margin-top: 4px;
 }
 .llv-doc-masthead .doc-title {
   font-family: 'Cormorant Garamond', 'Georgia', serif;
@@ -69,6 +72,17 @@ export const HOUSE_CSS = `
 /* ── body ────────────────────────────────────────────────────────────────────── */
 .llv-doc p {
   margin-bottom: 0.85em;
+}
+
+/* Lead / subtitle line: first paragraph that is entirely italic (e.g. *Summary…*) */
+.llv-doc-body > p:first-child > em:only-child {
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+  font-size: 13pt;
+  font-style: italic;
+  color: #9A8060;
+  display: block;
+  line-height: 1.45;
+  margin-bottom: 1.4em;
 }
 
 /* ── headings ────────────────────────────────────────────────────────────────── */
@@ -179,6 +193,18 @@ export const HOUSE_CSS = `
 `
 
 /**
+ * Running page footer injected by Puppeteer displayHeaderFooter.
+ * Left: brand + confidentiality line. Right: page number.
+ * System font only — custom fonts don't load in Puppeteer header/footer frames.
+ */
+export const PDF_FOOTER_TEMPLATE = `<div style="width:100%;padding:0 56px;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;font-family:'Helvetica Neue',Arial,sans-serif;font-size:8px;color:#9A8060;font-style:italic;letter-spacing:0.04em;"><span>Luxury Lifestyle Vault &nbsp;&middot;&nbsp; Confidential &amp; Proprietary</span><span class="pageNumber"></span></div>`
+
+export const PDF_HEADER_TEMPLATE = `<div style="font-size:0;"></div>`
+
+/** Bottom margin gives space for the running footer; all others 0 (padding in .llv-doc handles visual gutters). */
+export const PDF_MARGIN = { top: '0', bottom: '0.6in', left: '0', right: '0' } as const
+
+/**
  * Wraps rendered Markdown HTML in the full house document shell
  * (masthead + body + footer).  Used by both the admin preview and the Phase 3
  * PDF template.
@@ -196,7 +222,7 @@ export function buildDocHtml({
 <div class="llv-doc">
   <div class="llv-doc-masthead">
     <div class="brand">Luxury Lifestyle Vault</div>
-    <div class="tagline">Wardrobe Concierge &amp; Logistics Platform</div>
+    <div class="tagline">Your Lifestyle, Wherever Life Takes You.</div>
     <div class="doc-title">${title.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
   </div>
   <div class="llv-doc-body">
@@ -209,33 +235,29 @@ export function buildDocHtml({
 
 /**
  * Full standalone HTML document for Puppeteer/Gotenberg PDF rendering.
- * Embeds Google Fonts via CDN (not available from next/font in a headless context)
- * and HOUSE_CSS in a <style> block.  @page sets Letter size with zero margin so
- * the document's own padding controls the white space.
+ * Fonts are base64-inlined via @font-face (no network fetches in headless context).
+ * The in-body confidentiality footer is omitted; Puppeteer's displayHeaderFooter
+ * injects a running footer on every page instead.
  */
 export function buildPdfHtml({
   title,
   bodyHtml,
-  confidential = true,
 }: {
   title: string
   bodyHtml: string
-  confidential?: boolean
 }): string {
   const escapedTitle = title
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-  const docShell = buildDocHtml({ title, bodyHtml, confidential })
+  const docShell = buildDocHtml({ title, bodyHtml, confidential: false })
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>${escapedTitle}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    ${FONT_FACE_CSS}
     @page { size: Letter; margin: 0; }
     html, body { margin: 0; padding: 0; background: #F8F4EE; }
     ${HOUSE_CSS}
