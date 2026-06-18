@@ -7,15 +7,17 @@ import { AdminLoadError } from '@/components/admin/load-error'
 import { MarkReviewedButton } from '@/components/admin/mark-reviewed-button'
 
 const SECTION_LABELS: Record<string, string> = {
-  concept: 'The Concept',
-  strategy: 'Strategy',
-  market: 'Market & Competitive',
-  financials: 'Financials',
-  product: 'Product & Technology',
-  operations: 'Operations',
-  launch: 'Launch Plan',
-  legal: 'Legal & Risk',
-  deck: 'Pitch Deck',
+  concept:       'The Concept',
+  strategy:      'Strategy',
+  market:        'Market & Competitive',
+  financials:    'Financials',
+  product:       'Product & Technology',
+  operations:    'Operations',
+  launch:        'Launch Plan',
+  legal:         'Legal & Risk',
+  team:          'Leadership & Team',
+  ip:            'Intellectual Property & Brand',
+  deck:          'Pitch Deck',
   presentations: 'Presentations',
 }
 
@@ -85,7 +87,7 @@ export default async function AdminDataRoomPage() {
   )
 
   // Group by section in order
-  const sectionOrder = ['concept', 'strategy', 'market', 'financials', 'product', 'operations', 'launch', 'legal', 'deck', 'presentations']
+  const sectionOrder = ['concept', 'strategy', 'market', 'financials', 'product', 'operations', 'launch', 'legal', 'team', 'ip', 'deck', 'presentations']
   const bySection = new Map<string, typeof allDocs>()
   for (const doc of allDocs) {
     const existing = bySection.get(doc.section) ?? []

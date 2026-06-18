@@ -7,7 +7,7 @@ import type { InvestorDocument } from '@/lib/queries/investor'
 
 const SECTION_ORDER = [
   'concept', 'strategy', 'market', 'financials',
-  'product', 'operations', 'launch', 'legal',
+  'product', 'operations', 'launch', 'legal', 'team', 'ip',
 ] as const
 
 const SECTION_LABELS: Record<string, string> = {
@@ -19,6 +19,8 @@ const SECTION_LABELS: Record<string, string> = {
   operations: 'Operations',
   launch:     'Launch Plan',
   legal:      'Legal & Risk',
+  team:       'Leadership & Team',
+  ip:         'Intellectual Property & Brand',
   deck:       'Pitch Deck',
 }
 
