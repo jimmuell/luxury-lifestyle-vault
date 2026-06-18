@@ -1,5 +1,5 @@
 {
-  "_comment": "Copy this file to manifest.json (git-ignored) and fill in your documents. Section keys: concept, strategy, market, financials, product, operations, launch, legal, deck. doc_type: 'document' (default) | 'presentation'. audience: 'board' (default, full-access investors) | 'prospect' (shown to all investors including prospects).",
+  "_comment": "Copy this file to manifest.json (git-ignored) and fill in your documents. Sections: concept, strategy, market, financials, product, operations, launch, legal, deck. doc_type: 'document' (default) | 'presentation'. audience: 'board' (default) | 'investor' | 'prospect'. source.system: 'drive' | 'repo' | 'external'. For drive/repo docs, fill text_sha256 at export time (SHA-256 of normalized source text: lowercase → keep only [a-z0-9] → SHA-256). For external docs (SEC filings, press releases), omit text_sha256 — the publisher hashes the local PDF bytes.",
   "documents": [
     {
       "file": "LLV_Executive_One-Pager.pdf",
@@ -7,7 +7,16 @@
       "title": "Executive One-Pager",
       "description": "The 60-second overview of Luxury Lifestyle Vault.",
       "sort_order": 10,
-      "audience": "board"
+      "doc_type": "document",
+      "audience": "board",
+      "source": {
+        "system": "drive",
+        "ref": "1aBcDeFgHiJkLmNoPqRsTuVwXy",
+        "name": "R02_LLV_Executive_One_Pager.docx",
+        "version": "v3",
+        "revised_at": "2026-06-17",
+        "text_sha256": "<sha256-of-normalized-source-text-at-export-time>"
+      }
     },
     {
       "file": "LLV_Market_Analysis.pdf",
@@ -15,7 +24,16 @@
       "title": "Market & Competitive Analysis",
       "description": "Scottsdale luxury services market size, competitive landscape, and positioning.",
       "sort_order": 10,
-      "audience": "board"
+      "doc_type": "document",
+      "audience": "board",
+      "source": {
+        "system": "drive",
+        "ref": null,
+        "name": null,
+        "version": null,
+        "revised_at": null,
+        "text_sha256": null
+      }
     },
     {
       "file": "LLV_Financial_Model.pdf",
@@ -23,7 +41,28 @@
       "title": "3-Year Financial Model",
       "description": "Revenue projections, unit economics, and path to profitability.",
       "sort_order": 10,
-      "audience": "board"
+      "doc_type": "document",
+      "audience": "board",
+      "source": {
+        "system": "drive",
+        "ref": null,
+        "name": null,
+        "version": null,
+        "revised_at": null,
+        "text_sha256": null
+      }
+    },
+    {
+      "file": "TRR_10K_2025.pdf",
+      "section": "market",
+      "title": "The RealReal - Form 10-K (2025)",
+      "description": "External SEC filing - appendix/source material.",
+      "sort_order": 50,
+      "doc_type": "document",
+      "audience": "board",
+      "source": {
+        "system": "external"
+      }
     },
     {
       "file": "LLV_Pitch_Deck.pdf",
@@ -32,7 +71,15 @@
       "description": "The Luxury Lifestyle Vault investor pitch deck.",
       "sort_order": 10,
       "doc_type": "presentation",
-      "audience": "prospect"
+      "audience": "prospect",
+      "source": {
+        "system": "drive",
+        "ref": null,
+        "name": null,
+        "version": null,
+        "revised_at": null,
+        "text_sha256": null
+      }
     }
   ]
 }

@@ -6,18 +6,19 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { INVESTOR_BUCKET } from '@/lib/storage/constants'
 import { inngest } from '@/lib/inngest/client'
 
-async function assertAdmin(): Promise<{ error: string } | { error?: never }> {
+async function assertAdmin(): Promise<{ error: string } | { error?: never; email: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') return { error: 'Forbidden' }
-  return {}
+  return { email: user.email ?? 'admin' }
 }
 
 export async function uploadInvestorPresentation(formData: FormData) {
   const auth = await assertAdmin()
   if (auth.error) return { error: auth.error }
+  const adminEmail = (auth as { email: string }).email
 
   const title = (formData.get('title') as string | null)?.trim() ?? ''
   const description = (formData.get('description') as string | null)?.trim() || null
@@ -39,6 +40,10 @@ export async function uploadInvestorPresentation(formData: FormData) {
   const arrayBuffer = await file.arrayBuffer()
   const buffer = Buffer.from(arrayBuffer)
 
+  // Fingerprint the uploaded PDF bytes for provenance tracking
+  const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
+  const contentSha256 = [...new Uint8Array(hashBuffer)].map(b => b.toString(16).padStart(2, '0')).join('')
+
   const admin = createAdminClient()
 
   const { error: uploadError } = await admin.storage
@@ -49,6 +54,8 @@ export async function uploadInvestorPresentation(formData: FormData) {
     })
 
   if (uploadError) return { error: `Storage upload failed: ${uploadError.message}` }
+
+  const now = new Date().toISOString()
 
   const { data: insertedDoc, error: insertError } = await admin
     .from('investor_documents')
@@ -63,6 +70,11 @@ export async function uploadInvestorPresentation(formData: FormData) {
       sort_order: isNaN(sortOrder) ? 0 : sortOrder,
       is_published: true,
       section: 'presentations',
+      source_system: 'external',
+      published_by: adminEmail,
+      published_at: now,
+      content_sha256: contentSha256,
+      content_status: 'unverified',
     })
     .select('id')
     .single()

@@ -615,6 +615,39 @@ export type Database = {
         }
         Relationships: []
       }
+      data_room_reconcile_log: {
+        Row: {
+          id: string
+          run_at: string
+          document_id: string | null
+          storage_path: string | null
+          prev_status: string | null
+          new_status: string | null
+          drift: boolean
+          detail: string | null
+        }
+        Insert: {
+          id?: string
+          run_at?: string
+          document_id?: string | null
+          storage_path?: string | null
+          prev_status?: string | null
+          new_status?: string | null
+          drift?: boolean
+          detail?: string | null
+        }
+        Update: {
+          id?: string
+          run_at?: string
+          document_id?: string | null
+          storage_path?: string | null
+          prev_status?: string | null
+          new_status?: string | null
+          drift?: boolean
+          detail?: string | null
+        }
+        Relationships: []
+      }
       dev_email_inbox: {
         Row: {
           created_at: string
@@ -833,6 +866,8 @@ export type Database = {
       investor_documents: {
         Row: {
           audience: string
+          content_sha256: string | null
+          content_status: string
           created_at: string
           description: string | null
           doc_type: string
@@ -840,14 +875,24 @@ export type Database = {
           file_type: string
           id: string
           is_published: boolean
+          last_reconciled_at: string | null
+          published_at: string | null
+          published_by: string | null
           section: string
           sort_order: number
+          source_name: string | null
+          source_ref: string | null
+          source_revised_at: string | null
+          source_system: string | null
+          source_version: string | null
           storage_path: string
           title: string
           updated_at: string
         }
         Insert: {
           audience?: string
+          content_sha256?: string | null
+          content_status?: string
           created_at?: string
           description?: string | null
           doc_type?: string
@@ -855,14 +900,24 @@ export type Database = {
           file_type?: string
           id?: string
           is_published?: boolean
+          last_reconciled_at?: string | null
+          published_at?: string | null
+          published_by?: string | null
           section: string
           sort_order?: number
+          source_name?: string | null
+          source_ref?: string | null
+          source_revised_at?: string | null
+          source_system?: string | null
+          source_version?: string | null
           storage_path: string
           title: string
           updated_at?: string
         }
         Update: {
           audience?: string
+          content_sha256?: string | null
+          content_status?: string
           created_at?: string
           description?: string | null
           doc_type?: string
@@ -870,8 +925,16 @@ export type Database = {
           file_type?: string
           id?: string
           is_published?: boolean
+          last_reconciled_at?: string | null
+          published_at?: string | null
+          published_by?: string | null
           section?: string
           sort_order?: number
+          source_name?: string | null
+          source_ref?: string | null
+          source_revised_at?: string | null
+          source_system?: string | null
+          source_version?: string | null
           storage_path?: string
           title?: string
           updated_at?: string
@@ -2111,7 +2174,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      data_room_currency: {
+        Row: {
+          id: string
+          section: string
+          title: string
+          audience: string
+          is_published: boolean
+          content_status: string
+          source_name: string | null
+          source_version: string | null
+          published_at: string | null
+          last_reconciled_at: string | null
+          reconcile_overdue: boolean
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_my_role: {

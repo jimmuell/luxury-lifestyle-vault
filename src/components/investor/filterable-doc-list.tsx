@@ -7,7 +7,7 @@ import type { InvestorDocument } from '@/lib/queries/investor'
 
 const SECTION_ORDER = [
   'concept', 'strategy', 'market', 'financials',
-  'product', 'operations', 'launch', 'legal',
+  'product', 'operations', 'launch', 'legal', 'team', 'ip',
 ] as const
 
 const SECTION_LABELS: Record<string, string> = {
@@ -19,7 +19,21 @@ const SECTION_LABELS: Record<string, string> = {
   operations: 'Operations',
   launch:     'Launch Plan',
   legal:      'Legal & Risk',
+  team:       'Leadership & Team',
+  ip:         'Intellectual Property & Brand',
   deck:       'Pitch Deck',
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function currencyStamp(doc: InvestorDocument): string | null {
+  const date = doc.source_revised_at ?? doc.published_at
+  if (!date) return null
+  const datePart = formatDate(date)
+  return doc.source_version ? `As of ${datePart} · ${doc.source_version}` : `As of ${datePart}`
 }
 
 function formatBytes(bytes: number | null): string {
@@ -176,6 +190,11 @@ export function FilterableDocList({ docs }: FilterableDocListProps) {
                       {doc.file_type.toUpperCase()}
                       {doc.file_size_bytes ? ` · ${formatBytes(doc.file_size_bytes)}` : ''}
                     </p>
+                    {currencyStamp(doc) && (
+                      <p className="font-serif text-xs text-muted-foreground/50 italic">
+                        {currencyStamp(doc)}
+                      </p>
+                    )}
                   </div>
                   <div className="flex-shrink-0 print:hidden">
                     <DocActions docId={doc.id} title={doc.title} />
