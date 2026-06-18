@@ -85,6 +85,7 @@ interface ExistingDoc {
   doc_type: string
   audience: string
   is_published: boolean
+  published_by: string | null
   content_sha256: string | null
   source_system: string | null
   source_ref: string | null
@@ -174,7 +175,7 @@ async function main() {
   // Fetch all current investor_documents rows
   const { data: existingRows, error: fetchErr } = await sb
     .from('investor_documents')
-    .select('id, storage_path, title, description, section, sort_order, doc_type, audience, is_published, content_sha256, source_system, source_ref, source_name, source_version, source_revised_at')
+    .select('id, storage_path, title, description, section, sort_order, doc_type, audience, is_published, published_by, content_sha256, source_system, source_ref, source_name, source_version, source_revised_at')
 
   if (fetchErr) {
     console.error('Failed to fetch existing documents:', fetchErr.message)
@@ -285,11 +286,14 @@ async function main() {
     else                         counts.updated++
   }
 
-  // ── Prune: soft-unpublish docs in DB but missing from manifest ────────────
+  // ── Prune: soft-unpublish pipeline-managed docs missing from manifest ───────
+  // Exempt admin-uploaded docs (published_by != 'cowork-pipeline') — they are
+  // managed out-of-band via the admin UI and are not tracked in manifest.json.
 
   for (const [dbPath, dbDoc] of dbByPath.entries()) {
     if (manifestPaths.has(dbPath)) continue
     if (!dbDoc.is_published) continue
+    if (dbDoc.published_by !== 'cowork-pipeline') continue
 
     report.push({ action: 'PRUNE', path: dbPath, title: dbDoc.title })
 
