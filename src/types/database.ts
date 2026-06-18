@@ -2174,7 +2174,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      data_room_currency: {
+        Row: {
+          id: string
+          section: string
+          title: string
+          audience: string
+          is_published: boolean
+          content_status: string
+          source_name: string | null
+          source_version: string | null
+          published_at: string | null
+          last_reconciled_at: string | null
+          reconcile_overdue: boolean
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_my_role: {

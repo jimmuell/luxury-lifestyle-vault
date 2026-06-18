@@ -10,6 +10,7 @@ import { billOnDemandOrder } from '@/lib/inngest/functions/bill-on-demand-order'
 import { seasonalRotationReminders } from '@/lib/inngest/functions/seasonal-rotation-reminders'
 import { notifyInvestorDocument } from '@/lib/inngest/functions/notify-investor-document'
 import { notifyInvestorUpdate } from '@/lib/inngest/functions/notify-investor-update'
+import { notifyDataroomDrift } from '@/lib/inngest/functions/notify-dataroom-drift'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -22,5 +23,6 @@ export const { GET, POST, PUT } = serve({
     seasonalRotationReminders,
     notifyInvestorDocument,
     notifyInvestorUpdate,
+    notifyDataroomDrift,
   ],
 })

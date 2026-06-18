@@ -11,6 +11,7 @@ export type EmailTemplate =
   | 'provider_assignment'
   | 'investor_document_published'
   | 'investor_update_published'
+  | 'dataroom_drift_detected'
 
 type EmailPreferenceKey = 'order_updates' | 'delivery_notices' | 'payment' | 'seasonal_reminders'
 
@@ -24,6 +25,7 @@ const TEMPLATE_PREFERENCE_MAP: Record<EmailTemplate, EmailPreferenceKey | null> 
   provider_assignment: null,
   investor_document_published: null, // opt-in gated via investor_notifications_opt_in on profiles
   investor_update_published: null,   // opt-in gated via investor_notifications_opt_in on profiles
+  dataroom_drift_detected: null,     // transactional admin alert — always sent
 }
 
 export async function sendEmail({
