@@ -1,0 +1,96 @@
+{
+  "_comment": "Investor FAQ seed for the investor_faq table (/investor/faq). All entries are prospect-tier (visible to every gated viewer) and published. Source: the finalized Investor FAQ data-room doc, 2026-06-18.",
+  "faq": [
+    {
+      "question": "What is Luxury Lifestyle Vault?",
+      "answer": "A concierge wardrobe-management platform for affluent clients — secure storage, seasonal rotation, professional cleaning coordination, and on-demand delivery of luxury wardrobes, under a documented chain of custody and fully insured.",
+      "audience": "prospect",
+      "sort_order": 10,
+      "is_published": true
+    },
+    {
+      "question": "What problem does it solve?",
+      "answer": "Affluent clients with large wardrobes across multiple homes and seasons lack a trusted, insured, white-glove way to store, maintain, rotate, and retrieve their clothing. LLV is that trusted custodian and concierge.",
+      "audience": "prospect",
+      "sort_order": 20,
+      "is_published": true
+    },
+    {
+      "question": "How does the model work?",
+      "answer": "Members subscribe to a seasonal tier and place on-demand requests. Items move through a bi-directional Wisconsin–Arizona corridor: intake, secure storage, professional cleaning, seasonal rotation, delivery and returns.",
+      "audience": "prospect",
+      "sort_order": 30,
+      "is_published": true
+    },
+    {
+      "question": "Who is the customer?",
+      "answer": "Affluent individuals and households, initially along the Wisconsin–Arizona \"snowbird\" corridor. The founding-member pilot launches in the Scottsdale market in October 2026.",
+      "audience": "prospect",
+      "sort_order": 40,
+      "is_published": true
+    },
+    {
+      "question": "How does LLV make money?",
+      "answer": "Recurring membership — Seasonal Essentials ($299) and Seasonal Premier ($599) — plus per-request fees for on-demand services.",
+      "audience": "prospect",
+      "sort_order": 50,
+      "is_published": true
+    },
+    {
+      "question": "What is the traction?",
+      "answer": "The founding-member pilot launches October 2026 in Scottsdale, targeting 10–15 founding members. Founding-member outreach and pipeline development are underway ahead of launch; specific commitments will be reported as the cohort is confirmed.",
+      "audience": "prospect",
+      "sort_order": 60,
+      "is_published": true
+    },
+    {
+      "question": "What are you raising, and for what?",
+      "answer": "LLV is raising $500,000 on a post-money SAFE. The round funds roughly 18–24 months of runway, allocated to operations and hiring (45%), pilot and corridor launch (15%), platform (13%), insurance and legal (12%), and marketing and contingency (15%). It is sized to carry LLV through the founding-member pilot and expansion toward three to four corridors. The valuation cap and any discount will be finalized with the lead investor.",
+      "audience": "prospect",
+      "sort_order": 70,
+      "is_published": true
+    },
+    {
+      "question": "Who is on the team?",
+      "answer": "Founder-led with a lean operating team spanning the corridor; founder / CEO plus Arizona operations. See the Leadership & Team page.",
+      "audience": "prospect",
+      "sort_order": 80,
+      "is_published": true
+    },
+    {
+      "question": "How are members' items protected?",
+      "answer": "Bailee and general-liability insurance cover items in LLV's custody and in transit, under a documented chain of custody. LLV records owner-provided values and never authenticates or appraises items.",
+      "audience": "prospect",
+      "sort_order": 90,
+      "is_published": true
+    },
+    {
+      "question": "What is the technology?",
+      "answer": "A custom member and investor platform (Next.js, Supabase, Stripe, Resend, Inngest, on Vercel) with tiered, NDA-gated access. See the Technology overview.",
+      "audience": "prospect",
+      "sort_order": 100,
+      "is_published": true
+    },
+    {
+      "question": "Who are the partners?",
+      "answer": "Professional garment-care partners (for example RAVE FabriCARE and European Couture Cleaners) and resale through The RealReal.",
+      "audience": "prospect",
+      "sort_order": 110,
+      "is_published": true
+    },
+    {
+      "question": "What are the key risks?",
+      "answer": "Operational scaling, insurance and liability, regulatory steps (entity formation, SMS compliance), and competition. These are mitigated through insurance, documented processes, and a staged pilot.",
+      "audience": "prospect",
+      "sort_order": 120,
+      "is_published": true
+    },
+    {
+      "question": "How do I get access or ask more?",
+      "answer": "Reach out through the investor portal's Contact page or the \"Book a call\" action.",
+      "audience": "prospect",
+      "sort_order": 130,
+      "is_published": true
+    }
+  ]
+}
