@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useTransition, useCallback } from 'react'
+import { useState, useTransition, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Eye, Edit3, Upload, FileText } from 'lucide-react'
+import { Eye, Edit3, Upload, FileText, FolderOpen, CheckCircle2, X } from 'lucide-react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { HOUSE_CSS, buildDocHtml } from '@/lib/docs/house-style'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { createDocument, saveDocument, uploadDocumentPdf } from '@/actions/admin-documents'
 
 marked.setOptions({ gfm: true, breaks: false })
@@ -52,6 +53,10 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
   const [body, setBody]                 = useState(doc?.body_markdown ?? '')
   const [sortOrder, setSortOrder]       = useState(doc?.sort_order ?? 0)
   const [activeTab, setActiveTab]       = useState<'edit' | 'preview'>('edit')
+  const [importedFilename, setImportedFilename] = useState<string | null>(null)
+  const [isDragging, setIsDragging]     = useState(false)
+  const dragCounter                     = useRef(0)
+  const confirm                         = useConfirm()
 
   const previewHtml = useCallback(() => {
     const raw = marked.parse(body) as string
@@ -114,6 +119,65 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
       }
     })
     e.target.value = ''
+  }
+
+  async function handleImportFile(file: File) {
+    if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
+      toast.info('PDFs are for upload-type documents — switch Source to "Upload" to attach a PDF.')
+      return
+    }
+    const validExts = ['.md', '.markdown', '.txt']
+    if (!validExts.some(ext => file.name.toLowerCase().endsWith(ext))) {
+      toast.error('Only .md, .markdown, or .txt files can be imported.')
+      return
+    }
+    if (body.trim()) {
+      const ok = await confirm({
+        title: 'Replace current content?',
+        body: `Importing "${file.name}" will overwrite the current editor body. The change isn't saved until you click Save Draft.`,
+        confirmLabel: 'Replace',
+        tone: 'default',
+      })
+      if (!ok) return
+    }
+    const text = await file.text()
+    setBody(text)
+    setImportedFilename(file.name)
+    setActiveTab('edit')
+  }
+
+  function handleFilePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) void handleImportFile(file)
+    e.target.value = ''
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  function handleDragEnter(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current++
+    setIsDragging(true)
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current--
+    if (dragCounter.current === 0) setIsDragging(false)
+  }
+
+  async function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current = 0
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) await handleImportFile(file)
   }
 
   const isCreate = !doc
@@ -196,6 +260,19 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
           <Eye className="h-3 w-3" /> Preview
         </button>
 
+        {sourceKind === 'markdown' && (
+          <label className="flex items-center gap-1.5 cursor-pointer rounded border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <FolderOpen className="h-3 w-3" />
+            Import .md
+            <input
+              type="file"
+              accept=".md,.markdown,.txt"
+              className="sr-only"
+              onChange={handleFilePickerChange}
+            />
+          </label>
+        )}
+
         <div className="ml-auto flex items-center gap-2">
           {sourceKind === 'upload' && doc && (
             <label className={`flex items-center gap-1.5 cursor-pointer rounded border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -221,6 +298,22 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
         </div>
       </div>
 
+      {/* ── imported filename banner ──────────────────────────────────────────── */}
+      {importedFilename && (
+        <div className="flex items-center gap-2 px-5 py-1.5 bg-green-50 dark:bg-green-950/20 border-b border-border text-xs text-green-700 dark:text-green-400">
+          <CheckCircle2 className="h-3 w-3 shrink-0" />
+          <span>Imported from <span className="font-medium">{importedFilename}</span></span>
+          <button
+            type="button"
+            onClick={() => setImportedFilename(null)}
+            aria-label="Dismiss"
+            className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+
       {/* ── pane ──────────────────────────────────────────────────────────────── */}
       {activeTab === 'edit' ? (
         sourceKind === 'upload' ? (
@@ -235,13 +328,28 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
             </div>
           </div>
         ) : (
-          <textarea
-            value={body}
-            onChange={e => setBody(e.target.value)}
-            placeholder="Write your document in Markdown…&#10;&#10;# Heading&#10;&#10;Paragraph text."
-            spellCheck
-            className="flex-1 w-full resize-none rounded-b-lg border-0 bg-card px-6 py-5 font-mono text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/40 focus:outline-none min-h-[520px]"
-          />
+          <div
+            className="relative flex-1"
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <textarea
+              value={body}
+              onChange={e => setBody(e.target.value)}
+              placeholder="Write your document in Markdown…&#10;&#10;# Heading&#10;&#10;Paragraph text."
+              spellCheck
+              className="h-full w-full resize-none rounded-b-lg border-0 bg-card px-6 py-5 font-mono text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/40 focus:outline-none min-h-[520px]"
+            />
+            {isDragging && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-b-lg border-2 border-dashed border-ring bg-background/90 z-10 pointer-events-none">
+                <FolderOpen className="h-8 w-8 text-muted-foreground" />
+                <p className="text-sm font-medium text-foreground">Drop .md file to import</p>
+                <p className="text-xs text-muted-foreground">Supports .md · .markdown · .txt</p>
+              </div>
+            )}
+          </div>
         )
       ) : (
         <div className="flex-1 overflow-auto rounded-b-lg bg-[#F8F4EE] border-t-0">
