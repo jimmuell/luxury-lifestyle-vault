@@ -294,7 +294,7 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
 
         <label className={`flex items-center gap-1.5 cursor-pointer rounded border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
           <Paperclip className="h-3 w-3" />
-          {uploading ? 'Uploading…' : 'Attach file'}
+          {uploading ? 'Uploading…' : 'Upload File'}
           <input
             type="file"
             accept=".md,.markdown,.txt,.pdf,application/pdf"
@@ -366,8 +366,8 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
                   {pendingPdf
                     ? `PDF "${pendingPdf.name}" will be uploaded when you save.`
                     : doc
-                      ? 'Drop a PDF or use Attach file above.'
-                      : 'Drop a PDF or use Attach file above, then save the draft.'}
+                      ? 'Drop a PDF or use Upload File above.'
+                      : 'Drop a PDF or use Upload File above, then save the draft.'}
                 </p>
               </div>
             </div>
