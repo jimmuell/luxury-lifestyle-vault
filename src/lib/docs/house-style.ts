@@ -206,3 +206,43 @@ export function buildDocHtml({
 </div>
 `
 }
+
+/**
+ * Full standalone HTML document for Puppeteer/Gotenberg PDF rendering.
+ * Embeds Google Fonts via CDN (not available from next/font in a headless context)
+ * and HOUSE_CSS in a <style> block.  @page sets Letter size with zero margin so
+ * the document's own padding controls the white space.
+ */
+export function buildPdfHtml({
+  title,
+  bodyHtml,
+  confidential = true,
+}: {
+  title: string
+  bodyHtml: string
+  confidential?: boolean
+}): string {
+  const escapedTitle = title
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+  const docShell = buildDocHtml({ title, bodyHtml, confidential })
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${escapedTitle}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    @page { size: Letter; margin: 0; }
+    html, body { margin: 0; padding: 0; background: #F8F4EE; }
+    ${HOUSE_CSS}
+  </style>
+</head>
+<body>
+  ${docShell}
+</body>
+</html>`
+}
