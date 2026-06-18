@@ -98,8 +98,8 @@ Refactor `scripts/seed-investor-docs.ts` into the single source-of-truth publish
 Retire the duplicate `src/lib/seed/investor-docs-manifest.ts`: either (a) generate it from `manifest.json` at build, or (b) have `backfillPresentationTiers` read the JSON. **One list, not two.** Update `seed-investor.ts` accordingly.
 
 ### B2. Fingerprint
-- The fingerprint is the **SHA-256 of the normalized source text** (lower-cased, whitespace-collapsed, control-page section excluded). For `external` sources (e.g. the RealReal 10-K) where there is no editable source, hash the PDF bytes and mark `source_system='external'` — these are reference filings and not expected to drift.
-- For Drive-sourced docs, the text + version + revised_at come from the **export step** (the Cowork builder knows them when it produces the PDF) and are written into the manifest's `source.text_sha256` / `version` / `revised_at`. The publisher does not parse the stripped investor PDF for this.
+- The fingerprint is the **SHA-256 of the normalized source text**. Normalization (LOCKED, see `02_..._sectionB_confirm.md`): **lowercase → keep only `[a-z0-9]` (drop ALL whitespace and punctuation) → exclude the control page → SHA-256.** Alphanumeric-only is deliberate: it is stable across extraction tools and cosmetic re-exports, so reconcile flags real content edits only. For `external` sources (e.g. the RealReal 10-K) where there is no editable source, hash the PDF bytes and mark `source_system='external'` — these are reference filings and not expected to drift.
+- For Drive-sourced docs, the text + version + revised_at come from the **export step** (the Cowork builder knows them when it produces the PDF) and are written into the manifest's `source.text_sha256` / `version` / `revised_at`. **The Node publisher does not read Drive or recompute the hash — it persists the manifest's `text_sha256`.** The authoritative Drive-vs-published comparison runs Cowork-side in the daily audit (§C). The publisher does not parse the stripped investor PDF for this.
 
 ### B3. Modes
 Add an arg parser:
