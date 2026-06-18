@@ -3,7 +3,7 @@
 import { useState, useTransition, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Eye, Edit3, Upload, FileText, FolderOpen, CheckCircle2, X } from 'lucide-react'
+import { Eye, Edit3, FileText, FolderOpen, CheckCircle2, X, Paperclip } from 'lucide-react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { HOUSE_CSS, buildDocHtml } from '@/lib/docs/house-style'
@@ -40,6 +40,13 @@ const LABEL_CLASS = 'block text-xs font-medium text-muted-foreground uppercase t
 const INPUT_CLASS = 'w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring'
 const SELECT_CLASS = INPUT_CLASS
 
+const MD_EXTS  = ['.md', '.markdown', '.txt']
+const PDF_EXTS = ['.pdf']
+
+function stemFilename(name: string): string {
+  return name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim()
+}
+
 export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
   const router = useRouter()
   const [saving, startSaving] = useTransition()
@@ -54,18 +61,38 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
   const [sortOrder, setSortOrder]       = useState(doc?.sort_order ?? 0)
   const [activeTab, setActiveTab]       = useState<'edit' | 'preview'>('edit')
   const [importedFilename, setImportedFilename] = useState<string | null>(null)
+  const [pendingPdf, setPendingPdf]     = useState<File | null>(null)
   const [isDragging, setIsDragging]     = useState(false)
   const dragCounter                     = useRef(0)
   const confirm                         = useConfirm()
 
   const previewHtml = useCallback(() => {
     const raw = marked.parse(body) as string
-    // DOMPurify requires the browser DOM; safe in a 'use client' component.
     const bodyHtml = typeof window !== 'undefined' ? DOMPurify.sanitize(raw) : raw
     return buildDocHtml({ title: title || 'Untitled', bodyHtml })
   }, [title, body])
 
+  function doUploadPdf(file: File) {
+    if (!doc) return
+    const fd = new FormData()
+    fd.append('id', doc.id)
+    fd.append('file', file)
+    startUploading(async () => {
+      try {
+        const result = await uploadDocumentPdf(fd)
+        if ('error' in result && result.error) {
+          toast.error(result.error)
+        } else {
+          toast.success('PDF uploaded and document published.')
+        }
+      } catch {
+        toast.error('An unexpected error occurred.')
+      }
+    })
+  }
+
   function handleSave() {
+    const snapshotPdf = pendingPdf  // capture before async to preserve narrowing
     const fd = new FormData()
     if (doc) fd.append('id', doc.id)
     fd.append('title', title)
@@ -88,7 +115,19 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
         }
 
         if (!doc && 'id' in result && result.id) {
-          toast.success('Document created.')
+          if (snapshotPdf) {
+            const pdfFd = new FormData()
+            pdfFd.append('id', result.id as string)
+            pdfFd.append('file', snapshotPdf)
+            const uploadResult = await uploadDocumentPdf(pdfFd)
+            if ('error' in uploadResult && uploadResult.error) {
+              toast.error(`Draft created but PDF upload failed: ${uploadResult.error}`)
+            } else {
+              toast.success('Document created and PDF published.')
+            }
+          } else {
+            toast.success('Document created.')
+          }
           router.push(`/admin/documents/${result.id}/edit`)
         } else {
           toast.success('Draft saved.')
@@ -99,38 +138,28 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
     })
   }
 
-  function handlePdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    if (!doc) return
-    const file = e.target.files?.[0]
-    if (!file) return
-    const fd = new FormData()
-    fd.append('id', doc.id)
-    fd.append('file', file)
-    startUploading(async () => {
-      try {
-        const result = await uploadDocumentPdf(fd)
-        if ('error' in result && result.error) {
-          toast.error(result.error)
-        } else {
-          toast.success('PDF uploaded and document published.')
-        }
-      } catch {
-        toast.error('An unexpected error occurred.')
-      }
-    })
-    e.target.value = ''
-  }
-
   async function handleImportFile(file: File) {
-    if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
-      toast.info('PDFs are for upload-type documents — switch Source to "Upload" to attach a PDF.')
+    const nameLower = file.name.toLowerCase()
+    const isPdf = PDF_EXTS.some(ext => nameLower.endsWith(ext)) || file.type === 'application/pdf'
+    const isMd  = MD_EXTS.some(ext => nameLower.endsWith(ext))
+
+    if (!isPdf && !isMd) {
+      toast.error('Only .md, .markdown, .txt, or .pdf files can be attached.')
       return
     }
-    const validExts = ['.md', '.markdown', '.txt']
-    if (!validExts.some(ext => file.name.toLowerCase().endsWith(ext))) {
-      toast.error('Only .md, .markdown, or .txt files can be imported.')
+
+    if (isPdf) {
+      if (!title.trim()) setTitle(stemFilename(file.name))
+      setSourceKind('upload')
+      if (doc) {
+        doUploadPdf(file)
+      } else {
+        setPendingPdf(file)
+      }
       return
     }
+
+    // Markdown / text file
     if (body.trim()) {
       const ok = await confirm({
         title: 'Replace current content?',
@@ -140,9 +169,12 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
       })
       if (!ok) return
     }
+
     const text = await file.text()
     setBody(text)
     setImportedFilename(file.name)
+    setSourceKind('markdown')
+    if (!title.trim()) setTitle(stemFilename(file.name))
     setActiveTab('edit')
   }
 
@@ -260,37 +292,23 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
           <Eye className="h-3 w-3" /> Preview
         </button>
 
-        {sourceKind === 'markdown' && (
-          <label className="flex items-center gap-1.5 cursor-pointer rounded border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-            <FolderOpen className="h-3 w-3" />
-            Import .md
-            <input
-              type="file"
-              accept=".md,.markdown,.txt"
-              className="sr-only"
-              onChange={handleFilePickerChange}
-            />
-          </label>
-        )}
+        <label className={`flex items-center gap-1.5 cursor-pointer rounded border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+          <Paperclip className="h-3 w-3" />
+          {uploading ? 'Uploading…' : 'Attach file'}
+          <input
+            type="file"
+            accept=".md,.markdown,.txt,.pdf,application/pdf"
+            className="sr-only"
+            onChange={handleFilePickerChange}
+            disabled={uploading}
+          />
+        </label>
 
         <div className="ml-auto flex items-center gap-2">
-          {sourceKind === 'upload' && doc && (
-            <label className={`flex items-center gap-1.5 cursor-pointer rounded border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-              <Upload className="h-3 w-3" />
-              {uploading ? 'Uploading…' : 'Upload PDF'}
-              <input
-                type="file"
-                accept="application/pdf"
-                className="sr-only"
-                onChange={handlePdfUpload}
-                disabled={uploading}
-              />
-            </label>
-          )}
           <button
             type="button"
             onClick={handleSave}
-            disabled={saving || !title || !categoryId}
+            disabled={saving || uploading || !title || !categoryId}
             className="rounded bg-foreground px-4 py-1.5 text-xs font-medium text-background hover:bg-foreground/90 transition-colors disabled:opacity-50"
           >
             {saving ? 'Saving…' : isCreate ? 'Create Draft' : 'Save Draft'}
@@ -314,27 +332,46 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
         </div>
       )}
 
-      {/* ── pane ──────────────────────────────────────────────────────────────── */}
-      {activeTab === 'edit' ? (
-        sourceKind === 'upload' ? (
-          <div className="flex-1 flex items-center justify-center p-10 bg-card rounded-b-lg">
-            <div className="text-center space-y-3">
-              <FileText className="h-10 w-10 text-muted-foreground mx-auto" />
-              <p className="text-sm font-medium text-muted-foreground">Upload-type document</p>
-              <p className="text-xs text-muted-foreground/70 max-w-xs">
-                No Markdown body — this document is published by uploading a finished PDF.
-                {!doc && ' Save the draft first, then upload the PDF.'}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="relative flex-1"
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
+      {/* ── pending PDF banner ────────────────────────────────────────────────── */}
+      {pendingPdf && (
+        <div className="flex items-center gap-2 px-5 py-1.5 bg-amber-50 dark:bg-amber-950/20 border-b border-border text-xs text-amber-700 dark:text-amber-400">
+          <FileText className="h-3 w-3 shrink-0" />
+          <span>PDF ready to attach: <span className="font-medium">{pendingPdf.name}</span> — will upload when you create the draft</span>
+          <button
+            type="button"
+            onClick={() => { setPendingPdf(null); setSourceKind('markdown') }}
+            aria-label="Dismiss"
+            className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
           >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+
+      {/* ── pane (drag zone wraps all modes) ─────────────────────────────────── */}
+      <div
+        className="relative flex-1"
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {activeTab === 'edit' ? (
+          sourceKind === 'upload' ? (
+            <div className="flex items-center justify-center p-10 bg-card rounded-b-lg min-h-[520px]">
+              <div className="text-center space-y-3">
+                <FileText className="h-10 w-10 text-muted-foreground mx-auto" />
+                <p className="text-sm font-medium text-muted-foreground">Upload-type document</p>
+                <p className="text-xs text-muted-foreground/70 max-w-xs">
+                  {pendingPdf
+                    ? `PDF "${pendingPdf.name}" will be uploaded when you save.`
+                    : doc
+                      ? 'Drop a PDF or use Attach file above.'
+                      : 'Drop a PDF or use Attach file above, then save the draft.'}
+                </p>
+              </div>
+            </div>
+          ) : (
             <textarea
               value={body}
               onChange={e => setBody(e.target.value)}
@@ -342,23 +379,24 @@ export function DocumentEditor({ categories, doc }: DocumentEditorProps) {
               spellCheck
               className="h-full w-full resize-none rounded-b-lg border-0 bg-card px-6 py-5 font-mono text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/40 focus:outline-none min-h-[520px]"
             />
-            {isDragging && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-b-lg border-2 border-dashed border-ring bg-background/90 z-10 pointer-events-none">
-                <FolderOpen className="h-8 w-8 text-muted-foreground" />
-                <p className="text-sm font-medium text-foreground">Drop .md file to import</p>
-                <p className="text-xs text-muted-foreground">Supports .md · .markdown · .txt</p>
-              </div>
-            )}
+          )
+        ) : (
+          <div className="overflow-auto rounded-b-lg bg-[#F8F4EE] border-t-0 min-h-[520px]">
+            <style dangerouslySetInnerHTML={{ __html: HOUSE_CSS }} />
+            <div
+              dangerouslySetInnerHTML={{ __html: previewHtml() }}
+            />
           </div>
-        )
-      ) : (
-        <div className="flex-1 overflow-auto rounded-b-lg bg-[#F8F4EE] border-t-0">
-          <style dangerouslySetInnerHTML={{ __html: HOUSE_CSS }} />
-          <div
-            dangerouslySetInnerHTML={{ __html: previewHtml() }}
-          />
-        </div>
-      )}
+        )}
+
+        {isDragging && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-b-lg border-2 border-dashed border-ring bg-background/90 z-10 pointer-events-none">
+            <FolderOpen className="h-8 w-8 text-muted-foreground" />
+            <p className="text-sm font-medium text-foreground">Drop file to import</p>
+            <p className="text-xs text-muted-foreground">.md · .markdown · .txt — or — .pdf</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
