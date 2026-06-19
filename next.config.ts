@@ -2,6 +2,11 @@ import type { NextConfig } from "next"
 import { withSentryConfig } from "@sentry/nextjs"
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+  },
   serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
   allowedDevOrigins: ['127.0.0.1', 'localhost'],
   images: {

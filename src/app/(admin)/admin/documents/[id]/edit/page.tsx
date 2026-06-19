@@ -121,16 +121,18 @@ export default async function EditDocumentPage({
       <DocumentReplaceForm docId={doc.id} />
 
       {/* ── version history ─────────────────────────────────────────────────── */}
-      <div className="space-y-3">
-        <h2 className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
-          Version History
-        </h2>
-        <DocumentVersionHistory
-          docId={doc.id}
-          currentVersion={doc.current_version}
-          versions={versions ?? []}
-        />
-      </div>
+      {doc.source_kind !== 'upload' && (
+        <div className="space-y-3">
+          <h2 className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
+            Version History
+          </h2>
+          <DocumentVersionHistory
+            docId={doc.id}
+            currentVersion={doc.current_version}
+            versions={versions ?? []}
+          />
+        </div>
+      )}
     </div>
   )
 }

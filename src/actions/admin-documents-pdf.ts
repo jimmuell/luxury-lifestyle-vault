@@ -146,7 +146,10 @@ export async function createDocumentFromPdf(
     .from(INVESTOR_BUCKET)
     .upload(storagePath, buffer, { contentType: 'application/pdf', upsert: true })
 
-  if (uploadErr) return { error: `Upload failed: ${uploadErr.message}` }
+  if (uploadErr) {
+    await admin.from('documents').delete().eq('id', doc.id)
+    return { error: `Upload failed: ${uploadErr.message}` }
+  }
 
   // --- Update pdf_path + pdf_generated_at ---
   const { error: updateErr } = await admin
@@ -157,7 +160,10 @@ export async function createDocumentFromPdf(
     })
     .eq('id', doc.id)
 
-  if (updateErr) return { error: updateErr.message }
+  if (updateErr) {
+    await admin.from('documents').delete().eq('id', doc.id)
+    return { error: updateErr.message }
+  }
 
   revalidatePath('/admin/documents')
   revalidatePath('/investor/documents')
