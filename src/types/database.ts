@@ -758,6 +758,18 @@ export type Database = {
           published_at: string | null
           created_at: string
           updated_at: string
+          source_type: string
+          google_file_id: string | null
+          google_web_view_link: string | null
+          google_modified_time: string | null
+          google_md5_checksum: string | null
+          sync_status: string
+          last_synced_at: string | null
+          last_checked_at: string | null
+          last_sync_error: string | null
+          pdf_sha256: string | null
+          file_size_bytes: number | null
+          page_count: number | null
         }
         Insert: {
           id?: string
@@ -775,6 +787,18 @@ export type Database = {
           published_at?: string | null
           created_at?: string
           updated_at?: string
+          source_type?: string
+          google_file_id?: string | null
+          google_web_view_link?: string | null
+          google_modified_time?: string | null
+          google_md5_checksum?: string | null
+          sync_status?: string
+          last_synced_at?: string | null
+          last_checked_at?: string | null
+          last_sync_error?: string | null
+          pdf_sha256?: string | null
+          file_size_bytes?: number | null
+          page_count?: number | null
         }
         Update: {
           id?: string
@@ -792,6 +816,18 @@ export type Database = {
           published_at?: string | null
           created_at?: string
           updated_at?: string
+          source_type?: string
+          google_file_id?: string | null
+          google_web_view_link?: string | null
+          google_modified_time?: string | null
+          google_md5_checksum?: string | null
+          sync_status?: string
+          last_synced_at?: string | null
+          last_checked_at?: string | null
+          last_sync_error?: string | null
+          pdf_sha256?: string | null
+          file_size_bytes?: number | null
+          page_count?: number | null
         }
         Relationships: []
       }
