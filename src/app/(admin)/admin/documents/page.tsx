@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 import { Plus, FileText } from 'lucide-react'
 import { AdminLoadError } from '@/components/admin/load-error'
 import { buttonVariants } from '@/components/ui/button'
+import { DocumentDriveSourceForm } from '@/components/admin/document-drive-source-form'
 
 const STATUS_STYLES: Record<string, string> = {
   draft:     'bg-muted text-muted-foreground',
@@ -158,13 +159,19 @@ export default async function AdminDocumentsPage() {
                           <td className="px-5 py-3.5 text-muted-foreground text-xs whitespace-nowrap hidden xl:table-cell">
                             {doc.updated_at ? format(new Date(doc.updated_at), 'MMM d, yyyy') : '—'}
                           </td>
-                          <td className="px-5 py-3.5 text-right">
-                            <Link
-                              href={`/admin/documents/${doc.id}/edit`}
-                              className="rounded border border-border bg-background px-3 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                            >
-                              Edit
-                            </Link>
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center justify-end gap-2 flex-wrap">
+                              <DocumentDriveSourceForm
+                                docId={doc.id}
+                                currentLink={doc.google_web_view_link ?? null}
+                              />
+                              <Link
+                                href={`/admin/documents/${doc.id}/edit`}
+                                className="rounded border border-border bg-background px-3 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                              >
+                                Edit
+                              </Link>
+                            </div>
                           </td>
                         </tr>
                       ))}

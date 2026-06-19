@@ -172,7 +172,46 @@ export async function createDocumentFromPdf(
 }
 
 // ---------------------------------------------------------------------------
-// Action 2: replaceDocumentPdf
+// Action 2: setDocumentDriveSource
+// ---------------------------------------------------------------------------
+
+export async function setDocumentDriveSource(
+  formData: FormData,
+): Promise<{ success: true } | { error: string }> {
+  const auth = await assertAdmin()
+  if (auth.error) return { error: auth.error }
+
+  const id   = (formData.get('id') as string | null)?.trim() ?? ''
+  const link = (formData.get('google_drive_link') as string | null)?.trim() ?? ''
+
+  if (!id)   return { error: 'Document ID is required.' }
+  if (!link) return { error: 'A Google Drive link or file ID is required.' }
+
+  const parsed = parseGoogleDriveLink(link)
+  if (!parsed) return { error: 'Could not parse a Google Drive file ID from that link. Paste the full docs.google.com URL or the bare file ID.' }
+
+  const admin = createAdminClient()
+
+  const { error: updateErr } = await admin
+    .from('documents')
+    .update({
+      source_type:          'google_drive',
+      google_file_id:       parsed.fileId,
+      google_web_view_link: parsed.webViewLink,
+      sync_status:          'manual_only',
+    })
+    .eq('id', id)
+
+  if (updateErr) return { error: updateErr.message }
+
+  revalidatePath('/admin/documents')
+  revalidatePath(`/admin/documents/${id}/edit`)
+
+  return { success: true }
+}
+
+// ---------------------------------------------------------------------------
+// Action 3: replaceDocumentPdf
 // ---------------------------------------------------------------------------
 
 export async function replaceDocumentPdf(
