@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "eslint",
     "verify": "eslint && tsc --noEmit",
-    "seed:investor-docs": "npx tsx scripts/seed-investor-docs.ts",
     "postinstall": "patch-package"
   },
   "dependencies": {
@@ -35,6 +34,7 @@
     "marked": "^18.0.5",
     "next": "16.2.6",
     "next-themes": "^0.4.6",
+    "pdf-lib": "^1.17.1",
     "puppeteer-core": "^25.1.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",

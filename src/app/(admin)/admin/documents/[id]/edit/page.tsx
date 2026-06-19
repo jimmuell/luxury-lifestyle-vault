@@ -4,9 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { format } from 'date-fns'
 import { ChevronLeft } from 'lucide-react'
-import { DocumentEditor } from '@/components/admin/document-editor'
 import { DocumentActions } from '@/components/admin/document-actions'
 import { DocumentVersionHistory } from '@/components/admin/document-version-history'
+import { DocumentReplaceForm } from '@/components/admin/document-replace-form'
 import { AdminLoadError } from '@/components/admin/load-error'
 
 export default async function EditDocumentPage({
@@ -26,19 +26,13 @@ export default async function EditDocumentPage({
 
   const [
     { data: doc, error: docError },
-    { data: categories, error: catError },
     { data: versions },
   ] = await Promise.all([
     admin
       .from('documents')
-      .select('id, title, category_id, audience, doc_type, body_markdown, source_kind, status, sort_order, current_version, pdf_path, pdf_generated_at, published_at, updated_at')
+      .select('id, title, category_id, audience, doc_type, body_markdown, source_kind, status, sort_order, current_version, pdf_path, pdf_generated_at, published_at, updated_at, source_type, google_web_view_link, google_file_id, sync_status, pdf_sha256, file_size_bytes, page_count')
       .eq('id', id)
       .single(),
-    admin
-      .from('categories')
-      .select('id, key, label')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true }),
     admin
       .from('document_versions')
       .select('id, version_no, title, audience, created_at')
@@ -47,7 +41,6 @@ export default async function EditDocumentPage({
   ])
 
   if (docError) return <AdminLoadError area="document" message={docError.message} />
-  if (catError) return <AdminLoadError area="categories" message={catError.message} />
   if (!doc) notFound()
 
   return (
@@ -79,36 +72,67 @@ export default async function EditDocumentPage({
         />
       </div>
 
-      {/* ── editor ─────────────────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-border overflow-hidden">
-        <DocumentEditor
-          categories={categories ?? []}
-          doc={{
-            id:              doc.id,
-            title:           doc.title,
-            category_id:     doc.category_id,
-            audience:        doc.audience,
-            doc_type:        doc.doc_type,
-            body_markdown:   doc.body_markdown,
-            source_kind:     doc.source_kind,
-            status:          doc.status,
-            sort_order:      doc.sort_order,
-            current_version: doc.current_version,
-          }}
-        />
+      {/* ── PDF source metadata ─────────────────────────────────────────────── */}
+      <div className="rounded-lg border border-border bg-card p-5 space-y-4">
+        <h2 className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">Document Info</h2>
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-3">
+          <div>
+            <dt className="text-xs text-muted-foreground">Title</dt>
+            <dd className="font-medium mt-0.5">{doc.title}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Audience</dt>
+            <dd className="mt-0.5 capitalize">{doc.audience}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Source</dt>
+            <dd className="mt-0.5 capitalize">{doc.source_type?.replace('_', ' ') ?? 'manual upload'}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Sync status</dt>
+            <dd className="mt-0.5 capitalize">{doc.sync_status?.replace('_', ' ') ?? '—'}</dd>
+          </div>
+          {doc.page_count != null && (
+            <div>
+              <dt className="text-xs text-muted-foreground">Pages</dt>
+              <dd className="mt-0.5">{doc.page_count}</dd>
+            </div>
+          )}
+          {doc.file_size_bytes != null && (
+            <div>
+              <dt className="text-xs text-muted-foreground">File size</dt>
+              <dd className="mt-0.5">{(doc.file_size_bytes / 1024).toFixed(0)} KB</dd>
+            </div>
+          )}
+          {doc.google_web_view_link && (
+            <div className="col-span-2 md:col-span-3">
+              <dt className="text-xs text-muted-foreground">Google Drive</dt>
+              <dd className="mt-0.5">
+                <a href={doc.google_web_view_link} target="_blank" rel="noopener noreferrer" className="text-primary underline-offset-4 hover:underline text-xs break-all">
+                  {doc.google_web_view_link}
+                </a>
+              </dd>
+            </div>
+          )}
+        </dl>
       </div>
 
+      {/* ── replace PDF ──────────────────────────────────────────────────────── */}
+      <DocumentReplaceForm docId={doc.id} />
+
       {/* ── version history ─────────────────────────────────────────────────── */}
-      <div className="space-y-3">
-        <h2 className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
-          Version History
-        </h2>
-        <DocumentVersionHistory
-          docId={doc.id}
-          currentVersion={doc.current_version}
-          versions={versions ?? []}
-        />
-      </div>
+      {doc.source_kind !== 'upload' && (
+        <div className="space-y-3">
+          <h2 className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
+            Version History
+          </h2>
+          <DocumentVersionHistory
+            docId={doc.id}
+            currentVersion={doc.current_version}
+            versions={versions ?? []}
+          />
+        </div>
+      )}
     </div>
   )
 }

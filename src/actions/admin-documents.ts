@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { inngest } from '@/lib/inngest/client'
 import { INVESTOR_BUCKET } from '@/lib/storage/constants'
 
 async function assertAdmin(): Promise<
@@ -16,128 +15,6 @@ async function assertAdmin(): Promise<
     .from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') return { error: 'Forbidden' }
   return { userId: user.id, email: user.email ?? 'admin' }
-}
-
-const VALID_AUDIENCES = ['prospect', 'investor', 'board'] as const
-const VALID_SOURCE_KINDS = ['markdown', 'upload'] as const
-
-export async function createDocument(formData: FormData) {
-  const auth = await assertAdmin()
-  if (auth.error) return { error: auth.error }
-  const { userId } = auth as { userId: string; email: string }
-
-  const title       = (formData.get('title') as string | null)?.trim() ?? ''
-  const categoryId  = (formData.get('category_id') as string | null)?.trim() ?? ''
-  const audience    = (formData.get('audience') as string | null) ?? 'investor'
-  const docType     = (formData.get('doc_type') as string | null) ?? 'document'
-  const sourceKind  = (formData.get('source_kind') as string | null) ?? 'markdown'
-  const bodyMarkdown = (formData.get('body_markdown') as string | null) ?? ''
-  const sortOrderRaw = formData.get('sort_order')
-  const sortOrder   = sortOrderRaw ? parseInt(sortOrderRaw as string, 10) : 0
-
-  if (!title) return { error: 'Title is required.' }
-  if (!categoryId) return { error: 'Category is required.' }
-  if (!VALID_AUDIENCES.includes(audience as typeof VALID_AUDIENCES[number]))
-    return { error: 'Invalid audience.' }
-  if (!VALID_SOURCE_KINDS.includes(sourceKind as typeof VALID_SOURCE_KINDS[number]))
-    return { error: 'Invalid source kind.' }
-
-  const admin = createAdminClient()
-
-  const { data: doc, error: insertErr } = await admin
-    .from('documents')
-    .insert({
-      title,
-      category_id:   categoryId,
-      audience,
-      doc_type:      docType,
-      source_kind:   sourceKind,
-      body_markdown: bodyMarkdown || null,
-      sort_order:    isNaN(sortOrder) ? 0 : sortOrder,
-      status:        'draft',
-      current_version: 1,
-    })
-    .select('id')
-    .single()
-
-  if (insertErr || !doc) return { error: insertErr?.message ?? 'Failed to create document.' }
-
-  // Snapshot version 1
-  await admin.from('document_versions').insert({
-    document_id:   doc.id,
-    version_no:    1,
-    body_markdown: bodyMarkdown || null,
-    title,
-    category_id:   categoryId,
-    audience,
-    created_by:    userId,
-  })
-
-  revalidatePath('/admin/documents')
-  return { success: true, id: doc.id }
-}
-
-export async function saveDocument(formData: FormData) {
-  const auth = await assertAdmin()
-  if (auth.error) return { error: auth.error }
-  const { userId } = auth as { userId: string; email: string }
-
-  const id          = (formData.get('id') as string | null)?.trim() ?? ''
-  const title       = (formData.get('title') as string | null)?.trim() ?? ''
-  const categoryId  = (formData.get('category_id') as string | null)?.trim() ?? ''
-  const audience    = (formData.get('audience') as string | null) ?? 'investor'
-  const docType     = (formData.get('doc_type') as string | null) ?? 'document'
-  const bodyMarkdown = (formData.get('body_markdown') as string | null) ?? ''
-  const sortOrderRaw = formData.get('sort_order')
-  const sortOrder   = sortOrderRaw ? parseInt(sortOrderRaw as string, 10) : 0
-
-  if (!id) return { error: 'Document ID is required.' }
-  if (!title) return { error: 'Title is required.' }
-  if (!categoryId) return { error: 'Category is required.' }
-  if (!VALID_AUDIENCES.includes(audience as typeof VALID_AUDIENCES[number]))
-    return { error: 'Invalid audience.' }
-
-  const admin = createAdminClient()
-
-  // Fetch current version to compute next
-  const { data: current, error: fetchErr } = await admin
-    .from('documents')
-    .select('current_version, status')
-    .eq('id', id)
-    .single()
-
-  if (fetchErr || !current) return { error: fetchErr?.message ?? 'Document not found.' }
-
-  const nextVersion = current.current_version + 1
-
-  const { error: updateErr } = await admin
-    .from('documents')
-    .update({
-      title,
-      category_id:     categoryId,
-      audience,
-      doc_type:        docType,
-      body_markdown:   bodyMarkdown || null,
-      sort_order:      isNaN(sortOrder) ? 0 : sortOrder,
-      current_version: nextVersion,
-    })
-    .eq('id', id)
-
-  if (updateErr) return { error: updateErr.message }
-
-  await admin.from('document_versions').insert({
-    document_id:   id,
-    version_no:    nextVersion,
-    body_markdown: bodyMarkdown || null,
-    title,
-    category_id:   categoryId,
-    audience,
-    created_by:    userId,
-  })
-
-  revalidatePath('/admin/documents')
-  revalidatePath(`/admin/documents/${id}/edit`)
-  return { success: true }
 }
 
 export async function publishDocument(id: string) {
@@ -160,10 +37,6 @@ export async function publishDocument(id: string) {
     .eq('id', id)
 
   if (error) return { error: error.message }
-
-  if (doc.source_kind === 'markdown') {
-    await inngest.send({ name: 'document/pdf.requested' as never, data: { documentId: id } })
-  }
 
   revalidatePath('/admin/documents')
   revalidatePath(`/admin/documents/${id}/edit`)

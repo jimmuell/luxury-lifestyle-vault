@@ -13,7 +13,6 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { Inngest } from 'inngest'
 import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 
@@ -32,8 +31,6 @@ interface DocEntry {
 
 const SUPABASE_URL        = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SERVICE_ROLE_KEY    = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const INNGEST_EVENT_KEY   = process.env.INNGEST_EVENT_KEY
-const INNGEST_BASE_URL    = process.env.INNGEST_BASE_URL  // set to local CLI URL if testing locally
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
@@ -42,11 +39,6 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
 
 const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
-})
-
-const inngest = new Inngest({
-  id: 'luxury-lifestyle-vault',
-  ...(INNGEST_BASE_URL ? { baseUrl: INNGEST_BASE_URL } : {}),
 })
 
 const SEED_ROOT = join(process.cwd(), 'supabase', 'seed')
@@ -129,12 +121,7 @@ async function main() {
         created_by:    null,
       })
 
-      if (INNGEST_EVENT_KEY) {
-        await inngest.send({ name: 'document/pdf.requested' as never, data: { documentId: doc.id } })
-        console.log(`  INSERT + EVENT  ${entry.title}`)
-      } else {
-        console.log(`  INSERT (no INNGEST_EVENT_KEY — PDF pending manual trigger)  ${entry.title}`)
-      }
+      console.log(`  INSERT  ${entry.title}`)
       inserted++
 
     } else {
@@ -196,12 +183,6 @@ async function main() {
   }
 
   console.log(`\nSeed complete: ${inserted} inserted, ${skipped} skipped, ${errors} errors`)
-  if (!INNGEST_EVENT_KEY && inserted > 0) {
-    console.log('\nNote: INNGEST_EVENT_KEY not set. Markdown docs are published but PDFs have not')
-    console.log('been requested. To generate PDFs, either:')
-    console.log('  1. Re-run with INNGEST_EVENT_KEY set in .env')
-    console.log('  2. Use the admin UI — open each doc and click Unpublish, then Publish')
-  }
 }
 
 main().catch(err => { console.error(err); process.exit(1) })

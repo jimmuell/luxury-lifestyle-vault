@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ChevronLeft } from 'lucide-react'
-import { DocumentEditor } from '@/components/admin/document-editor'
+import { DocumentUploadForm } from '@/components/admin/document-upload-form'
 import { AdminLoadError } from '@/components/admin/load-error'
 
 export default async function NewDocumentPage() {
@@ -31,7 +31,9 @@ export default async function NewDocumentPage() {
         <h1 className="font-serif text-3xl font-light">New Document</h1>
       </div>
 
-      <DocumentEditor categories={categories ?? []} />
+      <div className="rounded-lg border border-border bg-card p-6">
+        <DocumentUploadForm categories={categories ?? []} />
+      </div>
     </div>
   )
 }

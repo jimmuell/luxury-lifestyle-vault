@@ -26,7 +26,8 @@ export async function getPublishedDocuments(): Promise<PublishedDoc[]> {
     supabase
       .from('documents')
       .select('id, title, audience, pdf_path, published_at, source_kind, sort_order, current_version, category_id')
-      .eq('status', 'published'),
+      .eq('status', 'published')
+      .not('pdf_path', 'is', null),
   ])
 
   if (catErr) throw new Error(`Failed to fetch categories: ${catErr.message}`)
