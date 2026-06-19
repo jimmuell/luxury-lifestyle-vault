@@ -101,17 +101,23 @@ export function DocumentUploadForm({ categories }: DocumentUploadFormProps) {
         </div>
 
         {/* Strip first page checkbox */}
-        <div className="flex items-center gap-2 self-end pb-2">
-          <input
-            id="strip_first_page"
-            type="checkbox"
-            name="strip_first_page"
-            value="1"
-            className="h-4 w-4 rounded border border-border"
-          />
-          <label htmlFor="strip_first_page" className="text-sm text-muted-foreground">
-            Remove first page (control page)
-          </label>
+        <div className="self-end pb-2 space-y-1">
+          <div className="flex items-center gap-2">
+            <input
+              id="strip_first_page"
+              type="checkbox"
+              name="strip_first_page"
+              value="1"
+              defaultChecked
+              className="h-4 w-4 rounded border border-border"
+            />
+            <label htmlFor="strip_first_page" className="text-sm text-muted-foreground">
+              Remove first page (control page)
+            </label>
+          </div>
+          <p className="text-xs text-muted-foreground/60 pl-6">
+            On by default — uncheck only if your PDF has no internal control page.
+          </p>
         </div>
 
         {/* Google Drive Link — full width */}

@@ -45,17 +45,23 @@ export function DocumentReplaceForm({ docId }: DocumentReplaceFormProps) {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            id="replace-strip-first"
-            type="checkbox"
-            name="strip_first_page"
-            value="1"
-            className="h-4 w-4 rounded border border-border"
-          />
-          <label htmlFor="replace-strip-first" className="text-sm text-muted-foreground">
-            Remove first page (control page)
-          </label>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <input
+              id="replace-strip-first"
+              type="checkbox"
+              name="strip_first_page"
+              value="1"
+              defaultChecked
+              className="h-4 w-4 rounded border border-border"
+            />
+            <label htmlFor="replace-strip-first" className="text-sm text-muted-foreground">
+              Remove first page (control page)
+            </label>
+          </div>
+          <p className="text-xs text-muted-foreground/60 pl-6">
+            On by default — uncheck only if your PDF has no internal control page.
+          </p>
         </div>
 
         <div>
