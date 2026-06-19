@@ -1,39 +1,10 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { format } from 'date-fns'
-import { AlertTriangle, Clock } from 'lucide-react'
+import { ExternalLink, FileText, AlertCircle } from 'lucide-react'
 import { AdminLoadError } from '@/components/admin/load-error'
-import { MarkReviewedButton } from '@/components/admin/mark-reviewed-button'
-
-const SECTION_LABELS: Record<string, string> = {
-  concept:       'The Concept',
-  strategy:      'Strategy',
-  market:        'Market & Competitive',
-  financials:    'Financials',
-  product:       'Product & Technology',
-  operations:    'Operations',
-  launch:        'Launch Plan',
-  legal:         'Legal & Risk',
-  team:          'Leadership & Team',
-  ip:            'Intellectual Property & Brand',
-  deck:          'Pitch Deck',
-  presentations: 'Presentations',
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  current:        'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  stale:          'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  source_missing: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  unverified:     'bg-muted text-muted-foreground',
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  current: 'Current',
-  stale: 'Stale',
-  source_missing: 'Source missing',
-  unverified: 'Unverified',
-}
 
 const AUDIENCE_STYLES: Record<string, string> = {
   prospect: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
@@ -41,11 +12,9 @@ const AUDIENCE_STYLES: Record<string, string> = {
   board:    'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
 }
 
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
-
-function isReconcileOverdue(lastReconciledAt: string | null): boolean {
-  if (!lastReconciledAt) return true
-  return Date.now() - new Date(lastReconciledAt).getTime() > SEVEN_DAYS_MS
+const SOURCE_STYLES: Record<string, string> = {
+  markdown: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  upload:   'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
 }
 
 export default async function AdminDataRoomPage() {
@@ -57,65 +26,72 @@ export default async function AdminDataRoomPage() {
 
   const admin = createAdminClient()
 
-  const { data: docs, error: docsError } = await admin
-    .from('investor_documents')
-    .select('id, title, section, audience, content_status, source_system, source_name, source_version, source_revised_at, published_at, published_by, last_reconciled_at')
-    .eq('is_published', true)
-    .order('section')
-    .order('sort_order', { ascending: true })
-    .order('title')
+  const [{ data: categories, error: catError }, { data: docs, error: docsError }] = await Promise.all([
+    admin
+      .from('categories')
+      .select('id, key, label, sort_order')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true }),
+    admin
+      .from('documents')
+      .select('id, title, category_id, audience, status, source_kind, current_version, pdf_path, pdf_generated_at, published_at')
+      .in('status', ['published', 'draft', 'archived'])
+      .order('sort_order', { ascending: true }),
+  ])
 
-  if (docsError) {
-    return (
-      <div className="space-y-6">
-        <h1 className="font-serif text-3xl font-light">Data Room Currency</h1>
-        <AdminLoadError area="data room" message={docsError.message} />
-      </div>
-    )
-  }
+  if (catError) return <AdminLoadError area="categories" message={catError.message} />
+  if (docsError) return <AdminLoadError area="data room" message={docsError.message} />
 
   const allDocs = docs ?? []
+  const allCats = categories ?? []
 
   // Summary counts
-  const counts = allDocs.reduce(
-    (acc, d) => {
-      acc[d.content_status as keyof typeof acc] = (acc[d.content_status as keyof typeof acc] ?? 0) + 1
-      if (isReconcileOverdue(d.last_reconciled_at)) acc.overdue++
-      return acc
-    },
-    { current: 0, stale: 0, source_missing: 0, unverified: 0, overdue: 0 }
-  )
+  const published  = allDocs.filter(d => d.status === 'published').length
+  const withPdf    = allDocs.filter(d => d.status === 'published' && d.pdf_path).length
+  const pendingPdf = allDocs.filter(d => d.status === 'published' && !d.pdf_path).length
+  const drafts     = allDocs.filter(d => d.status === 'draft').length
 
-  // Group by section in order
-  const sectionOrder = ['concept', 'strategy', 'market', 'financials', 'product', 'operations', 'launch', 'legal', 'team', 'ip', 'deck', 'presentations']
-  const bySection = new Map<string, typeof allDocs>()
+  // Group by category in category sort_order
+  const catById = new Map(allCats.map(c => [c.id, c]))
+  type DocRow = typeof allDocs[number]
+  const byCategory = new Map<string, DocRow[]>()
   for (const doc of allDocs) {
-    const existing = bySection.get(doc.section) ?? []
+    const existing = byCategory.get(doc.category_id) ?? []
     existing.push(doc)
-    bySection.set(doc.section, existing)
+    byCategory.set(doc.category_id, existing)
   }
-  const sections = [
-    ...sectionOrder.filter(s => bySection.has(s)).map(s => ({ key: s, docs: bySection.get(s)! })),
-    ...[...bySection.keys()].filter(s => !sectionOrder.includes(s)).map(s => ({ key: s, docs: bySection.get(s)! })),
-  ]
-
-  const hasIssues = counts.stale > 0 || counts.source_missing > 0
+  const sections = allCats
+    .filter(c => byCategory.has(c.id))
+    .map(c => ({ cat: c, docs: byCategory.get(c.id)! }))
+  // Append any docs whose category is inactive (shouldn't happen, but safe)
+  for (const [catId, catDocs] of byCategory) {
+    if (!catById.has(catId)) {
+      sections.push({ cat: { id: catId, key: catId, label: catId, sort_order: 999 }, docs: catDocs })
+    }
+  }
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="font-serif text-3xl font-light">Data Room Currency</h1>
-        <span className="text-sm text-muted-foreground">{allDocs.length} published</span>
+        <div>
+          <h1 className="font-serif text-3xl font-light">Data Room</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Published documents managed in the dashboard.{' '}
+            <Link href="/admin/documents" className="underline underline-offset-2 hover:text-foreground transition-colors">
+              Edit in Documents →
+            </Link>
+          </p>
+        </div>
+        <span className="text-sm text-muted-foreground">{published} published</span>
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Current',        value: counts.current,        style: 'text-green-600 dark:text-green-400' },
-          { label: 'Stale',          value: counts.stale,          style: counts.stale > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground' },
-          { label: 'Source missing', value: counts.source_missing, style: counts.source_missing > 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground' },
-          { label: 'Unverified',     value: counts.unverified,     style: 'text-muted-foreground' },
-          { label: 'Reconcile overdue', value: counts.overdue,     style: counts.overdue > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground' },
+          { label: 'Published',    value: published,  style: 'text-green-600 dark:text-green-400' },
+          { label: 'With PDF',     value: withPdf,    style: 'text-green-600 dark:text-green-400' },
+          { label: 'PDF pending',  value: pendingPdf, style: pendingPdf > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground' },
+          { label: 'Drafts',       value: drafts,     style: 'text-muted-foreground' },
         ].map(({ label, value, style }) => (
           <div key={label} className="rounded-lg border border-border bg-card px-4 py-3">
             <p className="text-xs text-muted-foreground uppercase tracking-[0.1em]">{label}</p>
@@ -124,95 +100,86 @@ export default async function AdminDataRoomPage() {
         ))}
       </div>
 
-      {/* Runbook callout */}
-      <div className={`rounded-lg border px-5 py-4 text-sm ${hasIssues ? 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30' : 'border-border bg-muted/30'}`}>
-        <p className="font-medium mb-2">How to re-publish a stale document</p>
-        <ol className="space-y-1 text-muted-foreground list-decimal list-inside">
-          <li>Edit the source in Drive, bump the control-page version and date.</li>
-          <li>Export the room PDF (strip the control page). Capture version, revised_at, and the normalized-text SHA-256.</li>
-          <li>Drop the PDF into <code className="text-xs bg-muted px-1 rounded">supabase/seed/investor-room/</code>.</li>
-          <li>Update <code className="text-xs bg-muted px-1 rounded">manifest.json</code> — set source.version, source.revised_at, source.text_sha256.</li>
-          <li>Run <code className="text-xs bg-muted px-1 rounded">npx tsx scripts/seed-investor-docs.ts --check</code>. Confirm no unexpected DRIFT or PRUNE.</li>
-          <li>Run <code className="text-xs bg-muted px-1 rounded">npx tsx scripts/seed-investor-docs.ts --publish</code>. Status returns to Current.</li>
-        </ol>
-      </div>
+      {pendingPdf > 0 && (
+        <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 px-5 py-4 text-sm">
+          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium text-amber-800 dark:text-amber-300">
+              {pendingPdf} document{pendingPdf > 1 ? 's' : ''} published without a PDF
+            </p>
+            <p className="text-amber-700 dark:text-amber-400 mt-0.5">
+              PDFs are generated by Inngest after publishing. If a PDF is missing, open the document,
+              click Unpublish, then Publish to re-trigger generation.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Document sections */}
-      {sections.map(({ key, docs: sectionDocs }) => (
-        <div key={key}>
-          <h2 className="font-serif text-xl font-light mb-3">
-            {SECTION_LABELS[key] ?? key}
-          </h2>
+      {sections.map(({ cat, docs: sectionDocs }) => (
+        <div key={cat.id}>
+          <h2 className="font-serif text-xl font-light mb-3">{cat.label}</h2>
           <div className="rounded-lg border border-border overflow-x-auto">
-            <table className="w-full text-sm min-w-[900px]">
+            <table className="w-full text-sm min-w-[760px]">
               <thead className="bg-muted/50 border-b border-border">
                 <tr>
                   <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Document</th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Audience</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Status</th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Source</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Ver.</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">PDF</th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Published</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Last reconciled</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Actions</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Edit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-card">
-                {sectionDocs.map(doc => {
-                  const overdue = isReconcileOverdue(doc.last_reconciled_at)
-                  const statusStyle = STATUS_STYLES[doc.content_status] ?? STATUS_STYLES.unverified
-                  const statusLabel = STATUS_LABELS[doc.content_status] ?? doc.content_status
-                  const audienceStyle = AUDIENCE_STYLES[doc.audience] ?? ''
-                  const sourceLabel = doc.source_name
-                    ? `${doc.source_name}${doc.source_version ? ` · ${doc.source_version}` : ''}`
-                    : doc.source_system === 'external' ? 'External' : '—'
-
-                  return (
-                    <tr key={doc.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-5 py-4 font-medium max-w-[220px]">
-                        <span className="line-clamp-2">{doc.title}</span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${audienceStyle}`}>
-                          {doc.audience}
+                {sectionDocs.map(doc => (
+                  <tr key={doc.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-5 py-4 font-medium max-w-[220px]">
+                      <span className="line-clamp-2">{doc.title}</span>
+                      {doc.status !== 'published' && (
+                        <span className="block text-[10px] uppercase tracking-wide text-muted-foreground/60 mt-0.5">
+                          {doc.status}
                         </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle}`}>
-                          {doc.content_status === 'stale' || doc.content_status === 'source_missing'
-                            ? <AlertTriangle className="h-3 w-3" />
-                            : null}
-                          {statusLabel}
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${AUDIENCE_STYLES[doc.audience] ?? ''}`}>
+                        {doc.audience}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${SOURCE_STYLES[doc.source_kind] ?? ''}`}>
+                        {doc.source_kind}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-muted-foreground text-xs">
+                      v{doc.current_version}
+                    </td>
+                    <td className="px-5 py-4">
+                      {doc.pdf_path ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                          <FileText className="h-3 w-3" />
+                          {doc.pdf_generated_at ? format(new Date(doc.pdf_generated_at), 'MMM d') : 'Ready'}
                         </span>
-                      </td>
-                      <td className="px-5 py-4 text-muted-foreground text-xs max-w-[180px]">
-                        <span className="line-clamp-2">{sourceLabel}</span>
-                      </td>
-                      <td className="px-5 py-4 text-muted-foreground text-xs whitespace-nowrap">
-                        {doc.published_at ? format(new Date(doc.published_at), 'MMM d, yyyy') : '—'}
-                        {doc.published_by && doc.published_by !== 'cowork-pipeline' && (
-                          <span className="block text-[10px] text-muted-foreground/60 mt-0.5">via admin upload</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-4 text-muted-foreground text-xs whitespace-nowrap">
-                        <span className={overdue && doc.source_system !== 'external' ? 'text-amber-600 dark:text-amber-400' : ''}>
-                          {doc.last_reconciled_at ? format(new Date(doc.last_reconciled_at), 'MMM d, yyyy') : '—'}
-                        </span>
-                        {overdue && doc.source_system !== 'external' && (
-                          <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-600 dark:text-amber-400 mt-0.5 block">
-                            <Clock className="h-3 w-3 inline" /> Overdue
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-5 py-4">
-                        {doc.source_system === 'external' ? (
-                          <MarkReviewedButton docId={doc.id} />
-                        ) : (
-                          <span className="text-xs text-muted-foreground/50">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
+                      ) : (
+                        <span className="text-xs text-muted-foreground/50">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4 text-muted-foreground text-xs whitespace-nowrap">
+                      {doc.published_at ? format(new Date(doc.published_at), 'MMM d, yyyy') : '—'}
+                    </td>
+                    <td className="px-5 py-4">
+                      <Link
+                        href={`/admin/documents/${doc.id}/edit`}
+                        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Edit
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

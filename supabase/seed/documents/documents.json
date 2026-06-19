@@ -1,0 +1,247 @@
+{
+  "_comment": "Seed for the documents table (ADR-0002). markdown docs: body in documents/<key>.md. upload docs: PDF in seed/investor-room/<key>.pdf.",
+  "documents": [
+    {
+      "key": "vision_and_strategy",
+      "title": "Vision & Strategy",
+      "category": "concept",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 30,
+      "status": "published",
+      "md_file": "documents/vision_and_strategy.md"
+    },
+    {
+      "key": "exec_one_pager",
+      "title": "Executive One-Pager",
+      "category": "concept",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 10,
+      "status": "published",
+      "md_file": "documents/exec_one_pager.md"
+    },
+    {
+      "key": "phase_3_positioning",
+      "title": "Phase 3 Positioning",
+      "category": "strategy",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 10,
+      "status": "published",
+      "md_file": "documents/phase_3_positioning.md"
+    },
+    {
+      "key": "trust_liability_guardrails",
+      "title": "Trust & Liability Guardrails",
+      "category": "strategy",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 30,
+      "status": "published",
+      "md_file": "documents/trust_liability_guardrails.md"
+    },
+    {
+      "key": "client_item_protection",
+      "title": "Client Item Protection",
+      "category": "legal",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 20,
+      "status": "published",
+      "md_file": "documents/client_item_protection.md"
+    },
+    {
+      "key": "realreal_partnership",
+      "title": "RealReal Partnership",
+      "category": "market",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 10,
+      "status": "published",
+      "md_file": "documents/realreal_partnership.md"
+    },
+    {
+      "key": "competitive_lessons_realreal",
+      "title": "Competitive Lessons (RealReal)",
+      "category": "market",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 20,
+      "status": "published",
+      "md_file": "documents/competitive_lessons_realreal.md"
+    },
+    {
+      "key": "technology_and_platform",
+      "title": "Technology & Platform",
+      "category": "product",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 10,
+      "status": "published",
+      "md_file": "documents/technology_and_platform.md"
+    },
+    {
+      "key": "vault_pilot_spec",
+      "title": "Vault Pilot Spec",
+      "category": "product",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 20,
+      "status": "published",
+      "md_file": "documents/vault_pilot_spec.md"
+    },
+    {
+      "key": "assumptions_register",
+      "title": "Business Strategy Assumptions Register",
+      "category": "strategy",
+      "audience": "board",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 20,
+      "status": "published",
+      "md_file": "documents/assumptions_register.md"
+    },
+    {
+      "key": "integrated_strategic_trust_analysis",
+      "title": "Integrated Strategic & Trust Analysis",
+      "category": "financials",
+      "audience": "board",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 20,
+      "status": "published",
+      "md_file": "documents/integrated_strategic_trust_analysis.md"
+    },
+    {
+      "key": "operations_and_logistics",
+      "title": "Operations & Logistics",
+      "category": "operations",
+      "audience": "board",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 10,
+      "status": "published",
+      "md_file": "documents/operations_and_logistics.md"
+    },
+    {
+      "key": "launch_implementation_plan",
+      "title": "Launch Implementation Plan",
+      "category": "launch",
+      "audience": "board",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 10,
+      "status": "published",
+      "md_file": "documents/launch_implementation_plan.md"
+    },
+    {
+      "key": "market_sizing",
+      "title": "Market Sizing — TAM/SAM/SOM",
+      "category": "market",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 5,
+      "status": "published",
+      "md_file": "documents/market_sizing.md"
+    },
+    {
+      "key": "compliance_summary",
+      "title": "Compliance Summary",
+      "category": "legal",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 5,
+      "status": "published",
+      "md_file": "documents/compliance_summary.md"
+    },
+    {
+      "key": "leadership_and_team",
+      "title": "Leadership & Team",
+      "category": "team",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 10,
+      "status": "published",
+      "md_file": "documents/leadership_and_team.md"
+    },
+    {
+      "key": "ip_and_brand",
+      "title": "Intellectual Property & Brand",
+      "category": "ip",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 10,
+      "status": "published",
+      "md_file": "documents/ip_and_brand.md"
+    },
+    {
+      "key": "cap_table_use_of_funds",
+      "title": "Capitalization Table & Use of Funds",
+      "category": "financials",
+      "audience": "board",
+      "doc_type": "document",
+      "source_kind": "markdown",
+      "sort_order": 10,
+      "status": "published",
+      "md_file": "documents/cap_table_use_of_funds.md"
+    },
+    {
+      "key": "brochure",
+      "title": "Brochure",
+      "category": "concept",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "upload",
+      "sort_order": 20,
+      "status": "published",
+      "pdf_file": "investor-room/brochure.pdf"
+    },
+    {
+      "key": "realreal_press_release",
+      "title": "The RealReal — Press Release (May 2026)",
+      "category": "market",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "upload",
+      "sort_order": 40,
+      "status": "published",
+      "pdf_file": "investor-room/realreal_press_release.pdf"
+    },
+    {
+      "key": "realreal_10k_2025",
+      "title": "The RealReal — Form 10-K (2025)",
+      "category": "market",
+      "audience": "investor",
+      "doc_type": "document",
+      "source_kind": "upload",
+      "sort_order": 50,
+      "status": "published",
+      "pdf_file": "investor-room/realreal_10k_2025.pdf"
+    },
+    {
+      "key": "pitch_deck",
+      "title": "Pitch Deck",
+      "category": "deck",
+      "audience": "prospect",
+      "doc_type": "presentation",
+      "source_kind": "upload",
+      "sort_order": 10,
+      "status": "published",
+      "pdf_file": "investor-room/pitch_deck.pdf"
+    }
+  ]
+}

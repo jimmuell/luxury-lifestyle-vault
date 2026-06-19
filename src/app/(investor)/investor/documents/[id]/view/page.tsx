@@ -2,7 +2,6 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Download } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getInvestorDocSignedUrl } from '@/lib/storage/investor-docs'
 import { buttonVariants } from '@/components/ui/button'
 
@@ -11,7 +10,6 @@ export default async function InvestorDocViewPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  // 1. Re-verify session
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -20,32 +18,25 @@ export default async function InvestorDocViewPage({
   const role = selfProfile?.role
   if (role !== 'investor' && role !== 'admin') redirect('/')
 
-  // 2. Await params (Next.js 16 — params is a Promise)
   const { id } = await params
 
-  // 3. Fetch the document
+  // RLS enforces published + tier visibility for investor role
   const { data: doc } = await supabase
-    .from('investor_documents')
-    .select('id, title, storage_path')
+    .from('documents')
+    .select('id, title, pdf_path')
     .eq('id', id)
-    .eq('is_published', true)
+    .eq('status', 'published')
     .maybeSingle()
 
-  if (!doc) notFound()
+  if (!doc || !doc.pdf_path) notFound()
 
-  // 4. Log view for investors only (not admin previews)
-  if (role === 'investor') {
-    const admin = createAdminClient()
-    const { error: auditErr } = await admin.from('investor_document_views').insert({
-      profile_id: user.id,
-      document_id: doc.id,
-      view_type: 'view',
-    })
-    if (auditErr) console.error('[investor-view audit]', auditErr.message)
-  }
+  await supabase.from('investor_document_views').insert({
+    document_id: doc.id,
+    profile_id: user.id,
+    view_type: 'view',
+  })
 
-  // 5. Mint signed URL (1 hour TTL is fine)
-  const signedUrl = await getInvestorDocSignedUrl(doc.storage_path)
+  const signedUrl = await getInvestorDocSignedUrl(doc.pdf_path)
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>

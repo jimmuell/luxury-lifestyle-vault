@@ -55,3 +55,4 @@ supabase/seed/investor-room/*.pdf
 supabase/seed/investor-room/*.docx
 supabase/seed/investor-room/*.xlsx
 supabase/seed/investor-room/manifest.json
+__pycache__/

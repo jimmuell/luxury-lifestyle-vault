@@ -3,48 +3,15 @@
 import { useState } from 'react'
 import { Search, X, FolderOpen } from 'lucide-react'
 import { DocActions } from '@/components/investor/doc-actions'
-import type { InvestorDocument } from '@/lib/queries/investor'
-
-const SECTION_ORDER = [
-  'concept', 'strategy', 'market', 'financials',
-  'product', 'operations', 'launch', 'legal', 'team', 'ip',
-] as const
-
-const SECTION_LABELS: Record<string, string> = {
-  concept:    'The Concept',
-  strategy:   'Strategy',
-  market:     'Market & Competitive',
-  financials: 'Financials',
-  product:    'Product & Technology',
-  operations: 'Operations',
-  launch:     'Launch Plan',
-  legal:      'Legal & Risk',
-  team:       'Leadership & Team',
-  ip:         'Intellectual Property & Brand',
-  deck:       'Pitch Deck',
-}
+import type { PublishedDoc } from '@/lib/queries/documents'
 
 function formatDate(iso: string | null): string {
   if (!iso) return ''
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function currencyStamp(doc: InvestorDocument): string | null {
-  const date = doc.source_revised_at ?? doc.published_at
-  if (!date) return null
-  const datePart = formatDate(date)
-  return doc.source_version ? `As of ${datePart} · ${doc.source_version}` : `As of ${datePart}`
-}
-
-function formatBytes(bytes: number | null): string {
-  if (bytes == null) return ''
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
 interface FilterableDocListProps {
-  docs: InvestorDocument[]
+  docs: PublishedDoc[]
 }
 
 export function FilterableDocList({ docs }: FilterableDocListProps) {
@@ -53,36 +20,30 @@ export function FilterableDocList({ docs }: FilterableDocListProps) {
 
   const normalizedQuery = query.trim().toLowerCase()
 
-  // Determine which sections have documents (preserving fixed + extra ordering)
-  const grouped: Record<string, InvestorDocument[]> = {}
+  // Derive ordered section list from pre-sorted docs (category_sort_order is baked in)
+  const sectionOrder: string[] = []
+  const sectionLabels: Record<string, string> = {}
   for (const doc of docs) {
-    if (!grouped[doc.section]) grouped[doc.section] = []
-    grouped[doc.section].push(doc)
+    if (!sectionLabels[doc.category_key]) {
+      sectionOrder.push(doc.category_key)
+      sectionLabels[doc.category_key] = doc.category_label
+    }
   }
-  const orderedSections = SECTION_ORDER.filter(s => (grouped[s]?.length ?? 0) > 0)
-  const extraSections = Object.keys(grouped).filter(
-    s => !SECTION_ORDER.includes(s as typeof SECTION_ORDER[number])
-  )
-  const allSections = [...orderedSections, ...extraSections]
 
   // Apply filters
   const filteredDocs = docs.filter(doc => {
-    if (activeSection && doc.section !== activeSection) return false
-    if (normalizedQuery) {
-      const inTitle = doc.title.toLowerCase().includes(normalizedQuery)
-      const inDescription = doc.description?.toLowerCase().includes(normalizedQuery) ?? false
-      if (!inTitle && !inDescription) return false
-    }
+    if (activeSection && doc.category_key !== activeSection) return false
+    if (normalizedQuery && !doc.title.toLowerCase().includes(normalizedQuery)) return false
     return true
   })
 
-  // Group filtered docs by section in the same order
-  const filteredGrouped: Record<string, InvestorDocument[]> = {}
+  // Group filtered docs by section (maintain order from sectionOrder)
+  const filteredGrouped: Record<string, PublishedDoc[]> = {}
   for (const doc of filteredDocs) {
-    if (!filteredGrouped[doc.section]) filteredGrouped[doc.section] = []
-    filteredGrouped[doc.section].push(doc)
+    if (!filteredGrouped[doc.category_key]) filteredGrouped[doc.category_key] = []
+    filteredGrouped[doc.category_key].push(doc)
   }
-  const filteredSections = allSections.filter(s => (filteredGrouped[s]?.length ?? 0) > 0)
+  const filteredSections = sectionOrder.filter(s => (filteredGrouped[s]?.length ?? 0) > 0)
 
   const hasActiveFilter = normalizedQuery.length > 0 || activeSection !== null
 
@@ -115,9 +76,9 @@ export function FilterableDocList({ docs }: FilterableDocListProps) {
           )}
         </div>
 
-        {allSections.length > 1 && (
+        {sectionOrder.length > 1 && (
           <div className="flex flex-wrap gap-2 items-center">
-            {allSections.map(s => (
+            {sectionOrder.map(s => (
               <button
                 key={s}
                 onClick={() => setActiveSection(s === activeSection ? null : s)}
@@ -127,7 +88,7 @@ export function FilterableDocList({ docs }: FilterableDocListProps) {
                     : 'border border-border text-muted-foreground hover:text-foreground hover:border-foreground/50'
                 }`}
               >
-                {SECTION_LABELS[s] ?? s}
+                {sectionLabels[s]}
               </button>
             ))}
             {hasActiveFilter && (
@@ -144,7 +105,7 @@ export function FilterableDocList({ docs }: FilterableDocListProps) {
       </div>
 
       {/* Empty state — no docs at all */}
-      {allSections.length === 0 && (
+      {sectionOrder.length === 0 && (
         <div className="border border-border rounded-lg bg-card p-12 flex flex-col items-center text-center gap-4">
           <FolderOpen className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm font-medium text-muted-foreground">No documents yet</p>
@@ -155,7 +116,7 @@ export function FilterableDocList({ docs }: FilterableDocListProps) {
       )}
 
       {/* Empty state — no filter matches */}
-      {allSections.length > 0 && filteredSections.length === 0 && (
+      {sectionOrder.length > 0 && filteredSections.length === 0 && (
         <div className="border border-border rounded-lg bg-card p-12 flex flex-col items-center text-center gap-4">
           <Search className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm font-medium text-muted-foreground">No documents match your search.</p>
@@ -173,7 +134,7 @@ export function FilterableDocList({ docs }: FilterableDocListProps) {
         {filteredSections.map(section => (
           <div key={section} className="space-y-3">
             <h2 className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
-              {SECTION_LABELS[section] ?? section}
+              {sectionLabels[section]}
             </h2>
             <div className="space-y-2">
               {filteredGrouped[section].map(doc => (
@@ -183,18 +144,10 @@ export function FilterableDocList({ docs }: FilterableDocListProps) {
                 >
                   <div className="min-w-0 space-y-1">
                     <p className="font-serif text-base font-light leading-snug">{doc.title}</p>
-                    {doc.description && (
-                      <p className="text-xs text-muted-foreground leading-relaxed">{doc.description}</p>
-                    )}
                     <p className="text-xs text-muted-foreground/60 uppercase tracking-wide">
-                      {doc.file_type.toUpperCase()}
-                      {doc.file_size_bytes ? ` · ${formatBytes(doc.file_size_bytes)}` : ''}
+                      PDF
+                      {doc.published_at ? ` · ${formatDate(doc.published_at)}` : ''}
                     </p>
-                    {currencyStamp(doc) && (
-                      <p className="font-serif text-xs text-muted-foreground/50 italic">
-                        {currencyStamp(doc)}
-                      </p>
-                    )}
                   </div>
                   <div className="flex-shrink-0 print:hidden">
                     <DocActions docId={doc.id} title={doc.title} />
