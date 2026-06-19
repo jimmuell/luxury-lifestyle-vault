@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { inngest } from '@/lib/inngest/client'
 import { INVESTOR_BUCKET } from '@/lib/storage/constants'
 
 async function assertAdmin(): Promise<
@@ -160,10 +159,6 @@ export async function publishDocument(id: string) {
     .eq('id', id)
 
   if (error) return { error: error.message }
-
-  if (doc.source_kind === 'markdown') {
-    await inngest.send({ name: 'document/pdf.requested' as never, data: { documentId: id } })
-  }
 
   revalidatePath('/admin/documents')
   revalidatePath(`/admin/documents/${id}/edit`)

@@ -31,7 +31,7 @@ export default async function AdminDocumentsPage() {
   const [{ data: docs, error: docsError }, { data: categories }] = await Promise.all([
     admin
       .from('documents')
-      .select('id, title, status, audience, doc_type, source_kind, sort_order, current_version, published_at, updated_at, category_id')
+      .select('id, title, status, audience, doc_type, source_kind, sort_order, current_version, published_at, updated_at, category_id, source_type, google_web_view_link, sync_status, file_size_bytes, page_count')
       .order('status')
       .order('sort_order', { ascending: true })
       .order('title'),
@@ -104,7 +104,9 @@ export default async function AdminDocumentsPage() {
                       <tr>
                         <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Title</th>
                         <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden md:table-cell">Audience</th>
+                        <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden lg:table-cell">Source</th>
                         <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em]">Status</th>
+                        <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden xl:table-cell">PDF</th>
                         <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden lg:table-cell">Version</th>
                         <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-[0.1em] hidden xl:table-cell">Updated</th>
                         <th className="px-5 py-3" />
@@ -116,7 +118,9 @@ export default async function AdminDocumentsPage() {
                           <td className="px-5 py-3.5">
                             <p className="font-medium leading-snug">{doc.title}</p>
                             <p className="text-xs text-muted-foreground/60 mt-0.5 capitalize">
-                              {doc.source_kind} · sort {doc.sort_order}
+                              {doc.source_kind}
+                              {doc.sync_status && doc.sync_status !== 'manual_only' && ` · ${doc.sync_status.replace('_', ' ')}`}
+                              {` · sort ${doc.sort_order}`}
                             </p>
                           </td>
                           <td className="px-5 py-3.5 hidden md:table-cell">
@@ -124,10 +128,29 @@ export default async function AdminDocumentsPage() {
                               {doc.audience}
                             </span>
                           </td>
+                          <td className="px-5 py-3.5 text-xs hidden lg:table-cell">
+                            {doc.source_type === 'google_drive' && doc.google_web_view_link ? (
+                              <a href={doc.google_web_view_link} target="_blank" rel="noopener noreferrer" className="text-primary underline-offset-4 hover:underline">Drive</a>
+                            ) : (
+                              <span className="text-muted-foreground">Manual</span>
+                            )}
+                          </td>
                           <td className="px-5 py-3.5">
                             <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[doc.status] ?? STATUS_STYLES.draft}`}>
                               {doc.status}
                             </span>
+                          </td>
+                          <td className="px-5 py-3.5 hidden xl:table-cell">
+                            {doc.page_count != null ? (
+                              <span className="text-muted-foreground text-xs">
+                                {doc.page_count}p
+                                {doc.file_size_bytes != null && (
+                                  <span className="text-muted-foreground/60"> · {(doc.file_size_bytes / 1024).toFixed(0)} KB</span>
+                                )}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground/60 text-xs">—</span>
+                            )}
                           </td>
                           <td className="px-5 py-3.5 text-muted-foreground text-xs hidden lg:table-cell">
                             v{doc.current_version}
