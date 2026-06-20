@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { RefreshCw } from 'lucide-react'
 import { triggerDocumentSync } from '@/actions/admin-documents-sync'
@@ -11,6 +12,7 @@ interface DocumentSyncButtonProps {
 }
 
 export function DocumentSyncButton({ docId, syncStatus }: DocumentSyncButtonProps) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -22,6 +24,7 @@ export function DocumentSyncButton({ docId, syncStatus }: DocumentSyncButtonProp
         toast.error(result.error)
       } else {
         toast.success('Sync queued.')
+        router.refresh()
       }
     })
   }

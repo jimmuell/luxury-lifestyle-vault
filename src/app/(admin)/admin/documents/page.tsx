@@ -9,6 +9,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { DocumentDriveSourceForm } from '@/components/admin/document-drive-source-form'
 import { DocumentSyncButton } from '@/components/admin/document-sync-button'
 import { DocumentSyncAllButton } from '@/components/admin/document-sync-all-button'
+import { DocumentsSyncPoller } from '@/components/admin/documents-sync-poller'
 
 const STATUS_STYLES: Record<string, string> = {
   draft:     'bg-muted text-muted-foreground',
@@ -71,9 +72,11 @@ export default async function AdminDocumentsPage() {
   const total = docs?.length ?? 0
   const published = docs?.filter(d => d.status === 'published').length ?? 0
   const driveLinked = docs?.filter(d => d.source_type === 'google_drive').length ?? 0
+  const isSyncing = docs?.some(d => d.sync_status === 'syncing') ?? false
 
   return (
     <div className="space-y-6">
+      <DocumentsSyncPoller isSyncing={isSyncing} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-serif text-3xl font-light">Documents</h1>

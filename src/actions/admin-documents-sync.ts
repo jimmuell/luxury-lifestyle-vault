@@ -38,6 +38,9 @@ export async function triggerDocumentSync(
   if (doc.source_type !== 'google_drive' || !doc.google_file_id)
     return { error: 'Document is not linked to a Google Drive source.' }
 
+  // Optimistically mark syncing so an immediate router.refresh() shows the state change.
+  await admin.from('documents').update({ sync_status: 'syncing' }).eq('id', docId)
+
   await inngest.send({
     name: 'documents/sync.requested' as never,
     data: { docId, force: true },

@@ -1,11 +1,13 @@
 'use client'
 
 import { useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { RefreshCw } from 'lucide-react'
 import { triggerSyncAll } from '@/actions/admin-documents-sync'
 
 export function DocumentSyncAllButton() {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
   function handleClick() {
@@ -15,6 +17,7 @@ export function DocumentSyncAllButton() {
         toast.error(result.error)
       } else {
         toast.success('Full sync queued — check back in a moment.')
+        router.refresh()
       }
     })
   }
