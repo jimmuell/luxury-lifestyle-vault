@@ -26,17 +26,19 @@ export async function triggerDocumentSync(
   const docId = (formData.get('id') as string | null)?.trim() ?? ''
   if (!docId) return { error: 'Document ID is required.' }
 
-  // Confirm document is Drive-linked
+  // Confirm document is Drive-linked and sync is enabled
   const admin = createAdminClient()
   const { data: doc, error: fetchErr } = await admin
     .from('documents')
-    .select('id, source_type, google_file_id')
+    .select('id, source_type, google_file_id, sync_enabled')
     .eq('id', docId)
     .single()
 
   if (fetchErr || !doc) return { error: fetchErr?.message ?? 'Document not found.' }
   if (doc.source_type !== 'google_drive' || !doc.google_file_id)
     return { error: 'Document is not linked to a Google Drive source.' }
+  if (!doc.sync_enabled)
+    return { error: 'Sync is disabled for this document.' }
 
   await inngest.send({
     name: 'documents/sync.requested' as never,
@@ -59,6 +61,29 @@ export async function triggerSyncAll(): Promise<{ success: true } | { error: str
   })
 
   revalidatePath('/admin/documents')
+
+  return { success: true }
+}
+
+export async function updateSyncEnabled(
+  docId: string,
+  enabled: boolean,
+): Promise<{ success: true } | { error: string }> {
+  const auth = await assertAdmin()
+  if (auth.error) return { error: auth.error }
+
+  if (!docId) return { error: 'Document ID is required.' }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('documents')
+    .update({ sync_enabled: enabled })
+    .eq('id', docId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/documents')
+  revalidatePath(`/admin/documents/${docId}/edit`)
 
   return { success: true }
 }

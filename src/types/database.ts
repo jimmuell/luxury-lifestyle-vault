@@ -771,6 +771,7 @@ export type Database = {
           file_size_bytes: number | null
           page_count: number | null
           strip_first_page: boolean
+          sync_enabled: boolean
         }
         Insert: {
           id?: string
@@ -801,6 +802,7 @@ export type Database = {
           file_size_bytes?: number | null
           page_count?: number | null
           strip_first_page?: boolean
+          sync_enabled?: boolean
         }
         Update: {
           id?: string
@@ -831,6 +833,7 @@ export type Database = {
           file_size_bytes?: number | null
           page_count?: number | null
           strip_first_page?: boolean
+          sync_enabled?: boolean
         }
         Relationships: []
       }

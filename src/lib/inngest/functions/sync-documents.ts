@@ -233,6 +233,7 @@ async function runSync(docIds: string[] | null, trigger: 'cron' | 'manual' | 'ma
       .from('documents')
       .select('id')
       .eq('source_type', 'google_drive')
+      .eq('sync_enabled', true)
       .not('google_file_id', 'is', null)
     if (error) throw new Error(error.message)
     docs = data ?? []
