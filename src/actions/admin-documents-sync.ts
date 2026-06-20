@@ -40,6 +40,9 @@ export async function triggerDocumentSync(
   if (!doc.sync_enabled)
     return { error: 'Sync is disabled for this document.' }
 
+  // Optimistically mark syncing so an immediate router.refresh() shows the state change.
+  await admin.from('documents').update({ sync_status: 'syncing' }).eq('id', docId)
+
   await inngest.send({
     name: 'documents/sync.requested' as never,
     data: { docId, force: true },
