@@ -7,6 +7,8 @@ import { Plus, FileText } from 'lucide-react'
 import { AdminLoadError } from '@/components/admin/load-error'
 import { buttonVariants } from '@/components/ui/button'
 import { DocumentDriveSourceForm } from '@/components/admin/document-drive-source-form'
+import { DocumentSyncButton } from '@/components/admin/document-sync-button'
+import { DocumentSyncAllButton } from '@/components/admin/document-sync-all-button'
 
 const STATUS_STYLES: Record<string, string> = {
   draft:     'bg-muted text-muted-foreground',
@@ -18,6 +20,14 @@ const AUDIENCE_STYLES: Record<string, string> = {
   prospect: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
   investor: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   board:    'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+}
+
+const SYNC_STATUS_STYLES: Record<string, string> = {
+  synced:      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  syncing:     'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  failed:      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  changed:     'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  manual_only: 'bg-muted text-muted-foreground',
 }
 
 export default async function AdminDocumentsPage() {
@@ -32,7 +42,7 @@ export default async function AdminDocumentsPage() {
   const [{ data: docs, error: docsError }, { data: categories }] = await Promise.all([
     admin
       .from('documents')
-      .select('id, title, status, audience, doc_type, source_kind, sort_order, current_version, published_at, updated_at, category_id, source_type, google_web_view_link, sync_status, file_size_bytes, page_count')
+      .select('id, title, status, audience, doc_type, source_kind, sort_order, current_version, published_at, updated_at, category_id, source_type, google_web_view_link, sync_status, last_synced_at, last_sync_error, file_size_bytes, page_count')
       .order('status')
       .order('sort_order', { ascending: true })
       .order('title'),
@@ -60,6 +70,7 @@ export default async function AdminDocumentsPage() {
 
   const total = docs?.length ?? 0
   const published = docs?.filter(d => d.status === 'published').length ?? 0
+  const driveLinked = docs?.filter(d => d.source_type === 'google_drive').length ?? 0
 
   return (
     <div className="space-y-6">
@@ -68,12 +79,16 @@ export default async function AdminDocumentsPage() {
           <h1 className="font-serif text-3xl font-light">Documents</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {published} published · {total} total
+            {driveLinked > 0 && ` · ${driveLinked} Drive-linked`}
           </p>
         </div>
-        <Link href="/admin/documents/new" className={buttonVariants({ variant: 'default', size: 'sm' })}>
-          <Plus className="h-4 w-4 mr-1.5" />
-          New Document
-        </Link>
+        <div className="flex items-center gap-2">
+          {driveLinked > 0 && <DocumentSyncAllButton />}
+          <Link href="/admin/documents/new" className={buttonVariants({ variant: 'default', size: 'sm' })}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            New Document
+          </Link>
+        </div>
       </div>
 
       {docsError ? (
@@ -120,9 +135,26 @@ export default async function AdminDocumentsPage() {
                             <p className="font-medium leading-snug">{doc.title}</p>
                             <p className="text-xs text-muted-foreground/60 mt-0.5 capitalize">
                               {doc.source_kind}
-                              {doc.sync_status && doc.sync_status !== 'manual_only' && ` · ${doc.sync_status.replace('_', ' ')}`}
+                              {doc.sync_status && doc.sync_status !== 'manual_only' && (
+                                <>
+                                  {' · '}
+                                  <span className={`inline-flex items-center rounded px-1 py-px text-[10px] font-medium ${SYNC_STATUS_STYLES[doc.sync_status] ?? ''}`}>
+                                    {doc.sync_status.replace(/_/g, ' ')}
+                                  </span>
+                                  {doc.last_synced_at && (
+                                    <span className="ml-1 text-muted-foreground/40">
+                                      {format(new Date(doc.last_synced_at), 'MMM d')}
+                                    </span>
+                                  )}
+                                </>
+                              )}
                               {` · sort ${doc.sort_order}`}
                             </p>
+                            {doc.last_sync_error && (
+                              <p className="text-[10px] text-red-500 mt-0.5 truncate max-w-xs" title={doc.last_sync_error}>
+                                {doc.last_sync_error}
+                              </p>
+                            )}
                           </td>
                           <td className="px-5 py-3.5 hidden md:table-cell">
                             <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${AUDIENCE_STYLES[doc.audience] ?? ''}`}>
@@ -165,6 +197,12 @@ export default async function AdminDocumentsPage() {
                                 docId={doc.id}
                                 currentLink={doc.google_web_view_link ?? null}
                               />
+                              {doc.source_type === 'google_drive' && (
+                                <DocumentSyncButton
+                                  docId={doc.id}
+                                  syncStatus={doc.sync_status}
+                                />
+                              )}
                               <Link
                                 href={`/admin/documents/${doc.id}/edit`}
                                 className="rounded border border-border bg-background px-3 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
