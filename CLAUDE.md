@@ -44,6 +44,10 @@ There are no automated tests — `npm run verify` (ESLint + TypeScript) is the o
 
 ### Local dev server — ownership & known recurring failure (read before debugging)
 
+**Access the local app at `http://127.0.0.1:3000` (NOT `localhost:3000`).** `localhost` does not
+resolve to the dev server in this environment and returns a connection error; always use the
+`127.0.0.1` loopback address for browser access to the running local app.
+
 **Who runs the local dev server: the founder, exclusively.** Claude Code must NOT run `npm run dev` / `next dev`, and must NOT `pkill`/`kill` Next processes — a second server collides on port 3000 and has repeatedly broken local dev. To verify your work, run `npm run verify` (ESLint + TypeScript; no server required) and ask the founder to exercise the running app for any manual/UI checks. The commands in this section are the founder's recovery procedure, not a step for you to run.
 
 If the app won't run locally — `next dev` reaches "Ready" then dies, hangs at `○ Compiling proxy ...`, blank page, or webpack throws `loadProjectInfo is not a function` — **do NOT debug the proxy.** The cause is a corrupted `node_modules/next` (usually from in-place edits/instrumentation of Next internals or half-applied patches); the hang and the `loadProjectInfo` crash are symptoms, not a `proxy.ts` bug. Canonical fix:
