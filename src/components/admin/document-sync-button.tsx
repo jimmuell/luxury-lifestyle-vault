@@ -8,9 +8,10 @@ import { triggerDocumentSync } from '@/actions/admin-documents-sync'
 interface DocumentSyncButtonProps {
   docId: string
   syncStatus: string | null
+  syncEnabled: boolean
 }
 
-export function DocumentSyncButton({ docId, syncStatus }: DocumentSyncButtonProps) {
+export function DocumentSyncButton({ docId, syncStatus, syncEnabled }: DocumentSyncButtonProps) {
   const [isPending, startTransition] = useTransition()
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -27,14 +28,15 @@ export function DocumentSyncButton({ docId, syncStatus }: DocumentSyncButtonProp
   }
 
   const isSyncing = syncStatus === 'syncing' || isPending
+  const isDisabled = isSyncing || !syncEnabled
 
   return (
     <form onSubmit={handleSubmit}>
       <input type="hidden" name="id" value={docId} />
       <button
         type="submit"
-        disabled={isSyncing}
-        className={`flex items-center gap-1 rounded border px-3 py-1 text-xs transition-colors disabled:opacity-50 ${
+        disabled={isDisabled}
+        className={`flex items-center gap-1 rounded border px-3 py-1 text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
           isSyncing
             ? 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400'
             : 'border-border bg-background text-muted-foreground hover:text-foreground hover:bg-muted'

@@ -3,12 +3,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { format } from 'date-fns'
-import { Plus, FileText } from 'lucide-react'
+import { Plus, FileText, PauseCircle } from 'lucide-react'
 import { AdminLoadError } from '@/components/admin/load-error'
 import { buttonVariants } from '@/components/ui/button'
 import { DocumentDriveSourceForm } from '@/components/admin/document-drive-source-form'
 import { DocumentSyncButton } from '@/components/admin/document-sync-button'
 import { DocumentSyncAllButton } from '@/components/admin/document-sync-all-button'
+import { DocumentSyncToggle } from '@/components/admin/document-sync-toggle'
 
 const STATUS_STYLES: Record<string, string> = {
   draft:     'bg-muted text-muted-foreground',
@@ -42,7 +43,7 @@ export default async function AdminDocumentsPage() {
   const [{ data: docs, error: docsError }, { data: categories }] = await Promise.all([
     admin
       .from('documents')
-      .select('id, title, status, audience, doc_type, source_kind, sort_order, current_version, published_at, updated_at, category_id, source_type, google_web_view_link, sync_status, last_synced_at, last_sync_error, file_size_bytes, page_count')
+      .select('id, title, status, audience, doc_type, source_kind, sort_order, current_version, published_at, updated_at, category_id, source_type, google_web_view_link, sync_status, sync_enabled, last_synced_at, last_sync_error, file_size_bytes, page_count')
       .order('status')
       .order('sort_order', { ascending: true })
       .order('title'),
@@ -150,6 +151,12 @@ export default async function AdminDocumentsPage() {
                               )}
                               {` · sort ${doc.sort_order}`}
                             </p>
+                            {doc.source_type === 'google_drive' && !doc.sync_enabled && (
+                              <p className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
+                                <PauseCircle className="h-3 w-3 shrink-0" />
+                                <span title="Excluded from Sync all — pending table-border fix.">Sync paused</span>
+                              </p>
+                            )}
                             {doc.last_sync_error && (
                               <p className="text-[10px] text-red-500 mt-0.5 truncate max-w-xs" title={doc.last_sync_error}>
                                 {doc.last_sync_error}
@@ -198,10 +205,17 @@ export default async function AdminDocumentsPage() {
                                 currentLink={doc.google_web_view_link ?? null}
                               />
                               {doc.source_type === 'google_drive' && (
-                                <DocumentSyncButton
-                                  docId={doc.id}
-                                  syncStatus={doc.sync_status}
-                                />
+                                <>
+                                  <DocumentSyncButton
+                                    docId={doc.id}
+                                    syncStatus={doc.sync_status}
+                                    syncEnabled={doc.sync_enabled}
+                                  />
+                                  <DocumentSyncToggle
+                                    docId={doc.id}
+                                    syncEnabled={doc.sync_enabled}
+                                  />
+                                </>
                               )}
                               <Link
                                 href={`/admin/documents/${doc.id}/edit`}
