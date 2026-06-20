@@ -56,6 +56,12 @@ ADR-0004 stated that Phase 2 would call `files.export` directly on native Docs. 
 
 Google's `.docx`→Doc conversion drops table borders defined via `w:tblStyle`, but preserves *direct* borders (`w:tblBorders`, `w:tcBorders`). House docs with tables lose their gold grid until the docx template is updated to emit direct borders (gold `#C9A86A`, ~1.5pt). This is a separate follow-up (Part E of the Phase 2 code-prompt). Prose-only docs are unaffected.
 
+### Google auth — OAuth as founder (not service account)
+
+The initial Phase 2 implementation used a **service-account JWT** (`GOOGLE_SERVICE_ACCOUNT_KEY`). This was replaced immediately after first deploy because a service account on a personal Gmail organisation has **no Drive storage quota** — `files.copy` (creating the temp Google Doc) fails with `storageQuotaExceeded`.
+
+The fix (2026-06-20, `fix/drive-oauth`): authenticate as the **founder's Google account** via OAuth 2.0 with a long-lived refresh token (`GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN`). `googleapis` auto-refreshes the access token; no manual token handling in app code. The refresh token is minted once via `scripts/mint-drive-token.mjs` (loopback flow). `GOOGLE_SERVICE_ACCOUNT_KEY` is deprecated.
+
 ### Runtime
 
 Phase 2 is implemented as an **Inngest function** (`sync-documents`), not a Supabase Edge Function + pg\_cron. Inngest crons fire correctly in prod; the original motivation for an Edge Function (Vercel deployment-protection gating) only affected function registration, not execution.
