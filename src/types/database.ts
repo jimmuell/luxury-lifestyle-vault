@@ -770,6 +770,7 @@ export type Database = {
           pdf_sha256: string | null
           file_size_bytes: number | null
           page_count: number | null
+          strip_first_page: boolean
         }
         Insert: {
           id?: string
@@ -799,6 +800,7 @@ export type Database = {
           pdf_sha256?: string | null
           file_size_bytes?: number | null
           page_count?: number | null
+          strip_first_page?: boolean
         }
         Update: {
           id?: string
@@ -828,6 +830,73 @@ export type Database = {
           pdf_sha256?: string | null
           file_size_bytes?: number | null
           page_count?: number | null
+          strip_first_page?: boolean
+        }
+        Relationships: []
+      }
+      document_sync_events: {
+        Row: {
+          id: string
+          run_id: string
+          document_id: string
+          result: string
+          bytes: number | null
+          pages: number | null
+          message: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          run_id: string
+          document_id: string
+          result: string
+          bytes?: number | null
+          pages?: number | null
+          message?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          run_id?: string
+          document_id?: string
+          result?: string
+          bytes?: number | null
+          pages?: number | null
+          message?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      document_sync_runs: {
+        Row: {
+          id: string
+          started_at: string
+          finished_at: string | null
+          trigger: string
+          docs_checked: number
+          docs_synced: number
+          docs_failed: number
+          error: string | null
+        }
+        Insert: {
+          id?: string
+          started_at?: string
+          finished_at?: string | null
+          trigger: string
+          docs_checked?: number
+          docs_synced?: number
+          docs_failed?: number
+          error?: string | null
+        }
+        Update: {
+          id?: string
+          started_at?: string
+          finished_at?: string | null
+          trigger?: string
+          docs_checked?: number
+          docs_synced?: number
+          docs_failed?: number
+          error?: string | null
         }
         Relationships: []
       }

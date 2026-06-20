@@ -23,7 +23,7 @@ async function assertAdmin(): Promise<
   return { userId: user.id, email: user.email ?? 'admin' }
 }
 
-async function processAndMetadataPdf(
+export async function processAndMetadataPdf(
   buffer: Buffer,
   stripFirst: boolean,
 ): Promise<{ buffer: Buffer; sha256: string; fileSize: number; pageCount: number }> {

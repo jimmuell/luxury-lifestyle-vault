@@ -11,6 +11,7 @@ import { seasonalRotationReminders } from '@/lib/inngest/functions/seasonal-rota
 import { notifyInvestorDocument } from '@/lib/inngest/functions/notify-investor-document'
 import { notifyInvestorUpdate } from '@/lib/inngest/functions/notify-investor-update'
 import { notifyDataroomDrift } from '@/lib/inngest/functions/notify-dataroom-drift'
+import { syncDocuments } from '@/lib/inngest/functions/sync-documents'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -24,5 +25,6 @@ export const { GET, POST, PUT } = serve({
     notifyInvestorDocument,
     notifyInvestorUpdate,
     notifyDataroomDrift,
+    syncDocuments,
   ],
 })
