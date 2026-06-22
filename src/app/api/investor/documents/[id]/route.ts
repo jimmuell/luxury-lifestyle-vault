@@ -31,9 +31,16 @@ export async function GET(
   const { id } = await params
 
   const url = new URL(request.url)
-  const isDownload = url.searchParams.get('download') === '1'
+  // mode: 'download' forces a file download; 'inline' renders the PDF in the
+  // browser (used by the admin Data Room View button); default redirects to
+  // the investor in-app viewer page.
+  const mode = url.searchParams.get('download') === '1'
+    ? 'download'
+    : url.searchParams.get('inline') === '1'
+      ? 'inline'
+      : 'view'
 
-  if (!isDownload) {
+  if (mode === 'view') {
     return NextResponse.redirect(new URL(`/investor/documents/${id}/view`, request.url), 302)
   }
 
@@ -52,10 +59,13 @@ export async function GET(
   await supabase.from('investor_document_views').insert({
     document_id: doc.id,
     profile_id: user.id,
-    view_type: 'download',
+    view_type: mode === 'download' ? 'download' : 'view',
   })
 
-  const filename = `${slugify(doc.title)}.pdf`
-  const signedUrl = await getInvestorDocSignedUrl(doc.pdf_path, undefined, filename)
+  // download -> signed URL with Content-Disposition attachment;
+  // inline -> signed URL the browser renders in a tab.
+  const signedUrl = mode === 'download'
+    ? await getInvestorDocSignedUrl(doc.pdf_path, undefined, `${slugify(doc.title)}.pdf`)
+    : await getInvestorDocSignedUrl(doc.pdf_path)
   return NextResponse.redirect(signedUrl, 302)
 }

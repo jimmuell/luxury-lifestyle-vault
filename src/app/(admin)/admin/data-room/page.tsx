@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { format } from 'date-fns'
-import { ExternalLink, FileText, AlertCircle } from 'lucide-react'
+import { ExternalLink, FileText, AlertCircle, Eye, Download } from 'lucide-react'
 import { AdminLoadError } from '@/components/admin/load-error'
 
 const AUDIENCE_STYLES: Record<string, string> = {
@@ -158,10 +158,30 @@ export default async function AdminDataRoomPage() {
                     </td>
                     <td className="px-5 py-4">
                       {doc.pdf_path ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                          <FileText className="h-3 w-3" />
-                          {doc.pdf_generated_at ? format(new Date(doc.pdf_generated_at), 'MMM d') : 'Ready'}
-                        </span>
+                        <div className="flex flex-col gap-1 text-xs">
+                          <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400">
+                            <FileText className="h-3 w-3" />
+                            {doc.pdf_generated_at ? format(new Date(doc.pdf_generated_at), 'MMM d') : 'Ready'}
+                          </span>
+                          <span className="inline-flex items-center gap-3">
+                            <a
+                              href={`/api/investor/documents/${doc.id}?inline=1`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              <Eye className="h-3 w-3" />
+                              View
+                            </a>
+                            <a
+                              href={`/api/investor/documents/${doc.id}?download=1`}
+                              className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              <Download className="h-3 w-3" />
+                              Download
+                            </a>
+                          </span>
+                        </div>
                       ) : (
                         <span className="text-xs text-muted-foreground/50">—</span>
                       )}
